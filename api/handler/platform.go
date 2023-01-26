@@ -31,7 +31,7 @@ func (p platform) Create(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := p.service.Create()
+	m, err := p.service.Create(c.Request().Context())
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
 		return httperror.InternalError(c)

@@ -1,12 +1,14 @@
 package service
 
 import (
+	"context"
+
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
 
 type Platform interface {
-	Create() (model.Platform, error)
+	Create(ctx context.Context) (model.Platform, error)
 }
 
 type platform struct {
@@ -17,6 +19,6 @@ func NewPlatform(repos repository.Repositories) Platform {
 	return &platform{repos}
 }
 
-func (a platform) Create() (model.Platform, error) {
+func (a platform) Create(ctx context.Context) (model.Platform, error) {
 	return model.Platform{}, nil
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -19,10 +20,10 @@ type PlaformUpdates struct {
 
 type Platform interface {
 	database.Transactable
-	Create(model.Platform) (model.Platform, error)
-	GetById(ID string) (model.Platform, error)
-	List(limit int, offset int) ([]model.Platform, error)
-	Update(ID string, updates any) error
+	Create(ctx context.Context, model model.Platform) (model.Platform, error)
+	GetById(ctx context.Context, ID string) (model.Platform, error)
+	List(ctx context.Context, limit int, offset int) ([]model.Platform, error)
+	Update(ctx context.Context, ID string, updates any) error
 }
 
 type platform[T any] struct {
@@ -33,7 +34,7 @@ func NewPlatform(db database.Queryable) Platform {
 	return &platform[model.Platform]{strrepo.Base[model.Platform]{Store: db, Table: "platform"}}
 }
 
-func (p platform[T]) Create(m model.Platform) (model.Platform, error) {
+func (p platform[T]) Create(ctx context.Context, m model.Platform) (model.Platform, error) {
 	plat := model.Platform{}
 	rows, err := p.Store.NamedQuery(`
 		INSERT INTO platform (type, authentication, api_key, status) 
