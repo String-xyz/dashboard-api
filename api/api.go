@@ -33,5 +33,12 @@ func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
 func Start(config APIConfig) {
 	e := echo.New()
 	e.Validator = validator.New()
+	e.GET("/heartbeat", heartbeat)
+
+	//Platform Routes
+	repos := newRepos(config)
+	service := newServices(config, repos)
+	platformRoute(service, e)
+
 	e.Logger.Fatal(e.Start(":" + config.Port))
 }
