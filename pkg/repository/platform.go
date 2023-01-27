@@ -37,22 +37,22 @@ func NewPlatform(db database.Queryable) Platform {
 }
 
 func (p platform[T]) Create(ctx context.Context, m model.Platform) (model.Platform, error) {
-	plat := model.Platform{}
+	newModel := model.Platform{}
 	rows, err := p.Store.NamedQuery(`
 		INSERT INTO platform (name) 
 		VALUES(:name) RETURNING *`, m)
 
 	if err != nil {
-		return plat, common.StringError(err)
+		return newModel, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&plat)
+		err := rows.StructScan(&newModel)
 		if err != nil {
-			return plat, common.StringError(err)
+			return newModel, common.StringError(err)
 		}
 	}
 
-	return plat, nil
+	return newModel, nil
 }
