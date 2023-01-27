@@ -18,7 +18,7 @@ type Platform struct {
 	IPAddresses   pq.StringArray `json:"ipAddresses" db:"ip_addresses"`
 }
 
-type Member struct {
+type PlatformMember struct {
 	ID            string     `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
@@ -27,12 +27,12 @@ type Member struct {
 	Password      string     `json:"password" db:"password"`
 }
 
-type PlatformMember struct {
+type MemberToPlatform struct {
 	PlatformID string `json:"platformId" db:"platform_id"`
 	MemberID   string `json:"memberId" db:"member_id"`
 }
 
-type Role struct {
+type MemberRole struct {
 	ID            string     `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
@@ -40,12 +40,12 @@ type Role struct {
 	Name          string     `json:"name" db:"name"`
 }
 
-type MemberRole struct {
+type MemberToRole struct {
 	MemberID string `json:"memberId" db:"member_id"`
 	RoleID   string `json:"roleId" db:"role_id"`
 }
 
-type Invite struct {
+type MemberInvite struct {
 	ID            string     `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`

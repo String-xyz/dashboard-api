@@ -8,14 +8,16 @@ import (
 	"github.com/String-xyz/go-lib/database"
 	strrepo "github.com/String-xyz/go-lib/repository"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
-	"github.com/jmoiron/sqlx/types"
+	"github.com/lib/pq"
 )
 
 type PlaformUpdates struct {
 	DeactivatedAt *time.Time      `json:"deactivatedAt" db:"deactivated_at"`
-	Type          *string         `json:"type" db:"type"`
-	Status        *string         `json:"status" db:"status"`
-	Tags          *types.JSONText `json:"tags" db:"tags"`
+	ActivatedAt   *time.Time      `json:"activatedAt" db:"activated_at"`
+	Name          *string         `json:"name" db:"name"`
+	Description   *string         `json:"description" db:"description"`
+	Domains       *pq.StringArray `json:"domains" db:"domains"`
+	IPAddresses   *pq.StringArray `json:"ipAddresses" db:"ip_addresses"`
 }
 
 type Platform interface {
@@ -37,8 +39,8 @@ func NewPlatform(db database.Queryable) Platform {
 func (p platform[T]) Create(ctx context.Context, m model.Platform) (model.Platform, error) {
 	plat := model.Platform{}
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO platform (type, authentication, api_key, status) 
-		VALUES(:type, :authentication, :api_key, :status) RETURNING *`, m)
+		INSERT INTO platform (name) 
+		VALUES(:name) RETURNING *`, m)
 
 	if err != nil {
 		return plat, common.StringError(err)
