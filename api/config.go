@@ -7,7 +7,13 @@ import (
 
 func newRepos(config APIConfig) repository.Repositories {
 	return repository.Repositories{
-		Platform: repository.NewPlatform(config.DB),
+		Platform:         repository.NewPlatform(config.DB),
+		PlatformMember:   repository.NewPlatformMember(config.DB),
+		MemberToRole:     repository.NewMemberToRole(config.DB),
+		MemberToPlatform: repository.NewMemberToPlatform(config.DB),
+		MemberRole:       repository.NewMemberRole(config.DB),
+		MemberInvite:     repository.NewMemberInvite(config.DB),
+		Apikey:           repository.NewApikey(config.DB),
 	}
 }
 

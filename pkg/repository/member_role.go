@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -21,6 +23,7 @@ type MemberRole interface {
 	GetById(ctx context.Context, ID string) (model.MemberRole, error)
 	List(ctx context.Context, limit int, offset int) ([]model.MemberRole, error)
 	Update(ctx context.Context, ID string, updates any) error
+	GetByName(ctx context.Context, m model.MemberRole) (model.MemberRole, error)
 }
 
 type memberRole[T any] struct {
@@ -34,8 +37,8 @@ func NewMemberRole(db database.Queryable) MemberRole {
 func (p memberRole[T]) Create(ctx context.Context, m model.MemberRole) (model.MemberRole, error) {
 	newModel := model.MemberRole{}
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO member_role (name) 
-		VALUES(:name) RETURNING *`, m)
+		INSERT INTO member_role (id, name) 
+		VALUES(:id, :name) RETURNING *`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)
@@ -50,4 +53,15 @@ func (p memberRole[T]) Create(ctx context.Context, m model.MemberRole) (model.Me
 	}
 
 	return newModel, nil
+}
+
+func (p memberRole[T]) GetByName(ctx context.Context, m model.MemberRole) (model.MemberRole, error) {
+	result := model.MemberRole{}
+	err := p.Store.Get(&result, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1", p.Table), m.Name)
+	if err != nil && err == sql.ErrNoRows {
+		return result, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return result, common.StringError(err)
+	}
+	return result, nil
 }

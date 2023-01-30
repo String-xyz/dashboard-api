@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/lib/pq"
@@ -13,7 +14,7 @@ type Platform struct {
 	DeactivatedAt *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
 	ActivatedAt   *time.Time     `json:"activatedAt,omitempty" db:"activated_at"`
 	Name          string         `json:"name" db:"name"`
-	Description   string         `json:"description" db:"description"`
+	Description   sql.NullString `json:"description" db:"description"`
 	Domains       pq.StringArray `json:"domains" db:"domains"`
 	IPAddresses   pq.StringArray `json:"ipAddresses" db:"ip_addresses"`
 }
