@@ -39,12 +39,6 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 		return result, common.StringError(err)
 	}
 
-	// Associate new Member with Platform and associate new Member with Role
-	// owner, err := a.repos.MemberRole.GetByName(ctx, model.MemberRole{Name: "Owner"})
-	// if err != nil {
-	// 	return result, common.StringError(err)
-	// }
-
 	ownerId := os.Getenv("MEMBER_ROLE_OWNER_ID")
 	if ownerId == "" {
 		return result, common.StringError(errors.New("member role id is not defined in the env"))
