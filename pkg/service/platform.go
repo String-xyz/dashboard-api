@@ -12,6 +12,8 @@ import (
 
 type Platform interface {
 	Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error)
+	Get(ctx context.Context, request string) (model.Platform, error)
+	Update(ctx context.Context, request model.RequestPlatformUpdate, id string) (model.Platform, error)
 }
 
 type platform struct {
@@ -23,7 +25,6 @@ func NewPlatform(repos repository.Repositories) Platform {
 }
 
 // TODO: Ensure valid email is provided
-// TODO: Can multiple platforms share the same name?  Maybe we should prevent this.
 func (a platform) Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error) {
 	// Generate new Platform with a Name
 	result := model.Platform{Name: request.PlatformName}
@@ -49,5 +50,16 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 		return result, common.StringError(err)
 	}
 
+	return result, nil
+}
+
+func (a platform) Get(ctx context.Context, request string) (model.Platform, error) {
+	result := model.Platform{}
+	return result, nil
+}
+
+// TODO: Ensure multiple platforms do not share the same *domain*
+func (a platform) Update(ctx context.Context, request model.RequestPlatformUpdate, id string) (model.Platform, error) {
+	result := model.Platform{}
 	return result, nil
 }

@@ -12,11 +12,14 @@ import (
 
 type Platform interface {
 	Create(e echo.Context) error
+	Get(e echo.Context) error
+	Update(e echo.Context) error
 	RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc)
 }
 
 type platform struct {
 	service service.Platform
+	Group   *echo.Group
 }
 
 func NewPlatform(service service.Platform) Platform {
@@ -39,10 +42,43 @@ func (p platform) Create(c echo.Context) error {
 	return c.JSON(http.StatusCreated, m)
 }
 
+func (p platform) Get(c echo.Context) error {
+	// TODO: Get platform ID from the JWT
+	id := ""
+
+	m, err := p.service.Get(c.Request().Context(), id)
+	if err != nil {
+		common.LogStringError(c, err, "platform: get")
+		return httperror.InternalError(c)
+	}
+	return c.JSON(http.StatusAccepted, m)
+}
+
+func (p platform) Update(c echo.Context) error {
+	// TODO: Get platform ID from the JWT
+	id := ""
+	body := model.RequestPlatformUpdate{}
+	err := c.Bind(&body)
+	if err != nil {
+		common.LogStringError(c, err, "platform: update bind")
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := p.service.Update(c.Request().Context(), body, id)
+	if err != nil {
+		common.LogStringError(c, err, "platform: update")
+		return httperror.InternalError(c)
+	}
+	return c.JSON(http.StatusCreated, m)
+}
+
 func (p platform) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	if g == nil {
 		panic("no group attached to the platform handler")
 	}
+	p.Group = g
 	g.Use(ms...)
 	g.POST("", p.Create)
+	g.GET("", p.Get, ms...)
+	g.PUT("", p.Update, ms...)
 }
