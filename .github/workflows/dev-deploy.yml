@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
         
       - name: setup go
         uses: actions/setup-go@v3
@@ -42,7 +42,7 @@ jobs:
       - name: tag and push to Amazon ECR
         env:
           ECR_REPO: ${{ secrets.AWS_ACCT }}.dkr.ecr.us-west-2.amazonaws.com
-          SERVICE: platform-admin-api
+          SERVICE: platform-api
           IMAGE_TAG: latest
         run: |
           docker build -t $ECR_REPO/$SERVICE:$IMAGE_TAG ./cmd/app/
@@ -51,7 +51,7 @@ jobs:
       - name: deploy
         env:
           CLUSTER: string-core
-          SERVICE: platform-admin-api
+          SERVICE: platform-api
           AWS_REGION: us-west-2
         run: |
           aws ecs --region $AWS_REGION update-service --cluster $CLUSTER --service $SERVICE --force-new-deployment
