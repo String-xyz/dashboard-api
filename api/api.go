@@ -35,6 +35,8 @@ func Start(config APIConfig) {
 	e.Validator = validator.New()
 	e.GET("/heartbeat", heartbeat)
 
+	baseMiddleware(config.Logger, e)
+
 	//Platform Routes
 	repos := newRepos(config)
 	service := newServices(config, repos)

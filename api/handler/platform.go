@@ -24,14 +24,14 @@ func NewPlatform(service service.Platform) Platform {
 }
 
 func (p platform) Create(c echo.Context) error {
-	body := model.Platform{}
+	body := model.RequestPlatformCreate{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create bind")
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := p.service.Create(c.Request().Context())
+	m, err := p.service.Create(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
 		return httperror.InternalError(c)
