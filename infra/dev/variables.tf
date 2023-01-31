@@ -4,7 +4,7 @@ locals {
   service_name       = "platform-api"
   root_domain        = "dev.string-api.xyz"
   container_port     = "3000"
-  origin_id          = "string-api"
+  origin_id          = "platform-api"
   desired_task_count = "1"
   db_port            = "5432"
   redis_port         = "6379"

@@ -10,7 +10,7 @@ module "alb_listener_acm" {
 }
 
 data "aws_ssm_parameter" "alb_listener" {
-  name = "string-api-alb-istener-arn"
+  name = "string-api-alb-listener-arn"
 }
 
 resource "aws_alb_listener_certificate" "cert" {
