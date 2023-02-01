@@ -19,5 +19,9 @@ func newRepos(config APIConfig) repository.Repositories {
 
 func newServices(config APIConfig, repos repository.Repositories) service.Services {
 	plat := service.NewPlatform(repos)
-	return service.Services{Platform: plat}
+	member := service.NewMember(repos)
+	login := service.NewLogin(repos)
+	invite := service.NewInvite(repos)
+	apikey := service.NewApikey(repos)
+	return service.Services{Platform: plat, Member: member, Login: login, Invite: invite, Apikey: apikey}
 }
