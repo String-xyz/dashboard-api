@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
@@ -21,6 +23,8 @@ type MemberToPlatform interface {
 	GetById(ctx context.Context, ID string) (model.MemberToPlatform, error)
 	List(ctx context.Context, limit int, offset int) ([]model.MemberToPlatform, error)
 	Update(ctx context.Context, ID string, updates any) error
+	GetByMember(memberId string) ([]model.MemberToPlatform, error)
+	GetByPlatform(platformId string) ([]model.MemberToPlatform, error)
 }
 
 type memberToPlatform[T any] struct {
@@ -50,4 +54,26 @@ func (p memberToPlatform[T]) Create(ctx context.Context, m model.MemberToPlatfor
 	}
 
 	return newModel, nil
+}
+
+func (p memberToPlatform[T]) GetByMember(memberId string) ([]model.MemberToPlatform, error) {
+	m := []model.MemberToPlatform{}
+	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", p.Table), memberId)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p memberToPlatform[T]) GetByPlatform(platformId string) ([]model.MemberToPlatform, error) {
+	m := []model.MemberToPlatform{}
+	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
 }

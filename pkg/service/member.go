@@ -7,6 +7,11 @@ import (
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
 
+type MemberCreateResponse struct {
+	JWT  JWT                  `json:"authToken"`
+	User model.PlatformMember `json:"member"`
+}
+
 type Member interface {
 	GetAll(ctx context.Context, request string) ([]model.PlatformMember, error)
 	Get(ctx context.Context, request string, id string) (model.PlatformMember, error)
