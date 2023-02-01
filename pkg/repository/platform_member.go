@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -23,6 +25,7 @@ type PlatformMember interface {
 	GetById(ctx context.Context, ID string) (model.PlatformMember, error)
 	List(ctx context.Context, limit int, offset int) ([]model.PlatformMember, error)
 	Update(ctx context.Context, ID string, updates any) error
+	GetByEmail(email string) (model.PlatformMember, error)
 }
 
 type platformMember[T any] struct {
@@ -52,4 +55,15 @@ func (p platformMember[T]) Create(ctx context.Context, m model.PlatformMember) (
 	}
 
 	return newModel, nil
+}
+
+func (p platformMember[T]) GetByEmail(email string) (model.PlatformMember, error) {
+	m := model.PlatformMember{}
+	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE email = $1", p.Table), email)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
 }

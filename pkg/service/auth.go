@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	netmail "net/mail"
 	"os"
@@ -51,14 +50,22 @@ type RefreshTokenResponse struct {
 
 type Auth interface {
 	GenerateJWT(memberId string, platformId string) (JWT, error)
-	ValidateAPIKey(key string) bool
-	RefreshToken(token string, walletAddress string) (MemberCreateResponse, error)
-	InvalidateRefreshToken(token string) error
+	RefreshToken(refreshToken string, platformId string) (MemberCreateResponse, error)
+	CreateJWTRefresh(key string, memberId string) (JWTStrategy, error)
+	ValidateJWT(token string) (bool, error)
+	InvalidateRefreshToken(refreshToken string) error
+	GetUserIdFromRefreshToken(refreshToken string) (string, error)
+	Get(key string) (JWTStrategy, error)
+	Delete(key string) error
 }
 
 type auth struct {
 	repos repository.Repositories
 	redis database.RedisStore
+}
+
+func NewAuth(r repository.Repositories, d database.RedisStore) Auth {
+	return &auth{r, d}
 }
 
 // GenerateJWT generates a jwt token and a refresh token which is saved on redis
@@ -131,17 +138,14 @@ func (a auth) RefreshToken(refreshToken string, platformId string) (MemberCreate
 		return resp, common.StringError(err)
 	}
 
-	// get platforms associated with user
-	platforms, err := a.repos.MemberToPlatform.GetByMember(memberId)
+	// get platform associated with user
+	platform, err := a.repos.MemberToPlatform.GetByMember(memberId)
 	if err != nil {
 		return resp, common.StringError(err)
 	}
-	if len(platforms) == 0 {
-		return resp, common.StringError(errors.New("No platforms associated with member"))
-	}
 
 	// create new jwt
-	jwt, err := a.GenerateJWT(memberId, platforms[0].PlatformID) // TODO: use the correct platform, not the first
+	jwt, err := a.GenerateJWT(memberId, platform.PlatformID)
 	if err != nil {
 		return resp, common.StringError(err)
 	}
