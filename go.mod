@@ -3,7 +3,7 @@ module github.com/String-xyz/platform-admin-api
 go 1.19
 
 require (
-	github.com/String-xyz/go-lib v1.0.6-0.20230130184920-26c04d86d49f
+	github.com/String-xyz/go-lib v1.0.6-0.20230202215655-c35dd5f79452
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/labstack/echo/v4 v4.10.0

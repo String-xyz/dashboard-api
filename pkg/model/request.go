@@ -29,9 +29,15 @@ type RequestLogin struct {
 }
 
 type RequestMemberUpdate struct {
-	TodoDefineParameters string `json:"undefined"`
+	Email string `json:"email" db:"email"`
+	Name  string `json:"name" db:"name"`
 }
 
 type RequestApikeyUpdate struct {
 	TodoDefineParameters string `json:"undefined"`
+}
+
+type RequestPasswordReset struct {
+	Password   string `json:"password"`
+	ResetToken string `json:"resetToken"`
 }

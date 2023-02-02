@@ -11,7 +11,7 @@ import (
 )
 
 type Login interface {
-	Login(ctx context.Context, request model.RequestLogin) (interface{}, error) // TODO: Return JWT
+	Login(ctx context.Context, request model.RequestLogin) (JWT, error) // TODO: Return JWT
 }
 
 type login struct {
@@ -23,7 +23,7 @@ func NewLogin(repos repository.Repositories, redis database.RedisStore) Login {
 	return &login{repos, redis}
 }
 
-func (a login) Login(ctx context.Context, request model.RequestLogin) (interface{}, error) {
+func (a login) Login(ctx context.Context, request model.RequestLogin) (JWT, error) {
 	jwt := JWT{}
 	member, err := a.repos.PlatformMember.GetByEmail(request.Email)
 	if err != nil {
@@ -41,5 +41,5 @@ func (a login) Login(ctx context.Context, request model.RequestLogin) (interface
 	auth := NewAuth(a.repos, a.redis)
 	auth.GenerateJWT(member.ID, platform.PlatformID)
 
-	return "{}", nil
+	return jwt, nil
 }

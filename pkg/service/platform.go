@@ -64,7 +64,10 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 		"<br>Dear " + request.PlatformName + " owner," +
 		"<br>Thank you for signing up to use the String API.  Please click the link below to set your password and complete your registration process:" +
 		"<br><a href='https://platform-api.dev.string-api.xyz/invites/" + invite.ID + "'>Accept Invitation</a>" // TODO: double check :id
-	SendEmail("String API", "New String API User", "auth@string.xyz", request.Email, "String API Invitation", body)
+	err = SendEmail("String API", "New String API User", "auth@string.xyz", request.Email, "String API Invitation", body)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 
 	return result, nil
 }
