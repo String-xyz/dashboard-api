@@ -3,6 +3,7 @@ package model
 type RequestPlatformCreate struct {
 	PlatformName string `json:"platformName"`
 	Email        string `json:"email"`
+	Name         string `json:"name"`
 }
 
 type RequestPlatformUpdate struct {

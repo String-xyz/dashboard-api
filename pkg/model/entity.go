@@ -25,6 +25,7 @@ type PlatformMember struct {
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
 	Email         string     `json:"email" db:"email"`
 	Password      string     `json:"password" db:"password"`
+	Name          string     `json:"name" db:"name"`
 }
 
 type MemberToPlatform struct {

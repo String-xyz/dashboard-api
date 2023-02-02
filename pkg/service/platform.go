@@ -34,7 +34,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 	}
 
 	// Generate a new Platform Member with an Email
-	member := model.PlatformMember{Email: request.Email}
+	member := model.PlatformMember{Email: request.Email, Name: request.Name}
 	member, err = a.repos.PlatformMember.Create(ctx, member)
 	if err != nil {
 		return result, common.StringError(err)
