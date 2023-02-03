@@ -52,7 +52,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 	}
 
 	// Generate Owner invitation
-	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: member.ID, PlatformID: result.ID})
+	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: member.ID, PlatformID: result.ID, Name: request.Name})
 	if err != nil {
 		return result, common.StringError(err)
 	}

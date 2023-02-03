@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -18,9 +19,11 @@ type MemberCreateResponse struct {
 type Member interface {
 	GetAll(ctx context.Context, callerId string, platformId string) ([]model.PlatformMember, error)
 	Get(ctx context.Context, callerId string, platformId string, memberId string) (model.PlatformMember, error)
-	Update(ctx context.Context, request model.RequestMemberUpdate, callerId string, memberId string) (model.PlatformMember, error)
+	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error)
+	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (model.PlatformMember, error)
 	SendPasswordResetEmail(ctx context.Context, email string) error
 	PasswordReset(ctx context.Context, request model.RequestPasswordReset) error
+	Deactivate(ctx context.Context, callerId string, memberId string) (model.PlatformMember, error)
 }
 
 type member struct {
@@ -78,8 +81,8 @@ func (a member) Get(ctx context.Context, callerId string, platformId string, mem
 	return result, nil
 }
 
-func (a member) Update(ctx context.Context, request model.RequestMemberUpdate, callerId string, memberId string) (model.PlatformMember, error) {
-	result := model.PlatformMember{}
+func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error) {
+	result := model.MemberToRole{}
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
@@ -100,12 +103,43 @@ func (a member) Update(ctx context.Context, request model.RequestMemberUpdate, c
 		return result, common.StringError(errors.New("admins can only update members"))
 	}
 
-	err = a.repos.PlatformMember.Update(ctx, memberId, request)
+	if request.Role == "Owner" || request.Role == "owner" {
+		return result, common.StringError(errors.New("cannot elevate member to owner"))
+	}
+
+	role, err := a.repos.MemberToRole.GetByMember(memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	role.RoleID = GetRoleId(request.Role)
+	a.repos.MemberToRole.UpdateRole(memberId, role)
+
+	result = role
+
+	return result, nil
+}
+
+func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (model.PlatformMember, error) {
+	result := model.PlatformMember{}
+
+	// If password change is requested, verify the current password
+	if request.NewPassword != "" || request.OldPassword != "" {
+		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
+		if err != nil {
+			return result, common.StringError(err)
+		}
+		if m.Password != request.OldPassword {
+			return result, common.StringError(errors.New("invalid password"))
+		}
+	}
+
+	err := a.repos.PlatformMember.Update(ctx, callerId, request)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	result, err = a.repos.PlatformMember.GetById(ctx, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -163,4 +197,45 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	}
 
 	return nil
+}
+
+func (a member) Deactivate(ctx context.Context, callerId string, memberId string) (model.PlatformMember, error) {
+	result := model.PlatformMember{}
+	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	// Admin's can't edit Owners or Admins
+	callerRole, err := GetRole(a.repos, callerId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	memberRole, err := GetRole(a.repos, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	if callerRole == "Admin" && memberRole != "Member" {
+		return result, common.StringError(errors.New("admins can only update members"))
+	}
+
+	type DeactivateMember struct {
+		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	}
+	now := time.Now()
+	deactivateMember := DeactivateMember{DeactivatedAt: &now}
+
+	err = a.repos.PlatformMember.Update(ctx, memberId, deactivateMember)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	return result, nil
 }

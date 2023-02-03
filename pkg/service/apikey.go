@@ -8,9 +8,9 @@ import (
 )
 
 type Apikey interface {
-	Create(ctx context.Context, request string) (model.Apikey, error)
-	GetAll(ctx context.Context, request string) ([]model.Apikey, error)
-	Get(ctx context.Context, request string, id string) (model.Apikey, error)
+	Create(ctx context.Context, callerId string, platformId string) (model.Apikey, error)
+	GetAll(ctx context.Context, callerId string, platformId string) ([]model.Apikey, error)
+	Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error)
 	Deactivate(ctx context.Context, request string, id string) (model.Apikey, error)
 	Update(ctx context.Context, request model.RequestApikeyUpdate, id string) (model.Apikey, error)
 }
@@ -23,15 +23,15 @@ func NewApikey(repos repository.Repositories) Apikey {
 	return &apikey{repos}
 }
 
-func (a apikey) Create(ctx context.Context, request string) (model.Apikey, error) {
+func (a apikey) Create(ctx context.Context, callerId string, platformId string) (model.Apikey, error) {
 	return model.Apikey{}, nil
 }
 
-func (a apikey) GetAll(ctx context.Context, request string) ([]model.Apikey, error) {
+func (a apikey) GetAll(ctx context.Context, callerId string, platformId string) ([]model.Apikey, error) {
 	return nil, nil
 }
 
-func (a apikey) Get(ctx context.Context, request string, id string) (model.Apikey, error) {
+func (a apikey) Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error) {
 	return model.Apikey{}, nil
 }
 

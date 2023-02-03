@@ -65,3 +65,19 @@ func GetRole(repos repository.Repositories, memberId string) (string, error) {
 
 	return role, nil
 }
+
+func GetRoleId(roleName string) string {
+	role := "Not Found"
+	ownerRoleId := os.Getenv("MEMBER_ROLE_OWNER_ID")
+	adminRoleId := os.Getenv("MEMBER_ROLE_ADMIN_ID")
+	memberRoleId := os.Getenv("MEMBER_ROLE_MEMBER_ID")
+
+	if roleName == "Member" || roleName == "member" {
+		role = memberRoleId
+	} else if roleName == "Admin" || roleName == "admin" {
+		role = adminRoleId
+	} else if roleName == "Owner" || roleName == "owner" {
+		role = ownerRoleId
+	}
+	return role
+}

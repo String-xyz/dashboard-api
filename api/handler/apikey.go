@@ -29,10 +29,10 @@ func NewApikey(service service.Apikey) Apikey {
 }
 
 func (a apikey) Create(c echo.Context) error {
-	// TODO: Get platform ID from the JWT
-	id := ""
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
 
-	m, err := a.service.Create(c.Request().Context(), id)
+	m, err := a.service.Create(c.Request().Context(), callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: create")
 		return httperror.InternalError(c)
@@ -41,10 +41,10 @@ func (a apikey) Create(c echo.Context) error {
 }
 
 func (a apikey) GetAll(c echo.Context) error {
-	// TODO: Get platform ID from the JWT
-	id := ""
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
 
-	m, err := a.service.GetAll(c.Request().Context(), id)
+	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: get all")
 		return httperror.InternalError(c)
@@ -53,15 +53,14 @@ func (a apikey) GetAll(c echo.Context) error {
 }
 
 func (a apikey) Get(c echo.Context) error {
-	// TODO: Get platform ID from the JWT
-	id := ""
-
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
 	if keyId == "" {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Get(c.Request().Context(), id, keyId)
+	m, err := a.service.Get(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: get all")
 		return httperror.InternalError(c)

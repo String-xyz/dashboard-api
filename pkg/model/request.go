@@ -28,9 +28,23 @@ type RequestLogin struct {
 	Password string `json:"password"`
 }
 
-type RequestMemberUpdate struct {
-	Email string `json:"email" db:"email"`
-	Name  string `json:"name" db:"name"`
+// type RequestMemberUpdate struct {
+// 	Email string `json:"email" db:"email"`
+// 	Name  string `json:"name" db:"name"`
+
+// 	// Not part of PlatformMember entity but we still want to be able to change this from the Update endpoint
+// 	Role string `json:"role" db:"role"`
+// }
+
+type RequestMemberUpdateSelf struct {
+	Name string `json:"name" db:"name"`
+	// Password string `json:"password" db:"password"`
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
+type RequestMemberUpdateOther struct {
+	Role string `json:"role" db:"role"`
 }
 
 type RequestApikeyUpdate struct {

@@ -14,6 +14,7 @@ type Member interface {
 	GetAll(e echo.Context) error
 	Get(e echo.Context) error
 	Update(e echo.Context) error
+	Deactivate(e echo.Context) error
 	PasswordReset(e echo.Context) error
 	RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc)
 }
@@ -59,16 +60,31 @@ func (a member) Update(c echo.Context) error {
 	if memberId == "" {
 		return httperror.BadRequestError(c)
 	}
-	body := model.RequestMemberUpdate{}
+	body := model.RequestMemberUpdateOther{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "member: update bind")
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Update(c.Request().Context(), body, callerId, memberId)
+	m, err := a.service.UpdateMember(c.Request().Context(), body, callerId, memberId)
 	if err != nil {
 		common.LogStringError(c, err, "member: update")
+		return httperror.InternalError(c)
+	}
+	return c.JSON(http.StatusAccepted, m)
+}
+
+func (a member) Deactivate(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
+	memberId := c.Param("id")
+	if memberId == "" {
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := a.service.Deactivate(c.Request().Context(), callerId, memberId)
+	if err != nil {
+		common.LogStringError(c, err, "member: deactivate")
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusAccepted, m)
@@ -113,6 +129,7 @@ func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
 	g.PUT("/:id", a.Update, ms...)
+	g.PUT("/:id/deactivate", a.Deactivate, ms...)
 	g.GET("/password-reset", a.SendPasswordResetEmail)
 	g.POST("/password-reset", a.PasswordReset)
 }

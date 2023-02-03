@@ -56,6 +56,7 @@ type MemberInvite struct {
 	Email         string     `json:"email" db:"email"`
 	InvitedBy     string     `json:"invitedBy" db:"invited_by"`
 	PlatformID    string     `json:"platformId" db:"platform_id"`
+	Name          string     `json:"name" db:"name"`
 }
 
 type Apikey struct {

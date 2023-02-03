@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
@@ -25,6 +27,7 @@ type MemberToRole interface {
 	Update(ctx context.Context, ID string, updates any) error
 	GetByMember(memberId string) (model.MemberToRole, error)
 	GetByPlatform(platformId string) (model.MemberToRole, error)
+	UpdateRole(memberId string, updates any) error
 }
 
 type memberToRole[T any] struct {
@@ -76,4 +79,17 @@ func (p memberToRole[T]) GetByPlatform(platformId string) (model.MemberToRole, e
 		return m, common.StringError(err)
 	}
 	return m, nil
+}
+
+func (p memberToRole[T]) UpdateRole(memberId string, updates any) error {
+	names, keyToUpdate := common.KeysAndValues(updates)
+	if len(names) == 0 {
+		return common.StringError(errors.New("no fields to update"))
+	}
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE member_id = '%s'", p.Table, strings.Join(names, ", "), memberId)
+	_, err := p.Store.NamedExec(query, keyToUpdate)
+	if err != nil {
+		return common.StringError(err)
+	}
+	return nil
 }

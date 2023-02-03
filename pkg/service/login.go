@@ -11,7 +11,7 @@ import (
 )
 
 type Login interface {
-	Login(ctx context.Context, request model.RequestLogin) (JWT, error) // TODO: Return JWT
+	Login(ctx context.Context, request model.RequestLogin) (JWT, error)
 }
 
 type login struct {
