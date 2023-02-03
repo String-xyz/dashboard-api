@@ -48,7 +48,7 @@ type RequestMemberUpdateOther struct {
 }
 
 type RequestApikeyUpdate struct {
-	TodoDefineParameters string `json:"undefined"`
+	Description string `json:"description"`
 }
 
 type RequestPasswordReset struct {

@@ -134,7 +134,16 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		}
 	}
 
-	err := a.repos.PlatformMember.Update(ctx, callerId, request)
+	member, err := a.repos.PlatformMember.GetById(ctx, callerId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	if request.Name == "" {
+		request.Name = member.Name
+	}
+
+	err = a.repos.PlatformMember.Update(ctx, callerId, request)
 	if err != nil {
 		return result, common.StringError(err)
 	}
