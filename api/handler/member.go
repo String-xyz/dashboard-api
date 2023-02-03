@@ -75,6 +75,23 @@ func (a member) Update(c echo.Context) error {
 	return c.JSON(http.StatusAccepted, m)
 }
 
+func (a member) UpdateSelf(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
+	body := model.RequestMemberUpdateSelf{}
+	err := c.Bind(&body)
+	if err != nil {
+		common.LogStringError(c, err, "member: update self bind")
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := a.service.UpdateSelf(c.Request().Context(), body, callerId)
+	if err != nil {
+		common.LogStringError(c, err, "member: update self")
+		return httperror.InternalError(c)
+	}
+	return c.JSON(http.StatusAccepted, m)
+}
+
 func (a member) Deactivate(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	memberId := c.Param("id")
@@ -129,6 +146,7 @@ func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
 	g.PUT("/:id", a.Update, ms...)
+	g.PUT("", a.UpdateSelf, ms...)
 	g.PUT("/:id/deactivate", a.Deactivate, ms...)
 	g.GET("/password-reset", a.SendPasswordResetEmail)
 	g.POST("/password-reset", a.PasswordReset)
