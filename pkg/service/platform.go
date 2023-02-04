@@ -27,34 +27,44 @@ func NewPlatform(repos repository.Repositories) Platform {
 // TODO: Ensure valid email is provided
 func (a platform) Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error) {
 	// Generate new Platform with a Name
-	result := model.Platform{Name: request.PlatformName}
-	result, err := a.repos.Platform.Create(ctx, result)
+	platform := model.Platform{Name: request.PlatformName}
+	platform, err := a.repos.Platform.Create(ctx, platform)
 	if err != nil {
-		return result, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 
+	// TODO: replace this with an invite
 	// Generate a new Platform Member with an Email
 	member := model.PlatformMember{Email: request.Email, Name: request.Name}
 	member, err = a.repos.PlatformMember.Create(ctx, member)
 	if err != nil {
-		return result, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 
+	// TODO: move this to invite acceptance logic
+	// Create Member-To-Platform relationship
+	memberToPlatform := model.MemberToPlatform{MemberID: member.ID, PlatformID: platform.ID}
+	memberToPlatform, err = a.repos.MemberToPlatform.Create(ctx, memberToPlatform)
+	if err != nil {
+		return platform, common.StringError(err)
+	}
+
+	// TODO: move this to invite acceptance logic
 	// Give new Platform Member ownership of the Platform they just created
 	ownerId := os.Getenv("MEMBER_ROLE_OWNER_ID")
 	if ownerId == "" {
-		return result, common.StringError(errors.New("member role id is not defined in the env"))
+		return platform, common.StringError(errors.New("member role id is not defined in the env"))
 	}
 
 	_, err = a.repos.MemberToRole.Create(ctx, model.MemberToRole{MemberID: member.ID, RoleID: ownerId})
 	if err != nil {
-		return result, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 
 	// Generate Owner invitation
-	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: member.ID, PlatformID: result.ID, Name: request.Name})
+	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: member.ID, PlatformID: platform.ID, Name: request.Name})
 	if err != nil {
-		return result, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 
 	body := "" +
@@ -66,10 +76,10 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 		"<br><a href='https://platform-api.dev.string-api.xyz/invites/" + invite.ID + "'>Accept Invitation</a>" // TODO: double check :id
 	err = SendEmail("String API", "New String API User", "auth@string.xyz", request.Email, "String API Invitation", body)
 	if err != nil {
-		return result, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 
-	return result, nil
+	return platform, nil
 }
 
 func (a platform) Get(ctx context.Context, request string) (model.Platform, error) {
