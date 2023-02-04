@@ -38,11 +38,15 @@ type RequestLogin struct {
 // 	Role string `json:"role" db:"role"`
 // }
 
+type RequestInviteAcceptance struct {
+	Id       *string `json:"id"`
+	Password string  `json:"password"`
+}
+
 type RequestMemberUpdateSelf struct {
-	Name string `json:"name" db:"name"`
-	// Password string `json:"password" db:"password"`
-	OldPassword string `json:"oldPassword"`
-	NewPassword string `json:"newPassword"`
+	Name        *string `json:"name" db:"name"`
+	OldPassword *string `json:"oldPassword"`
+	NewPassword *string `json:"newPassword"`
 }
 
 type RequestMemberUpdateOther struct {

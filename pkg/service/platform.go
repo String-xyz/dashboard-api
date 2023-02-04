@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -37,11 +36,10 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 	// Get String Platform Id
 	// Generate Owner invitation
 	Invite := NewInvite(a.repos)
-	invite, err := Invite.Send(ctx, inviteReq, platform)
+	_, err = Invite.Send(ctx, inviteReq, platform)
 	if err != nil {
 		return platform, common.StringError(err)
 	}
-	log.Printf("\n\nsent invite from Platform Create %+v\n", invite)
 
 	return platform, nil
 }

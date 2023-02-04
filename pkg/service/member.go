@@ -124,12 +124,12 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 	result := model.PlatformMember{}
 
 	// If password change is requested, verify the current password
-	if request.NewPassword != "" || request.OldPassword != "" {
+	if *request.NewPassword != "" || *request.OldPassword != "" {
 		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
 		if err != nil {
 			return result, common.StringError(err)
 		}
-		if m.Password != request.OldPassword {
+		if m.Password != *request.OldPassword {
 			return result, common.StringError(errors.New("invalid password"))
 		}
 	}
@@ -139,8 +139,8 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		return result, common.StringError(err)
 	}
 
-	if request.Name == "" {
-		request.Name = member.Name
+	if *request.Name == "" {
+		request.Name = &member.Name
 	}
 
 	err = a.repos.PlatformMember.Update(ctx, callerId, request)

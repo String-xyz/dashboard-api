@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/String-xyz/go-lib/common"
@@ -32,8 +31,6 @@ func NewMember(service service.Member) Member {
 func (a member) GetAll(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
-	log.Printf("\n\ncallerId: %+v\n", callerId)
-	log.Printf("\n\nplatformId: %+v\n", platformId)
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "member: get all")
@@ -45,8 +42,6 @@ func (a member) GetAll(c echo.Context) error {
 func (a member) Get(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
-	log.Printf("\n\ncallerId: %+v\n", callerId)
-	log.Printf("\n\nplatformId: %+v\n", platformId)
 	memberId := c.Param("id")
 	if memberId == "" {
 		return httperror.BadRequestError(c)

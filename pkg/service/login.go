@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
@@ -33,7 +32,7 @@ func (a login) Login(ctx context.Context, request model.RequestLogin) (JWT, erro
 	if request.Password != member.Password {
 		return jwt, common.StringError(errors.New("wrong password"))
 	}
-	log.Printf("\n\nmember: %+v\n", member)
+
 	platform, err := a.repos.MemberToPlatform.GetByMember(member.ID)
 	if err != nil {
 		return jwt, common.StringError(err)

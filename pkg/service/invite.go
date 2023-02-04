@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/String-xyz/go-lib/common"
@@ -12,7 +11,7 @@ import (
 
 type Invite interface {
 	Send(ctx context.Context, request model.RequestInviteSend, platform model.Platform) (model.MemberInvite, error)
-	Accept(ctx context.Context, request string) (model.PlatformMember, error)
+	Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, error)
 	List(ctx context.Context, request string) ([]model.MemberInvite, error)
 	Resend(ctx context.Context, request string) (model.MemberInvite, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, id string) (model.MemberInvite, error)
@@ -40,7 +39,6 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, platf
 	if err != nil {
 		return invite, common.StringError(err)
 	}
-	log.Printf("\n\ninvite generated: %+v\n", invite)
 
 	body := "" +
 		"<a href='https://www.string.xyz'>" +
@@ -49,20 +47,20 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, platf
 		"<br>Dear " + request.Name + "," +
 		"<br>Thank you for signing up to use the String API.  Please click the link below to set your password and complete your registration process:" +
 		"<br><a href='" + os.Getenv("BASE_APP_URL") + "invites/" + invite.ID + "'>Accept Invitation</a>" // TODO: double check :id
-	log.Printf("\n\nemail body generated: %+v\n", body)
+
 	err = SendEmail("String API", "New String API User", "auth@string.xyz", request.Email, "String API Invitation", body)
 	if err != nil {
 		return invite, common.StringError(err)
 	}
-	log.Printf("\n\nSendEmail hit from invite Send: %+v\n", err)
+
 	return invite, nil
 }
 
-func (a invite) Accept(ctx context.Context, requestId string) (model.PlatformMember, error) {
+func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, error) {
 
-	invite, err := a.repos.MemberInvite.GetById(ctx, requestId)
+	invite, err := a.repos.MemberInvite.GetById(ctx, *requestBody.Id)
 	// Generate a new Platform Member with an Email
-	member := model.PlatformMember{Email: invite.Email, Name: invite.Name}
+	member := model.PlatformMember{Email: invite.Email, Name: invite.Name, Password: requestBody.Password}
 	member, err = a.repos.PlatformMember.Create(ctx, member)
 	if err != nil {
 		return member, common.StringError(err)

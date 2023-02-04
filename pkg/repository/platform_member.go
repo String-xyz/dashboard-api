@@ -39,8 +39,8 @@ func NewPlatformMember(db database.Queryable) PlatformMember {
 func (p platformMember[T]) Create(ctx context.Context, m model.PlatformMember) (model.PlatformMember, error) {
 	newModel := model.PlatformMember{}
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO platform_member (email, name) 
-		VALUES(:email, :name) RETURNING *`, m)
+		INSERT INTO platform_member (email, name, password) 
+		VALUES(:email, :name, :password) RETURNING *`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)

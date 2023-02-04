@@ -48,11 +48,18 @@ func (i invite) Send(c echo.Context) error {
 }
 
 func (i invite) Accept(c echo.Context) error {
+	body := model.RequestInviteAcceptance{}
+	err := c.Bind(&body)
+	if err != nil {
+		common.LogStringError(c, err, "invite: accept bind")
+		return httperror.BadRequestError(c)
+	}
 	id := c.Param("id")
 	if id == "" {
 		return httperror.BadRequestError(c)
 	}
-	m, err := i.service.Accept(c.Request().Context(), id)
+	body.Id = &id
+	m, err := i.service.Accept(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 		return httperror.InternalError(c)
