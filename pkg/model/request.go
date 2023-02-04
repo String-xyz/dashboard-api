@@ -14,8 +14,10 @@ type RequestPlatformUpdate struct {
 }
 
 type RequestInviteSend struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Name    string  `json:"name"`
+	Email   string  `json:"email"`
+	Role    string  `json:"role"`
+	Invitee *string `json:"invitee"`
 }
 
 type RequestInviteUpdate struct {

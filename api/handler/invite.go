@@ -35,8 +35,11 @@ func (i invite) Send(c echo.Context) error {
 		common.LogStringError(c, err, "invite: send bind")
 		return httperror.BadRequestError(c)
 	}
+	// TODO derive platform from JWT
+	platform := model.Platform{}
 
-	m, err := i.service.Send(c.Request().Context(), body)
+	// TODO derive member_id from JWT
+	m, err := i.service.Send(c.Request().Context(), body, platform)
 	if err != nil {
 		common.LogStringError(c, err, "invite: send")
 		return httperror.InternalError(c)
