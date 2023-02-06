@@ -14,8 +14,10 @@ type RequestPlatformUpdate struct {
 }
 
 type RequestInviteSend struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Name    string  `json:"name"`
+	Email   string  `json:"email"`
+	Role    string  `json:"role"`
+	Invitee *string `json:"invitee"`
 }
 
 type RequestInviteUpdate struct {
@@ -36,11 +38,15 @@ type RequestLogin struct {
 // 	Role string `json:"role" db:"role"`
 // }
 
+type RequestInviteAcceptance struct {
+	Id       *string `json:"id"`
+	Password string  `json:"password"`
+}
+
 type RequestMemberUpdateSelf struct {
-	Name string `json:"name" db:"name"`
-	// Password string `json:"password" db:"password"`
-	OldPassword string `json:"oldPassword"`
-	NewPassword string `json:"newPassword"`
+	Name        *string `json:"name" db:"name"`
+	OldPassword *string `json:"oldPassword"`
+	NewPassword *string `json:"newPassword"`
 }
 
 type RequestMemberUpdateOther struct {

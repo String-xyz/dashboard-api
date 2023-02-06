@@ -124,12 +124,12 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 	result := model.PlatformMember{}
 
 	// If password change is requested, verify the current password
-	if request.NewPassword != "" || request.OldPassword != "" {
+	if *request.NewPassword != "" || *request.OldPassword != "" {
 		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
 		if err != nil {
 			return result, common.StringError(err)
 		}
-		if m.Password != request.OldPassword {
+		if m.Password != *request.OldPassword {
 			return result, common.StringError(errors.New("invalid password"))
 		}
 	}
@@ -139,8 +139,8 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		return result, common.StringError(err)
 	}
 
-	if request.Name == "" {
-		request.Name = member.Name
+	if *request.Name == "" {
+		request.Name = &member.Name
 	}
 
 	err = a.repos.PlatformMember.Update(ctx, callerId, request)
@@ -176,7 +176,7 @@ func (a member) SendPasswordResetEmail(ctx context.Context, email string) error 
 		"<header>You have requested a password reset for the String API</header>" +
 		"<br>Dear " + member.Name + "," +
 		"<br>If you have forgotten your password, click the link below to reset it:" +
-		"<br><a href='https://platform-api.dev.string-api.xyz/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
+		"<br><a href='" + os.Getenv("BASE_API_URL") + "members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
 
 	err = SendEmail("String API", member.Name, "auth@string.xyz", email, "String API Password Reset", body)
 	if err != nil {

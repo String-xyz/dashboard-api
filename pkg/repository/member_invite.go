@@ -37,8 +37,8 @@ func NewMemberInvite(db database.Queryable) MemberInvite {
 func (p memberInvite[T]) Create(ctx context.Context, m model.MemberInvite) (model.MemberInvite, error) {
 	newModel := model.MemberInvite{}
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO member_invite (name, email, invited_by, platform_id) 
-		VALUES(:name, :email, :invited_by, :platform_id) RETURNING *`, m)
+		INSERT INTO member_invite (name, email, invited_by, platform_id, role_id) 
+		VALUES(:name, :email, :invited_by, :platform_id, :role_id) RETURNING *`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)

@@ -54,8 +54,9 @@ type MemberInvite struct {
 	ExpiredAt     *time.Time `json:"expiredAt,omitempty" db:"expired_at"`
 	AcceptedAt    *time.Time `json:"acceptedAt,omitempty" db:"accepted_at"`
 	Email         string     `json:"email" db:"email"`
-	InvitedBy     string     `json:"invitedBy" db:"invited_by"`
+	InvitedBy     *string    `json:"invitedBy,omitempty" db:"invited_by"`
 	PlatformID    string     `json:"platformId" db:"platform_id"`
+	RoleID        string     `json:"roleId" db:"role_id"`
 	Name          string     `json:"name" db:"name"`
 }
 
