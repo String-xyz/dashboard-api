@@ -49,7 +49,7 @@ func (a apikey) GetAll(c echo.Context) error {
 		common.LogStringError(c, err, "apikey: get all")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a apikey) Get(c echo.Context) error {
@@ -65,7 +65,7 @@ func (a apikey) Get(c echo.Context) error {
 		common.LogStringError(c, err, "apikey: get all")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a apikey) Deactivate(c echo.Context) error {
@@ -82,7 +82,7 @@ func (a apikey) Deactivate(c echo.Context) error {
 		common.LogStringError(c, err, "apikey: deactivate")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a apikey) Update(c echo.Context) error {
@@ -100,7 +100,7 @@ func (a apikey) Update(c echo.Context) error {
 		common.LogStringError(c, err, "apikey: update")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusCreated, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a apikey) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {

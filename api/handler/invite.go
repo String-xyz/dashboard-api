@@ -29,17 +29,17 @@ func NewInvite(service service.Invite) Invite {
 }
 
 func (i invite) Send(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
+
 	body := model.RequestInviteSend{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: send bind")
 		return httperror.BadRequestError(c)
 	}
-	// TODO derive platform from JWT
-	platform := model.Platform{}
 
-	// TODO derive member_id from JWT
-	m, err := i.service.Send(c.Request().Context(), body, platform)
+	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: send")
 		return httperror.InternalError(c)
@@ -64,7 +64,7 @@ func (i invite) Accept(c echo.Context) error {
 		common.LogStringError(c, err, "invite: accept")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (i invite) List(c echo.Context) error {
@@ -77,7 +77,7 @@ func (i invite) List(c echo.Context) error {
 		common.LogStringError(c, err, "invite: list")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (i invite) Resend(c echo.Context) error {
@@ -90,7 +90,7 @@ func (i invite) Resend(c echo.Context) error {
 		common.LogStringError(c, err, "invite: resend")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (i invite) Update(c echo.Context) error {
@@ -110,7 +110,7 @@ func (i invite) Update(c echo.Context) error {
 		common.LogStringError(c, err, "invite: update")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
@@ -119,7 +119,6 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	}
 	i.Group = g
 
-	g.Use(ms...)
 	g.POST("", i.Send, ms...)
 	g.POST("/:id", i.Accept)
 	g.GET("", i.List, ms...)

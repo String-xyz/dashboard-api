@@ -77,7 +77,6 @@ func (p platform) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 		panic("no group attached to the platform handler")
 	}
 	p.Group = g
-	g.Use(ms...)
 	g.POST("", p.Create)
 	g.GET("", p.Get, ms...)
 	g.PUT("", p.Update, ms...)

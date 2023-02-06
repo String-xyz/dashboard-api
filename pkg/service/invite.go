@@ -2,15 +2,17 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Invite interface {
-	Send(ctx context.Context, request model.RequestInviteSend, platform model.Platform) (model.MemberInvite, error)
+	Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (model.MemberInvite, error)
 	Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, error)
 	List(ctx context.Context, request string) ([]model.MemberInvite, error)
 	Resend(ctx context.Context, request string) (model.MemberInvite, error)
@@ -25,18 +27,12 @@ func NewInvite(repos repository.Repositories) Invite {
 	return &invite{repos}
 }
 
-func (a invite) Send(ctx context.Context, request model.RequestInviteSend, platform model.Platform) (model.MemberInvite, error) {
-	var roleId string
-	if request.Role == "Member" {
-		roleId = os.Getenv("MEMBER_ROLE_MEMBER_ID")
-	} else if request.Role == "Admin" {
-		roleId = os.Getenv("MEMBER_ROLE_ADMIN_ID")
-	} else if request.Role == "Owner" {
-		roleId = os.Getenv("MEMBER_ROLE_OWNER_ID")
-	}
-        // TODO: Use Role Helper Function
-        // TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
-	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: request.Invitee, PlatformID: platform.ID, Name: request.Name, RoleID: roleId})
+func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (model.MemberInvite, error) {
+	roleId := GetRoleId(request.Role)
+	// TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
+	req := model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformID: platformId, Name: request.Name, RoleID: roleId}
+	fmt.Printf("\nREQ = %+v", req)
+	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformID: platformId, Name: request.Name, RoleID: roleId})
 	if err != nil {
 		return invite, common.StringError(err)
 	}
@@ -58,10 +54,19 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, platf
 }
 
 func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, error) {
-
+	member := model.PlatformMember{}
 	invite, err := a.repos.MemberInvite.GetById(ctx, *requestBody.Id)
+	if err != nil {
+		return member, common.StringError(err)
+	}
+
 	// Generate a new Platform Member with an Email
-	member := model.PlatformMember{Email: invite.Email, Name: invite.Name, Password: requestBody.Password}
+	hash, err := bcrypt.GenerateFromPassword([]byte(requestBody.Password), 8)
+	if err != nil {
+		return member, common.StringError(err)
+	}
+
+	member = model.PlatformMember{Email: invite.Email, Name: invite.Name, Password: string(hash)}
 	member, err = a.repos.PlatformMember.Create(ctx, member)
 	if err != nil {
 		return member, common.StringError(err)

@@ -23,6 +23,7 @@ type PlatformMember interface {
 	database.Transactable
 	Create(ctx context.Context, model model.PlatformMember) (model.PlatformMember, error)
 	GetById(ctx context.Context, ID string) (model.PlatformMember, error)
+	GetByIdIncludingDeactivated(ctx context.Context, ID string) (model.PlatformMember, error)
 	List(ctx context.Context, limit int, offset int) ([]model.PlatformMember, error)
 	Update(ctx context.Context, ID string, updates any) error
 	GetByEmail(email string) (model.PlatformMember, error)
@@ -62,6 +63,17 @@ func (p platformMember[T]) GetByEmail(email string) (model.PlatformMember, error
 	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE email = $1", p.Table), email)
 	if err != nil && err == sql.ErrNoRows {
 		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p platformMember[T]) GetByIdIncludingDeactivated(ctx context.Context, ID string) (model.PlatformMember, error) {
+	m := model.PlatformMember{}
+	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /* AND deactivated_at IS NULL"*/, p.Table), ID)
+	if err != nil && err == sql.ErrNoRows {
+		return m, err
 	} else if err != nil {
 		return m, common.StringError(err)
 	}

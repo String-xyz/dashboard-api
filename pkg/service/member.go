@@ -9,6 +9,7 @@ import (
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type MemberCreateResponse struct {
@@ -46,8 +47,9 @@ func (a member) GetAll(ctx context.Context, callerId string, platformId string) 
 		return result, common.StringError(err)
 	}
 
+	// TODO: Replace all of this (after requireauthority) with SQL JOIN
 	for _, mtp := range membersToPlatform {
-		member, err := a.repos.PlatformMember.GetById(ctx, mtp.MemberID)
+		member, err := a.repos.PlatformMember.GetByIdIncludingDeactivated(ctx, mtp.MemberID)
 		if err != nil {
 			return result, common.StringError(err)
 		}
@@ -123,8 +125,18 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (model.PlatformMember, error) {
 	result := model.PlatformMember{}
 
+	// Actual DB request
+	type UpdateRequest struct {
+		Name     string `json:"name" db:"name"`
+		Password string `json:"password" db:"password"`
+	}
+	updateRequest := UpdateRequest{}
+
 	// If password change is requested, verify the current password
-	if *request.NewPassword != "" || *request.OldPassword != "" {
+	if request.NewPassword != nil && request.OldPassword != nil {
+		if len(*request.NewPassword) < 8 {
+			return result, common.StringError(errors.New("invalid password length")) // TODO: intensify sophistication
+		}
 		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
 		if err != nil {
 			return result, common.StringError(err)
@@ -132,6 +144,11 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		if m.Password != *request.OldPassword {
 			return result, common.StringError(errors.New("invalid password"))
 		}
+		hash, err := bcrypt.GenerateFromPassword([]byte(*request.NewPassword), 2^3)
+		if err != nil {
+			return result, common.StringError(err)
+		}
+		updateRequest.Password = string(hash)
 	}
 
 	member, err := a.repos.PlatformMember.GetById(ctx, callerId)
@@ -139,11 +156,13 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		return result, common.StringError(err)
 	}
 
-	if *request.Name == "" {
+	// Keep old name if "" or none was passed in
+	if request.Name == nil || *request.Name == "" {
 		request.Name = &member.Name
 	}
+	updateRequest.Name = *request.Name
 
-	err = a.repos.PlatformMember.Update(ctx, callerId, request)
+	err = a.repos.PlatformMember.Update(ctx, callerId, updateRequest)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -230,6 +249,12 @@ func (a member) Deactivate(ctx context.Context, callerId string, memberId string
 		return result, common.StringError(errors.New("admins can only update members"))
 	}
 
+	// Ensure not already deactivated || never existed
+	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
 	type DeactivateMember struct {
 		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
 	}
@@ -241,7 +266,8 @@ func (a member) Deactivate(ctx context.Context, callerId string, memberId string
 		return result, common.StringError(err)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	// Once a member has been deactivated,
+	result, err = a.repos.PlatformMember.GetByIdIncludingDeactivated(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}

@@ -32,12 +32,19 @@ func (l login) Login(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := l.service.Login(c.Request().Context(), body)
+	jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+
+	err = SetAuthCookies(c, jwt)
+	if err != nil {
+		common.LogStringError(c, err, "login: set auth cookies")
+		return httperror.InternalError(c)
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (l login) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
@@ -45,6 +52,5 @@ func (l login) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 		panic("no group attached to the login handler")
 	}
 	l.Group = g
-	// g.Use(ms...)
 	g.POST("", l.Login)
 }

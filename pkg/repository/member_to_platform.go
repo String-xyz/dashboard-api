@@ -69,7 +69,7 @@ func (p memberToPlatform[T]) GetByMember(memberId string) (model.MemberToPlatfor
 
 func (p memberToPlatform[T]) GetByPlatform(platformId string) ([]model.MemberToPlatform, error) {
 	m := []model.MemberToPlatform{}
-	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
+	err := p.Store.Select(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
 	if err != nil && err == sql.ErrNoRows {
 		return m, common.StringError(ErrNotFound)
 	} else if err != nil {

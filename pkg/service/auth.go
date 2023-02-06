@@ -26,6 +26,10 @@ type JWT struct {
 	RefreshToken RefreshTokenResponse `json:"refreshToken"`
 }
 
+func (j JWT) MarshalBinary() ([]byte, error) {
+	return json.Marshal(j)
+}
+
 type JWTClaims struct {
 	MemberId   string
 	PlatformId string
@@ -41,6 +45,10 @@ type JWTStrategy struct {
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
 	ExpiresAt     time.Time  `json:"expireAt,omitempty" db:"expire_at"`
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+}
+
+func (j JWTStrategy) MarshalBinary() ([]byte, error) {
+	return json.Marshal(j)
 }
 
 type RefreshTokenResponse struct {

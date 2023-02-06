@@ -8,6 +8,7 @@ import (
 	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Login interface {
@@ -29,17 +30,23 @@ func (a login) Login(ctx context.Context, request model.RequestLogin) (JWT, erro
 	if err != nil {
 		return jwt, common.StringError(err)
 	}
-	if request.Password != member.Password {
+
+	err = bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(request.Password))
+	if err != nil {
 		return jwt, common.StringError(errors.New("wrong password"))
 	}
 
 	platform, err := a.repos.MemberToPlatform.GetByMember(member.ID)
+
 	if err != nil {
 		return jwt, common.StringError(err)
 	}
 
 	auth := NewAuth(a.repos, a.redis)
-	auth.GenerateJWT(member.ID, platform.PlatformID)
+	jwt, err = auth.GenerateJWT(member.ID, platform.PlatformID)
+	if err != nil {
+		return jwt, common.StringError(err)
+	}
 
 	return jwt, nil
 }

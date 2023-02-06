@@ -36,7 +36,7 @@ func (a member) GetAll(c echo.Context) error {
 		common.LogStringError(c, err, "member: get all")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a member) Get(c echo.Context) error {
@@ -51,7 +51,7 @@ func (a member) Get(c echo.Context) error {
 		common.LogStringError(c, err, "member: get")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a member) Update(c echo.Context) error {
@@ -72,7 +72,7 @@ func (a member) Update(c echo.Context) error {
 		common.LogStringError(c, err, "member: update")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a member) UpdateSelf(c echo.Context) error {
@@ -89,7 +89,7 @@ func (a member) UpdateSelf(c echo.Context) error {
 		common.LogStringError(c, err, "member: update self")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a member) Deactivate(c echo.Context) error {
@@ -104,7 +104,7 @@ func (a member) Deactivate(c echo.Context) error {
 		common.LogStringError(c, err, "member: deactivate")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (a member) SendPasswordResetEmail(c echo.Context) error {
@@ -117,7 +117,7 @@ func (a member) SendPasswordResetEmail(c echo.Context) error {
 		common.LogStringError(c, err, "member: send password reset email")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, nil)
+	return c.JSON(http.StatusOK, nil)
 }
 
 func (a member) PasswordReset(c echo.Context) error {
@@ -133,7 +133,7 @@ func (a member) PasswordReset(c echo.Context) error {
 		common.LogStringError(c, err, "member: password reset")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusAccepted, nil)
+	return c.JSON(http.StatusOK, nil)
 }
 
 func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
@@ -142,7 +142,6 @@ func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	}
 	a.Group = g
 
-	g.Use(ms...)
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
 	g.PUT("/:id", a.Update, ms...)
