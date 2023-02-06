@@ -34,7 +34,8 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, platf
 	} else if request.Role == "Owner" {
 		roleId = os.Getenv("MEMBER_ROLE_OWNER_ID")
 	}
-
+        // TODO: Use Role Helper Function
+        // TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
 	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: request.Invitee, PlatformID: platform.ID, Name: request.Name, RoleID: roleId})
 	if err != nil {
 		return invite, common.StringError(err)
