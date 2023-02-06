@@ -68,11 +68,12 @@ func (i invite) Accept(c echo.Context) error {
 }
 
 func (i invite) List(c echo.Context) error {
-	status := c.QueryParam("status")
-	if status == "" {
-		return httperror.BadRequestError(c)
-	}
-	m, err := i.service.List(c.Request().Context(), status)
+	platformId := c.Get("platformId").(string)
+	status := c.QueryParam("status") // optional
+	// if status == "" {
+	// 	return httperror.BadRequestError(c)
+	// }
+	m, err := i.service.List(c.Request().Context(), status, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: list")
 		return httperror.InternalError(c)
