@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -9,6 +11,19 @@ import (
 	strrepo "github.com/String-xyz/go-lib/repository"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
+
+func GetInviteStatus(invite model.MemberInvite) string {
+	if invite.AcceptedAt != nil {
+		return "Accepted"
+	} else if invite.ExpiredAt != nil {
+		return "Expired"
+	} else if invite.DeactivatedAt != nil {
+		return "Revoked"
+	} else if invite.ID != "" {
+		return "Pending"
+	}
+	return "Not Found"
+}
 
 type MemberInviteUpdates struct {
 	DeactivatedAt *time.Time `json:"deactivatedAt" db:"deactivated_at"`
@@ -24,6 +39,7 @@ type MemberInvite interface {
 	GetById(ctx context.Context, ID string) (model.MemberInvite, error)
 	List(ctx context.Context, limit int, offset int) ([]model.MemberInvite, error)
 	Update(ctx context.Context, ID string, updates any) error
+	GetByPlatform(platformId string) ([]model.MemberInvite, error)
 }
 
 type memberInvite[T any] struct {
@@ -37,8 +53,8 @@ func NewMemberInvite(db database.Queryable) MemberInvite {
 func (p memberInvite[T]) Create(ctx context.Context, m model.MemberInvite) (model.MemberInvite, error) {
 	newModel := model.MemberInvite{}
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO member_invite (email, invited_by, platform_id) 
-		VALUES(:email, :invited_by, :platform_id) RETURNING *`, m)
+		INSERT INTO member_invite (name, email, invited_by, platform_id, role_id) 
+		VALUES(:name, :email, :invited_by, :platform_id, :role_id) RETURNING *`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)
@@ -53,4 +69,15 @@ func (p memberInvite[T]) Create(ctx context.Context, m model.MemberInvite) (mode
 	}
 
 	return newModel, nil
+}
+
+func (p memberInvite[T]) GetByPlatform(platformId string) ([]model.MemberInvite, error) {
+	m := []model.MemberInvite{}
+	err := p.Store.Select(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
 }

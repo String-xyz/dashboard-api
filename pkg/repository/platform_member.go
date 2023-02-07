@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -17,12 +19,19 @@ type PlaformMemberUpdates struct {
 	Password      *string    `json:"password" db:"password"`
 }
 
+type PlatformMemberWithRole struct {
+	model.PlatformMember
+	Role string `json:"role" db:"member_role"`
+}
+
 type PlatformMember interface {
 	database.Transactable
 	Create(ctx context.Context, model model.PlatformMember) (model.PlatformMember, error)
 	GetById(ctx context.Context, ID string) (model.PlatformMember, error)
-	List(ctx context.Context, limit int, offset int) ([]model.PlatformMember, error)
+	GetByIdIncludingDeactivated(ctx context.Context, ID string) (model.PlatformMember, error)
+	List(ctx context.Context, platformId string, limit int, offset int) ([]PlatformMemberWithRole, error)
 	Update(ctx context.Context, ID string, updates any) error
+	GetByEmail(email string) (model.PlatformMember, error)
 }
 
 type platformMember[T any] struct {
@@ -36,8 +45,8 @@ func NewPlatformMember(db database.Queryable) PlatformMember {
 func (p platformMember[T]) Create(ctx context.Context, m model.PlatformMember) (model.PlatformMember, error) {
 	newModel := model.PlatformMember{}
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO platform_member (email) 
-		VALUES(:email) RETURNING *`, m)
+		INSERT INTO platform_member (email, name, password) 
+		VALUES(:email, :name, :password) RETURNING *`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)
@@ -52,4 +61,56 @@ func (p platformMember[T]) Create(ctx context.Context, m model.PlatformMember) (
 	}
 
 	return newModel, nil
+}
+
+func (p platformMember[T]) GetByEmail(email string) (model.PlatformMember, error) {
+	m := model.PlatformMember{}
+	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE email = $1", p.Table), email)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p platformMember[T]) GetByIdIncludingDeactivated(ctx context.Context, ID string) (model.PlatformMember, error) {
+	m := model.PlatformMember{}
+	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /* AND deactivated_at IS NULL"*/, p.Table), ID)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p platformMember[T]) List(ctx context.Context, platformId string, limit int, offset int) ([]PlatformMemberWithRole, error) {
+	m := []PlatformMemberWithRole{}
+	if limit == 0 {
+		limit = 20
+	}
+
+	err := p.Store.SelectContext(ctx, &m, `
+		SELECT platform_member.*, member_role.name AS member_role
+		FROM platform_member
+		LEFT JOIN member_to_role
+		ON platform_member.id = member_to_role.member_id
+		LEFT JOIN member_role 
+		ON member_role.id = member_to_role.role_id 
+		LEFT JOIN member_to_platform
+		ON platform_member.id = member_to_platform.member_id 
+		LEFT JOIN platform
+		ON platform.id = member_to_platform.platform_id
+		WHERE platform.id = $1
+		LIMIT $2
+		OFFSET $3;`, platformId, limit, offset)
+
+	if err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+
+	return m, nil
 }

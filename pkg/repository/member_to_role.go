@@ -2,6 +2,10 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
@@ -21,6 +25,9 @@ type MemberToRole interface {
 	GetById(ctx context.Context, ID string) (model.MemberToRole, error)
 	List(ctx context.Context, limit int, offset int) ([]model.MemberToRole, error)
 	Update(ctx context.Context, ID string, updates any) error
+	GetByMember(memberId string) (model.MemberToRole, error)
+	GetByPlatform(platformId string) (model.MemberToRole, error)
+	UpdateRole(memberId string, updates any) error
 }
 
 type memberToRole[T any] struct {
@@ -50,4 +57,39 @@ func (p memberToRole[T]) Create(ctx context.Context, m model.MemberToRole) (mode
 	}
 
 	return newModel, nil
+}
+
+func (p memberToRole[T]) GetByMember(memberId string) (model.MemberToRole, error) {
+	m := model.MemberToRole{}
+	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", p.Table), memberId)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p memberToRole[T]) GetByPlatform(platformId string) (model.MemberToRole, error) {
+	m := model.MemberToRole{}
+	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p memberToRole[T]) UpdateRole(memberId string, updates any) error {
+	names, keyToUpdate := common.KeysAndValues(updates)
+	if len(names) == 0 {
+		return common.StringError(errors.New("no fields to update"))
+	}
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE member_id = '%s'", p.Table, strings.Join(names, ", "), memberId)
+	_, err := p.Store.NamedExec(query, keyToUpdate)
+	if err != nil {
+		return common.StringError(err)
+	}
+	return nil
 }

@@ -1,8 +1,10 @@
 package api
 
 import (
+	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
+	"github.com/String-xyz/platform-admin-api/pkg/store"
 )
 
 func newRepos(config APIConfig) repository.Repositories {
@@ -17,7 +19,15 @@ func newRepos(config APIConfig) repository.Repositories {
 	}
 }
 
-func newServices(config APIConfig, repos repository.Repositories) service.Services {
+func newRedis() database.RedisStore {
+	return store.NewRedis()
+}
+
+func newServices(config APIConfig, repos repository.Repositories, redis database.RedisStore) service.Services {
 	plat := service.NewPlatform(repos)
-	return service.Services{Platform: plat}
+	member := service.NewMember(repos)
+	login := service.NewLogin(repos, redis)
+	invite := service.NewInvite(repos)
+	apikey := service.NewApikey(repos)
+	return service.Services{Platform: plat, Member: member, Login: login, Invite: invite, Apikey: apikey}
 }

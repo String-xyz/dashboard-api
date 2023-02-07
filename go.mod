@@ -3,7 +3,7 @@ module github.com/String-xyz/platform-admin-api
 go 1.19
 
 require (
-	github.com/String-xyz/go-lib v1.0.6-0.20230130184920-26c04d86d49f
+	github.com/String-xyz/go-lib v1.0.6-0.20230202215655-c35dd5f79452
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/labstack/echo/v4 v4.10.0
@@ -40,6 +40,8 @@ require (
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.4.0 // indirect
+	github.com/sendgrid/rest v2.6.9+incompatible // indirect
+	github.com/sendgrid/sendgrid-go v3.12.0+incompatible // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

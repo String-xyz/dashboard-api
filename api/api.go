@@ -37,10 +37,16 @@ func Start(config APIConfig) {
 
 	baseMiddleware(config.Logger, e)
 
-	//Platform Routes
+	// Routes
 	repos := newRepos(config)
-	service := newServices(config, repos)
+	redis := newRedis()
+	service := newServices(config, repos, redis)
+
 	platformRoute(service, e)
+	memberRoute(service, e)
+	loginRoute(service, e)
+	inviteRoute(service, e)
+	apikeyRoute(service, e)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
 }

@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
-	"os"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -12,6 +10,8 @@ import (
 
 type Platform interface {
 	Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error)
+	Get(ctx context.Context, request string) (model.Platform, error)
+	Update(ctx context.Context, request model.RequestPlatformUpdate, id string) (model.Platform, error)
 }
 
 type platform struct {
@@ -23,31 +23,34 @@ func NewPlatform(repos repository.Repositories) Platform {
 }
 
 // TODO: Ensure valid email is provided
-// TODO: Can multiple platforms share the same name?  Maybe we should prevent this.
 func (a platform) Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error) {
 	// Generate new Platform with a Name
-	result := model.Platform{Name: request.PlatformName}
-	result, err := a.repos.Platform.Create(ctx, result)
+	platform := model.Platform{Name: request.PlatformName}
+	platform, err := a.repos.Platform.Create(ctx, platform)
 	if err != nil {
-		return result, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 
-	// Generate a new Platform Member with an Email
-	member := model.PlatformMember{Email: request.Email}
-	member, err = a.repos.PlatformMember.Create(ctx, member)
+	inviteReq := model.RequestInviteSend{Name: request.Name, Email: request.Email, Role: "Owner"}
+
+	// Get String Platform Id
+	// Generate Owner invitation
+	Invite := NewInvite(a.repos)
+	_, err = Invite.Send(ctx, inviteReq, nil, platform.ID)
 	if err != nil {
-		return result, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 
-	ownerId := os.Getenv("MEMBER_ROLE_OWNER_ID")
-	if ownerId == "" {
-		return result, common.StringError(errors.New("member role id is not defined in the env"))
-	}
+	return platform, nil
+}
 
-	_, err = a.repos.MemberToRole.Create(ctx, model.MemberToRole{MemberID: member.ID, RoleID: ownerId})
-	if err != nil {
-		return result, common.StringError(err)
-	}
+func (a platform) Get(ctx context.Context, request string) (model.Platform, error) {
+	result := model.Platform{}
+	return result, nil
+}
 
+// TODO: Ensure multiple platforms do not share the same *domain*
+func (a platform) Update(ctx context.Context, request model.RequestPlatformUpdate, id string) (model.Platform, error) {
+	result := model.Platform{}
 	return result, nil
 }

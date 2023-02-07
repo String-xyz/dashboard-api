@@ -24,7 +24,8 @@ type PlatformMember struct {
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
 	Email         string     `json:"email" db:"email"`
-	Password      string     `json:"password" db:"password"`
+	Password      string     `json:"-" db:"password"`
+	Name          string     `json:"name" db:"name"`
 }
 
 type MemberToPlatform struct {
@@ -53,8 +54,10 @@ type MemberInvite struct {
 	ExpiredAt     *time.Time `json:"expiredAt,omitempty" db:"expired_at"`
 	AcceptedAt    *time.Time `json:"acceptedAt,omitempty" db:"accepted_at"`
 	Email         string     `json:"email" db:"email"`
-	InvitedBy     string     `json:"invitedBy" db:"invited_by"`
+	InvitedBy     *string    `json:"invitedBy,omitempty" db:"invited_by"`
 	PlatformID    string     `json:"platformId" db:"platform_id"`
+	RoleID        string     `json:"roleId" db:"role_id"`
+	Name          string     `json:"name" db:"name"`
 }
 
 type Apikey struct {
