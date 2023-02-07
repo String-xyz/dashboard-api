@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 	"time"
@@ -59,6 +60,11 @@ func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAccep
 	invite, err := a.repos.MemberInvite.GetById(ctx, *requestBody.Id)
 	if err != nil {
 		return member, common.StringError(err)
+	}
+
+	// Check invite status
+	if repository.GetInviteStatus(invite) != "Pending" {
+		return member, common.StringError(errors.New("invite is not pending"))
 	}
 
 	// Generate a new Platform Member with an Email
