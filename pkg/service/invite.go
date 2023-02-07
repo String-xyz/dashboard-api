@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -126,14 +125,14 @@ func (a invite) List(ctx context.Context, status string, platformId string) ([]m
 		return result, common.StringError(err)
 	}
 
-	// If a status filter is provided, remove Invites which do not have the filter
-	if status != "" {
-		for i, j := range result {
-			if !strings.EqualFold(status, repository.GetInviteStatus(j)) { // case insensitive
-				result = append(result[:i], result[i+1:]...) // remove from slice
-			}
-		}
-	}
+	// // If a status filter is provided, remove Invites which do not have the filter
+	// if status != "" {
+	// 	for i, j := range result {
+	// 		if !strings.EqualFold(status, repository.GetInviteStatus(j)) { // case insensitive
+	// 			result = append(result[:i], result[i+1:]...) // remove from slice
+	// 		}
+	// 	}
+	// }
 
 	return result, nil
 }
