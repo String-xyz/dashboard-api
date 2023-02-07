@@ -59,11 +59,18 @@ func (i invite) Accept(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 	body.Id = &id
-	m, err := i.service.Accept(c.Request().Context(), body)
+	m, jwt, err := i.service.Accept(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 		return httperror.InternalError(c)
 	}
+
+	err = SetAuthCookies(c, jwt)
+	if err != nil {
+		common.LogStringError(c, err, "invite: set auth cookies")
+		return httperror.InternalError(c)
+	}
+
 	return c.JSON(http.StatusOK, m)
 }
 
