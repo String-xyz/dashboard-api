@@ -25,6 +25,11 @@ func GetInviteStatus(invite model.MemberInvite) string {
 	return "Not Found"
 }
 
+type MemberInviteNameAndPlatform struct {
+	Name         string `json:"name" db:"name"`
+	PlatformName string `json:"platformName" db:"platform_name"`
+}
+
 type MemberInviteUpdates struct {
 	DeactivatedAt *time.Time `json:"deactivatedAt" db:"deactivated_at"`
 	ExpiredAt     *time.Time `json:"expiredAt" db:"expired_at"`
@@ -40,6 +45,7 @@ type MemberInvite interface {
 	List(ctx context.Context, limit int, offset int) ([]model.MemberInvite, error)
 	Update(ctx context.Context, ID string, updates any) error
 	GetByPlatform(platformId string) ([]model.MemberInvite, error)
+	GetMemberAndPlatformName(ctx context.Context, ID string) (MemberInviteNameAndPlatform, error)
 }
 
 type memberInvite[T any] struct {
@@ -79,5 +85,22 @@ func (p memberInvite[T]) GetByPlatform(platformId string) ([]model.MemberInvite,
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
+	return m, nil
+}
+
+func (p memberInvite[T]) GetMemberAndPlatformName(ctx context.Context, ID string) (MemberInviteNameAndPlatform, error) {
+	m := MemberInviteNameAndPlatform{}
+	err := p.Store.GetContext(ctx, &m, `
+	SELECT member_invite.name, platform.name as platform_name
+	FROM member_invite
+	LEFT JOIN platform
+	ON member_invite.platform_id = platform.id
+	WHERE member_invite.id = $1`, ID)
+	if err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+
 	return m, nil
 }

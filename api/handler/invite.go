@@ -82,11 +82,12 @@ func (i invite) List(c echo.Context) error {
 }
 
 func (i invite) Resend(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
 	id := c.Param("id")
 	if id == "" {
 		return httperror.BadRequestError(c)
 	}
-	m, err := i.service.Resend(c.Request().Context(), id)
+	m, err := i.service.Resend(c.Request().Context(), id, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
 		return httperror.InternalError(c)
@@ -114,6 +115,20 @@ func (i invite) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+func (i invite) Get(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := i.service.Get(c.Request().Context(), id)
+	if err != nil {
+		common.LogStringError(c, err, "invite: get")
+		return httperror.InternalError(c)
+	}
+	return c.JSON(http.StatusOK, m)
+}
+
 func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	if g == nil {
 		panic("no group attached to the invite handler")
@@ -125,4 +140,6 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", i.List, ms...)
 	g.POST("/:id/resend", i.Resend, ms...)
 	g.PUT("/:id", i.Update, ms...)
+	g.GET("/:id", i.Get)
+
 }
