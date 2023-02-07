@@ -16,6 +16,7 @@ type Invite interface {
 	List(e echo.Context) error
 	Resend(e echo.Context) error
 	Update(e echo.Context) error
+	Deactivate(e echo.Context) error
 	RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc)
 }
 
@@ -123,6 +124,20 @@ func (i invite) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+func (i invite) Deactivate(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
+	id := c.Param("id")
+	if id == "" {
+		return httperror.BadRequestError(c)
+	}
+	m, err := i.service.Deactivate(c.Request().Context(), id, callerId)
+	if err != nil {
+		common.LogStringError(c, err, "invite: update")
+		return httperror.InternalError(c)
+	}
+	return c.JSON(http.StatusOK, m)
+}
+
 func (i invite) Get(c echo.Context) error {
 	id := c.Param("id")
 	if id == "" {
@@ -148,6 +163,7 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", i.List, ms...)
 	g.POST("/:id/resend", i.Resend, ms...)
 	g.PUT("/:id", i.Update, ms...)
+	g.PUT("/:id/deactivate", i.Deactivate, ms...)
 	g.GET("/:id", i.Get)
 
 }

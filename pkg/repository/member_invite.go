@@ -109,3 +109,14 @@ func (p memberInvite[T]) GetMemberAndPlatformName(ctx context.Context, ID string
 
 	return m, nil
 }
+
+func (p memberInvite[T]) GetById(ctx context.Context, ID string) (model.MemberInvite, error) {
+	m := model.MemberInvite{}
+	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /*AND deactivated_at IS NULL"*/, p.Table), ID)
+	if err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}

@@ -19,6 +19,7 @@ type Invite interface {
 	List(ctx context.Context, status string, platformId string) ([]model.MemberInvite, error)
 	Resend(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (model.MemberInvite, error)
+	Deactivate(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error)
 	Get(ctx context.Context, id string) (repository.MemberInviteInfo, error)
 }
 
@@ -179,6 +180,30 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 		RoleID string `json:"roleId" db:"role_id"`
 	}
 	update := RoleUpdate{RoleID: GetRoleId(request.Role)}
+	err = a.repos.MemberInvite.Update(ctx, inviteId, update)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+	result, err = a.repos.MemberInvite.GetById(ctx, inviteId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+	return result, nil
+}
+
+func (a invite) Deactivate(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error) {
+	result := model.MemberInvite{}
+	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	type DeactivateUpdate struct {
+		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	}
+
+	now := time.Now()
+	update := DeactivateUpdate{DeactivatedAt: &now}
 	err = a.repos.MemberInvite.Update(ctx, inviteId, update)
 	if err != nil {
 		return result, common.StringError(err)
