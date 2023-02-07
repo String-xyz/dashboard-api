@@ -135,7 +135,7 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		if bcrypt.CompareHashAndPassword([]byte(m.Password), []byte(*request.OldPassword)) != nil {
 			return result, common.StringError(errors.New("invalid password"))
 		}
-		hash, err := bcrypt.GenerateFromPassword([]byte(*request.NewPassword), 2^3)
+		hash, err := bcrypt.GenerateFromPassword([]byte(*request.NewPassword), 8)
 		if err != nil {
 			return result, common.StringError(err)
 		}
