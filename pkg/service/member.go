@@ -213,11 +213,15 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 		return common.StringError(err)
 	}
 
+	encrypted, err := bcrypt.GenerateFromPassword([]byte(request.Password), 8)
+	if err != nil {
+		return common.StringError(err)
+	}
 	// Update their password
 	type UpdatePW struct {
 		Password string `json:"password" db:"password"`
 	}
-	updatePW := UpdatePW{Password: request.Password}
+	updatePW := UpdatePW{Password: string(encrypted)}
 
 	err = a.repos.PlatformMember.Update(ctx, memberId, updatePW)
 	if err != nil {
