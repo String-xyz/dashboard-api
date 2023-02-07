@@ -15,6 +15,7 @@ func SendEmail(from string, to string, fromAddress string, toAddress string, sub
 	f := mail.NewEmail(from, fromAddress)
 	t := mail.NewEmail(to, toAddress)
 	textContent := ""
+	// TODO: Parse body to ensure links are valid
 	message := mail.NewSingleEmail(f, subject, t, textContent, body)
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 	_, err := client.Send(message)

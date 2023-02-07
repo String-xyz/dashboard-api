@@ -43,7 +43,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 		"<header>You have been invited to use the String API</header>" +
 		"<br>Dear " + request.Name + "," +
 		"<br>Thank you for signing up to use the String API.  Please click the link below to set your password and complete your registration process:" +
-		"<br><a href='" + os.Getenv("BASE_APP_URL") + "invites/" + invite.ID + "'>Accept Invitation</a>" // TODO: double check :id
+		"<br><a href='" + os.Getenv("BASE_APP_URL") + "/invites/" + invite.ID + "'>Accept Invitation</a>" // TODO: double check :id
 
 	err = SendEmail("String API", "New String API User", "auth@string.xyz", request.Email, "String API Invitation", body)
 	if err != nil {

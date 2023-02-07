@@ -18,7 +18,7 @@ type MemberCreateResponse struct {
 }
 
 type Member interface {
-	GetAll(ctx context.Context, callerId string, platformId string) ([]model.PlatformMember, error)
+	GetAll(ctx context.Context, callerId string, platformId string) ([]repository.PlatformMemberWithRole, error)
 	Get(ctx context.Context, callerId string, platformId string, memberId string) (model.PlatformMember, error)
 	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error)
 	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (model.PlatformMember, error)
@@ -35,25 +35,16 @@ func NewMember(repos repository.Repositories) Member {
 	return &member{repos}
 }
 
-func (a member) GetAll(ctx context.Context, callerId string, platformId string) ([]model.PlatformMember, error) {
-	result := []model.PlatformMember{}
+func (a member) GetAll(ctx context.Context, callerId string, platformId string) ([]repository.PlatformMemberWithRole, error) {
+	result := []repository.PlatformMemberWithRole{}
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	membersToPlatform, err := a.repos.MemberToPlatform.GetByPlatform(platformId)
+	result, err = a.repos.PlatformMember.List(ctx, platformId, 0, 0)
 	if err != nil {
 		return result, common.StringError(err)
-	}
-
-	// TODO: Replace all of this (after requireauthority) with SQL JOIN
-	for _, mtp := range membersToPlatform {
-		member, err := a.repos.PlatformMember.GetByIdIncludingDeactivated(ctx, mtp.MemberID)
-		if err != nil {
-			return result, common.StringError(err)
-		}
-		result = append(result, member)
 	}
 
 	return result, nil
