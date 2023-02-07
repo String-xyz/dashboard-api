@@ -18,8 +18,8 @@ type Invite interface {
 	Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, error)
 	List(ctx context.Context, status string, platformId string) ([]model.MemberInvite, error)
 	Resend(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error)
-	Update(ctx context.Context, request model.RequestInviteUpdate, id string) (model.MemberInvite, error)
-	Get(ctx context.Context, id string) (repository.MemberInviteNameAndPlatform, error)
+	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (model.MemberInvite, error)
+	Get(ctx context.Context, id string) (repository.MemberInviteInfo, error)
 }
 
 type invite struct {
@@ -155,12 +155,24 @@ func (a invite) Resend(ctx context.Context, inviteId string, callerId string) (m
 	return result, nil
 }
 
-func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, id string) (model.MemberInvite, error) {
+func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (model.MemberInvite, error) {
 	result := model.MemberInvite{}
+	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+	err = a.repos.MemberInvite.Update(ctx, inviteId, request)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+	result, err = a.repos.MemberInvite.GetById(ctx, inviteId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 	return result, nil
 }
 
-func (a invite) Get(ctx context.Context, id string) (repository.MemberInviteNameAndPlatform, error) {
+func (a invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo, error) {
 	result, err := a.repos.MemberInvite.GetMemberAndPlatformName(ctx, id)
 	if err != nil {
 		return result, common.StringError(err)

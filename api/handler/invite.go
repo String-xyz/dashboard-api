@@ -96,6 +96,7 @@ func (i invite) Resend(c echo.Context) error {
 }
 
 func (i invite) Update(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
 	id := c.Param("id")
 	if id == "" {
 		return httperror.BadRequestError(c)
@@ -107,7 +108,7 @@ func (i invite) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := i.service.Update(c.Request().Context(), body, id)
+	m, err := i.service.Update(c.Request().Context(), body, id, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 		return httperror.InternalError(c)
