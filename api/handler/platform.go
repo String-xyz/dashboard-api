@@ -69,7 +69,7 @@ func (p platform) Update(c echo.Context) error {
 		common.LogStringError(c, err, "platform: update")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusCreated, m)
+	return c.JSON(http.StatusOK, m)
 }
 
 func (p platform) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
