@@ -67,6 +67,11 @@ func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAccep
 		return member, common.StringError(errors.New("invite is not pending"))
 	}
 
+	// Ensure password exists and has more than 8 chars
+	if len(requestBody.Password) < 8 {
+		return member, common.StringError(errors.New("password too short"))
+	}
+
 	// Generate a new Platform Member with an Email
 	hash, err := bcrypt.GenerateFromPassword([]byte(requestBody.Password), 8)
 	if err != nil {
