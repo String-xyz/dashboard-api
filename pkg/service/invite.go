@@ -161,6 +161,11 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	if err != nil {
 		return result, common.StringError(err)
 	}
+
+	if request.Role == "Owner" || request.Role == "owner" {
+		return result, common.StringError(errors.New("cannot elevate member to owner"))
+	}
+
 	err = a.repos.MemberInvite.Update(ctx, inviteId, request)
 	if err != nil {
 		return result, common.StringError(err)
