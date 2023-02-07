@@ -186,7 +186,7 @@ func (a member) SendPasswordResetEmail(ctx context.Context, email string) error 
 		"<header>You have requested a password reset for the String API</header>" +
 		"<br>Dear " + member.Name + "," +
 		"<br>If you have forgotten your password, click the link below to reset it:" +
-		"<br><a href='" + os.Getenv("BASE_API_URL") + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
+		"<br><a href='" + os.Getenv("BASE_DASHBOARD_URL") + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
 
 	err = SendEmail("String API", member.Name, "auth@string.xyz", email, "String API Password Reset", body)
 	if err != nil {
