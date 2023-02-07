@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/String-xyz/go-lib/common"
+	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
@@ -16,10 +17,11 @@ type Platform interface {
 
 type platform struct {
 	repos repository.Repositories
+	redis database.RedisStore
 }
 
-func NewPlatform(repos repository.Repositories) Platform {
-	return &platform{repos}
+func NewPlatform(repos repository.Repositories, redis database.RedisStore) Platform {
+	return &platform{repos, redis}
 }
 
 // TODO: Ensure valid email is provided
@@ -35,7 +37,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 
 	// Get String Platform Id
 	// Generate Owner invitation
-	Invite := NewInvite(a.repos)
+	Invite := NewInvite(a.repos, a.redis)
 	_, err = Invite.Send(ctx, inviteReq, nil, platform.ID)
 	if err != nil {
 		return platform, common.StringError(err)

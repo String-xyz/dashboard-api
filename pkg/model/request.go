@@ -20,8 +20,7 @@ type RequestInviteSend struct {
 }
 
 type RequestInviteUpdate struct {
-	Status string `json:"status"`
-	Role   string `json:"role"`
+	Role string `json:"role"`
 }
 
 type RequestLogin struct {

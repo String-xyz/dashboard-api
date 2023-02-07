@@ -25,6 +25,14 @@ func GetInviteStatus(invite model.MemberInvite) string {
 	return "Not Found"
 }
 
+type MemberInviteInfo struct {
+	ID           string `json:"id" db:"id"`
+	Name         string `json:"name" db:"name"`                  // user name
+	Email        string `json:"email" db:"email"`                // user name
+	Role         string `json:"role" db:"role"`                  // invite role
+	PlatformName string `json:"platformName" db:"platform_name"` // platform name
+}
+
 type MemberInviteUpdates struct {
 	DeactivatedAt *time.Time `json:"deactivatedAt" db:"deactivated_at"`
 	ExpiredAt     *time.Time `json:"expiredAt" db:"expired_at"`
@@ -40,6 +48,7 @@ type MemberInvite interface {
 	List(ctx context.Context, limit int, offset int) ([]model.MemberInvite, error)
 	Update(ctx context.Context, ID string, updates any) error
 	GetByPlatform(platformId string) ([]model.MemberInvite, error)
+	GetMemberAndPlatformName(ctx context.Context, ID string) (MemberInviteInfo, error)
 }
 
 type memberInvite[T any] struct {
@@ -75,6 +84,36 @@ func (p memberInvite[T]) GetByPlatform(platformId string) ([]model.MemberInvite,
 	m := []model.MemberInvite{}
 	err := p.Store.Select(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
 	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p memberInvite[T]) GetMemberAndPlatformName(ctx context.Context, ID string) (MemberInviteInfo, error) {
+	m := MemberInviteInfo{}
+	err := p.Store.GetContext(ctx, &m, `
+	SELECT member_invite.id, member_invite.name, member_invite.email, member_role.name as role, platform.name as platform_name
+	FROM member_invite
+	LEFT JOIN platform
+	ON member_invite.platform_id = platform.id
+	LEFT JOIN member_role
+	ON member_invite.role_id = member_role.id
+	WHERE member_invite.id = $1`, ID)
+	if err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+
+	return m, nil
+}
+
+func (p memberInvite[T]) GetById(ctx context.Context, ID string) (model.MemberInvite, error) {
+	m := model.MemberInvite{}
+	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /*AND deactivated_at IS NULL"*/, p.Table), ID)
+	if err == sql.ErrNoRows {
 		return m, common.StringError(ErrNotFound)
 	} else if err != nil {
 		return m, common.StringError(err)
