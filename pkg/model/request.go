@@ -1,5 +1,7 @@
 package model
 
+import "github.com/lib/pq"
+
 type RequestPlatformCreate struct {
 	PlatformName string `json:"platformName"`
 	Email        string `json:"email"`
@@ -7,10 +9,10 @@ type RequestPlatformCreate struct {
 }
 
 type RequestPlatformUpdate struct {
-	Name        *string   `json:"name" db:"name"`
-	Description *string   `json:"description" db:"description"`
-	Domains     *[]string `json:"domains" db:"domains"`
-	IPAddresses *[]string `json:"ipAddresses" db:"ip_addresses"`
+	Name        *string         `json:"platformName" db:"name"`
+	Description *string         `json:"description" db:"description"`
+	Domains     *pq.StringArray `json:"domains" db:"domains"`
+	IPAddresses *pq.StringArray `json:"ipAddresses" db:"ip_addresses"`
 }
 
 type RequestInviteSend struct {
