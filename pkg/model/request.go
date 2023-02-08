@@ -7,10 +7,10 @@ type RequestPlatformCreate struct {
 }
 
 type RequestPlatformUpdate struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Domains     []string `json:"domains"`
-	IPAddresses []string `json:"ipAddresses"`
+	Name        *string   `json:"name" db:"name"`
+	Description *string   `json:"description" db:"description"`
+	Domains     *[]string `json:"domains" db:"domains"`
+	IPAddresses *[]string `json:"ipAddresses" db:"ip_addresses"`
 }
 
 type RequestInviteSend struct {
