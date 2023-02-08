@@ -42,7 +42,7 @@ func (a apikey) Create(ctx context.Context, callerId string, platformId string) 
 
 	uuiKey := "str." + uuidWithoutHyphens()
 
-	key = model.Apikey{Type: "Public", Data: uuiKey, PlatformID: platformId, CreatedBy: callerId}
+	key = model.Apikey{Type: "public", Data: uuiKey, PlatformID: platformId, CreatedBy: callerId}
 	key, err = a.repos.Apikey.Create(ctx, key)
 	if err != nil {
 		return key, common.StringError(err)
