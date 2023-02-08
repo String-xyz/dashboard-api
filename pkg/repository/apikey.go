@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -23,7 +25,7 @@ type Apikey interface {
 	database.Transactable
 	Create(ctx context.Context, model model.Apikey) (model.Apikey, error)
 	GetById(ctx context.Context, ID string) (model.Apikey, error)
-	List(ctx context.Context, limit int, offset int) ([]model.Apikey, error)
+	List(ctx context.Context, platformId string, limit int, offset int) ([]model.Apikey, error)
 	Update(ctx context.Context, ID string, updates any) error
 }
 
@@ -35,10 +37,10 @@ func NewApikey(db database.Queryable) Apikey {
 	return &apikey[model.Apikey]{strrepo.Base[model.Apikey]{Store: db, Table: "apikey"}}
 }
 
-func (p apikey[T]) Create(ctx context.Context, m model.Apikey) (model.Apikey, error) {
+func (a apikey[T]) Create(ctx context.Context, m model.Apikey) (model.Apikey, error) {
 	newModel := model.Apikey{}
-	rows, err := p.Store.NamedQuery(`
-		INSERT INTO member_invite (type, data, description, created_by, platform_id) 
+	rows, err := a.Store.NamedQuery(`
+		INSERT INTO apikey (type, data, description, created_by, platform_id) 
 		VALUES(:type, :data, :description, :created_by, :platform_id) RETURNING *`, m)
 
 	if err != nil {
@@ -54,4 +56,32 @@ func (p apikey[T]) Create(ctx context.Context, m model.Apikey) (model.Apikey, er
 	}
 
 	return newModel, nil
+}
+
+func (p apikey[T]) GetById(ctx context.Context, ID string) (model.Apikey, error) {
+	m := model.Apikey{}
+	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", p.Table), ID)
+	if err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p apikey[T]) List(ctx context.Context, platformId string, limit int, offset int) ([]model.Apikey, error) {
+	m := []model.Apikey{}
+	if limit == 0 {
+		limit = 20
+	}
+
+	err := p.Store.SelectContext(ctx, &m, `SELECT * FROM apikey WHERE apikey.platform_id = $1 LIMIT $2 OFFSET $3;`, platformId, limit, offset)
+
+	if err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+
+	return m, nil
 }
