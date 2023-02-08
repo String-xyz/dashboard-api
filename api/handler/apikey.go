@@ -69,15 +69,14 @@ func (a apikey) Get(c echo.Context) error {
 }
 
 func (a apikey) Deactivate(c echo.Context) error {
-	// TODO: Get platform ID from the JWT
-	id := ""
-
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
-	if keyId == "" {
+	if keyId == "" || platformId == "" || callerId == "" {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Deactivate(c.Request().Context(), id, keyId)
+	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: deactivate")
 		return httperror.InternalError(c)
@@ -86,8 +85,12 @@ func (a apikey) Deactivate(c echo.Context) error {
 }
 
 func (a apikey) Update(c echo.Context) error {
-	// TODO: Get platform ID from the JWT
-	id := ""
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
+	keyId := c.Param("id")
+	if keyId == "" || platformId == "" || callerId == "" {
+		return httperror.BadRequestError(c)
+	}
 	body := model.RequestApikeyUpdate{}
 	err := c.Bind(&body)
 	if err != nil {
@@ -95,7 +98,7 @@ func (a apikey) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Update(c.Request().Context(), body, id)
+	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, keyId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: update")
 		return httperror.InternalError(c)
