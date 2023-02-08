@@ -43,10 +43,8 @@ func (p platform) Create(c echo.Context) error {
 }
 
 func (p platform) Get(c echo.Context) error {
-	// TODO: Get platform ID from the JWT
-	id := ""
-
-	m, err := p.service.Get(c.Request().Context(), id)
+	platformId := c.Get("platformId").(string)
+	m, err := p.service.Get(c.Request().Context(), platformId)
 	if err != nil {
 		common.LogStringError(c, err, "platform: get")
 		return httperror.InternalError(c)
@@ -55,8 +53,8 @@ func (p platform) Get(c echo.Context) error {
 }
 
 func (p platform) Update(c echo.Context) error {
-	// TODO: Get platform ID from the JWT
-	id := ""
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
 	body := model.RequestPlatformUpdate{}
 	err := c.Bind(&body)
 	if err != nil {
@@ -64,7 +62,7 @@ func (p platform) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := p.service.Update(c.Request().Context(), body, id)
+	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update")
 		return httperror.InternalError(c)

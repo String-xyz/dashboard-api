@@ -11,8 +11,8 @@ import (
 
 type Platform interface {
 	Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error)
-	Get(ctx context.Context, request string) (model.Platform, error)
-	Update(ctx context.Context, request model.RequestPlatformUpdate, id string) (model.Platform, error)
+	Get(ctx context.Context, platformId string) (model.Platform, error)
+	Update(ctx context.Context, request model.RequestPlatformUpdate, platformId string, callerId string) (model.Platform, error)
 }
 
 type platform struct {
@@ -46,13 +46,28 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 	return platform, nil
 }
 
-func (a platform) Get(ctx context.Context, request string) (model.Platform, error) {
-	result := model.Platform{}
+func (a platform) Get(ctx context.Context, platformId string) (model.Platform, error) {
+	result, err := a.repos.Platform.GetById(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 	return result, nil
 }
 
 // TODO: Ensure multiple platforms do not share the same *domain*
-func (a platform) Update(ctx context.Context, request model.RequestPlatformUpdate, id string) (model.Platform, error) {
+func (a platform) Update(ctx context.Context, request model.RequestPlatformUpdate, platformId string, callerId string) (model.Platform, error) {
 	result := model.Platform{}
+	err := RequireAuthority(a.repos, callerId, "Owner")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+	err = a.repos.Platform.Update(ctx, platformId, request)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+	result, err = a.repos.Platform.GetById(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 	return result, nil
 }
