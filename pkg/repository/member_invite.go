@@ -49,6 +49,7 @@ type MemberInvite interface {
 	Update(ctx context.Context, ID string, updates any) error
 	GetByPlatform(platformId string) ([]model.MemberInvite, error)
 	GetMemberAndPlatformName(ctx context.Context, ID string) (MemberInviteInfo, error)
+	GetByEmail(email string) (model.MemberInvite, error)
 }
 
 type memberInvite[T any] struct {
@@ -114,6 +115,17 @@ func (p memberInvite[T]) GetById(ctx context.Context, ID string) (model.MemberIn
 	m := model.MemberInvite{}
 	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /*AND deactivated_at IS NULL"*/, p.Table), ID)
 	if err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p memberInvite[T]) GetByEmail(email string) (model.MemberInvite, error) {
+	m := model.MemberInvite{}
+	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE email = $1", p.Table), email)
+	if err != nil && err == sql.ErrNoRows {
 		return m, common.StringError(ErrNotFound)
 	} else if err != nil {
 		return m, common.StringError(err)

@@ -3,9 +3,9 @@ package model
 import "github.com/lib/pq"
 
 type RequestPlatformCreate struct {
-	PlatformName string `json:"platformName"`
-	Email        string `json:"email"`
-	Name         string `json:"name"`
+	PlatformName string `json:"platformName" validate:"required"`
+	Email        string `json:"email" validate:"required,email"`
+	Name         string `json:"name" validate:"required"`
 }
 
 type RequestPlatformUpdate struct {
@@ -23,6 +23,7 @@ type RequestInviteSend struct {
 
 type RequestInviteUpdate struct {
 	Role string `json:"role"`
+	Name string `json:"name"`
 }
 
 type RequestLogin struct {
