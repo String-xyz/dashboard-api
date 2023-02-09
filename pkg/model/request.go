@@ -23,6 +23,7 @@ type RequestInviteSend struct {
 
 type RequestInviteUpdate struct {
 	Role string `json:"role"`
+	Name string `json:"name"`
 }
 
 type RequestLogin struct {

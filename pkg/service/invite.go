@@ -41,6 +41,20 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 		return model.MemberInvite{}, common.StringError(errors.New("email already in use"))
 	}
 
+	// If there is a pending invite, update the role
+	pendingInvite, err := a.repos.MemberInvite.GetByEmail(request.Email)
+	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
+		return model.MemberInvite{}, common.StringError(err)
+	} else if pendingInvite.Email == request.Email && callerId != nil {
+		// Update invite and resend it
+		newRequest := model.RequestInviteUpdate{Role: request.Role, Name: request.Name}
+		newInvite, err := a.Update(ctx, newRequest, pendingInvite.ID, *callerId)
+		if err != nil {
+			return model.MemberInvite{}, common.StringError(err)
+		}
+		return a.Resend(ctx, newInvite.ID, *callerId)
+	}
+
 	roleId := GetRoleId(request.Role)
 	// TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
 	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformID: platformId, Name: request.Name, RoleID: roleId})
@@ -185,9 +199,10 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	}
 
 	type RoleUpdate struct {
-		RoleID string `json:"roleId" db:"role_id"`
+		RoleID string  `json:"roleId" db:"role_id"`
+		Name   *string `json:"name" db:"name"`
 	}
-	update := RoleUpdate{RoleID: GetRoleId(request.Role)}
+	update := RoleUpdate{RoleID: GetRoleId(request.Role), Name: &request.Name}
 	err = a.repos.MemberInvite.Update(ctx, inviteId, update)
 	if err != nil {
 		return result, common.StringError(err)
