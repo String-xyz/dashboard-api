@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"os"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -33,6 +33,14 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 }
 
 func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (model.MemberInvite, error) {
+	// Ensure there are no duplicate emails
+	preexisting, err := a.repos.PlatformMember.GetByEmail(request.Email)
+	if err != nil && errors.Cause(err) != repository.ErrNotFound {
+		return model.MemberInvite{}, common.StringError(err)
+	} else if preexisting.Email == request.Email {
+		return model.MemberInvite{}, common.StringError(errors.New("email already in use"))
+	}
+
 	roleId := GetRoleId(request.Role)
 	// TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
 	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformID: platformId, Name: request.Name, RoleID: roleId})
