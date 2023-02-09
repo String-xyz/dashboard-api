@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"net/url"
 	"os"
 	"time"
 
@@ -176,6 +177,10 @@ func (a member) SendPasswordResetEmail(ctx context.Context, email string) error 
 	// generate reset token by hashing member id
 	secret := os.Getenv("STRING_ENCRYPTION_KEY")
 	resetToken, err := common.EncryptString(member.ID, secret)
+
+	// url encode token
+	resetToken = url.QueryEscape(resetToken)
+
 	if err != nil {
 		return common.StringError(err)
 	}
