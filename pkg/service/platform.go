@@ -29,7 +29,7 @@ func NewPlatform(repos repository.Repositories, redis database.RedisStore) Platf
 func (a platform) Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error) {
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(request.Email)
-	if err != nil && errors.Cause(err) != repository.ErrNotFound {
+	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
 		return model.Platform{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
 		return model.Platform{}, common.StringError(errors.New("email already in use"))

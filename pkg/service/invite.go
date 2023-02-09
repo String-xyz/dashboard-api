@@ -35,7 +35,7 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (model.MemberInvite, error) {
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(request.Email)
-	if err != nil && errors.Cause(err) != repository.ErrNotFound {
+	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
 		return model.MemberInvite{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
 		return model.MemberInvite{}, common.StringError(errors.New("email already in use"))
