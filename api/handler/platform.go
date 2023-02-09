@@ -34,6 +34,10 @@ func (p platform) Create(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	if err := c.Validate(body); err != nil {
+		return httperror.InvalidPayloadError(c, err)
+	}
+
 	m, err := p.service.Create(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
