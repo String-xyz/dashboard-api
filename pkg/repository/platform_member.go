@@ -27,11 +27,11 @@ type PlatformMemberWithRole struct {
 type PlatformMember interface {
 	database.Transactable
 	Create(ctx context.Context, model model.PlatformMember) (model.PlatformMember, error)
-	GetById(ctx context.Context, ID string) (model.PlatformMember, error)
-	GetByIdIncludingDeactivated(ctx context.Context, ID string) (model.PlatformMember, error)
+	GetById(ctx context.Context, ID string) (PlatformMemberWithRole, error)
+	GetByIdIncludingDeactivated(ctx context.Context, ID string) (PlatformMemberWithRole, error)
 	List(ctx context.Context, platformId string, limit int, offset int) ([]PlatformMemberWithRole, error)
 	Update(ctx context.Context, ID string, updates any) error
-	GetByEmail(email string) (model.PlatformMember, error)
+	GetByEmail(ctx context.Context, email string) (PlatformMemberWithRole, error)
 }
 
 type platformMember[T any] struct {
@@ -63,9 +63,16 @@ func (p platformMember[T]) Create(ctx context.Context, m model.PlatformMember) (
 	return newModel, nil
 }
 
-func (p platformMember[T]) GetByEmail(email string) (model.PlatformMember, error) {
-	m := model.PlatformMember{}
-	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE email = $1", p.Table), email)
+func (p platformMember[T]) GetByEmail(ctx context.Context, email string) (PlatformMemberWithRole, error) {
+	m := PlatformMemberWithRole{}
+	err := p.Store.GetContext(ctx, &m, `
+		SELECT platform_member.*, member_role.name AS member_role
+		FROM platform_member
+		LEFT JOIN member_to_role
+		ON platform_member.id = member_to_role.member_id
+		LEFT JOIN member_role 
+		ON member_role.id = member_to_role.role_id 
+		WHERE platform_member.email = $1`, email)
 	if err != nil && err == sql.ErrNoRows {
 		return m, common.StringError(ErrNotFound)
 	} else if err != nil {
@@ -74,8 +81,26 @@ func (p platformMember[T]) GetByEmail(email string) (model.PlatformMember, error
 	return m, nil
 }
 
-func (p platformMember[T]) GetByIdIncludingDeactivated(ctx context.Context, ID string) (model.PlatformMember, error) {
-	m := model.PlatformMember{}
+func (p platformMember[T]) GetById(ctx context.Context, ID string) (PlatformMemberWithRole, error) {
+	m := PlatformMemberWithRole{}
+	err := p.Store.GetContext(ctx, &m, `
+		SELECT platform_member.*, member_role.name AS member_role
+		FROM platform_member
+		LEFT JOIN member_to_role
+		ON platform_member.id = member_to_role.member_id
+		LEFT JOIN member_role 
+		ON member_role.id = member_to_role.role_id 
+		WHERE platform_member.id = $1`, ID)
+	if err != nil && err == sql.ErrNoRows {
+		return m, common.StringError(ErrNotFound)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
+}
+
+func (p platformMember[T]) GetByIdIncludingDeactivated(ctx context.Context, ID string) (PlatformMemberWithRole, error) {
+	m := PlatformMemberWithRole{}
 	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /* AND deactivated_at IS NULL"*/, p.Table), ID)
 	if err != nil && err == sql.ErrNoRows {
 		return m, common.StringError(ErrNotFound)

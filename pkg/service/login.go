@@ -26,7 +26,7 @@ func NewLogin(repos repository.Repositories, redis database.RedisStore) Login {
 
 func (a login) Login(ctx context.Context, request model.RequestLogin) (JWT, error) {
 	jwt := JWT{}
-	member, err := a.repos.PlatformMember.GetByEmail(request.Email)
+	member, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
 	if err != nil {
 		return jwt, common.StringError(err)
 	}
