@@ -23,7 +23,7 @@ func SendEmail(from string, to string, fromAddress string, toAddress string, sub
 
 	if res.StatusCode >= 400 {
 		fmt.Println(">>> email failed to send: ", res.Body)
-		return common.StringError(fmt.Errorf("email failed to send"))
+		return common.StringError(errors.New(res.Body))
 	}
 
 	if err != nil {
