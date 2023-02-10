@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/String-xyz/go-lib/common"
@@ -18,7 +20,13 @@ func SendEmail(from string, to string, fromAddress string, toAddress string, sub
 	// TODO: Parse body to ensure links are valid
 	message := mail.NewSingleEmail(f, subject, t, textContent, body)
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
-	_, err := client.Send(message)
+	res, err := client.Send(message)
+
+	if res.StatusCode >= 400 {
+		fmt.Println(">>> email failed to send: ", res.Body)
+		return common.StringError(errors.New(res.Body))
+	}
+
 	if err != nil {
 		return common.StringError(err)
 	}
