@@ -12,7 +12,7 @@ import (
 )
 
 type Login interface {
-	Login(ctx context.Context, request model.RequestLogin) (JWT, error)
+	Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error)
 }
 
 type login struct {
@@ -24,29 +24,29 @@ func NewLogin(repos repository.Repositories, redis database.RedisStore) Login {
 	return &login{repos, redis}
 }
 
-func (a login) Login(ctx context.Context, request model.RequestLogin) (JWT, error) {
+func (a login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
 	jwt := JWT{}
-	member, err := a.repos.PlatformMember.GetByEmail(request.Email)
+	member, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
 	if err != nil {
-		return jwt, common.StringError(err)
+		return member, jwt, common.StringError(err)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(request.Password))
 	if err != nil {
-		return jwt, common.StringError(errors.New("wrong password"))
+		return member, jwt, common.StringError(errors.New("wrong password"))
 	}
 
 	platform, err := a.repos.MemberToPlatform.GetByMember(member.ID)
 
 	if err != nil {
-		return jwt, common.StringError(err)
+		return member, jwt, common.StringError(err)
 	}
 
 	auth := NewAuth(a.repos, a.redis)
 	jwt, err = auth.GenerateJWT(member.ID, platform.PlatformID)
 	if err != nil {
-		return jwt, common.StringError(err)
+		return member, jwt, common.StringError(err)
 	}
 
-	return jwt, nil
+	return member, jwt, nil
 }

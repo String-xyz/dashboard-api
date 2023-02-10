@@ -32,7 +32,7 @@ func (l login) Login(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	jwt, err := l.service.Login(c.Request().Context(), body)
+	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
 		return httperror.InternalError(c)
@@ -44,7 +44,7 @@ func (l login) Login(c echo.Context) error {
 		return httperror.InternalError(c)
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.JSON(http.StatusOK, member)
 }
 
 func (l login) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {

@@ -14,18 +14,18 @@ import (
 )
 
 type MemberCreateResponse struct {
-	JWT  JWT                  `json:"authToken"`
-	User model.PlatformMember `json:"member"`
+	JWT  JWT                               `json:"authToken"`
+	User repository.PlatformMemberWithRole `json:"member"`
 }
 
 type Member interface {
 	GetAll(ctx context.Context, callerId string, platformId string) ([]repository.PlatformMemberWithRole, error)
-	Get(ctx context.Context, callerId string, platformId string, memberId string) (model.PlatformMember, error)
+	Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error)
 	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error)
-	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (model.PlatformMember, error)
+	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error)
 	SendPasswordResetEmail(ctx context.Context, email string) error
 	PasswordReset(ctx context.Context, request model.RequestPasswordReset) error
-	Deactivate(ctx context.Context, callerId string, memberId string) (model.PlatformMember, error)
+	Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 }
 
 type member struct {
@@ -51,8 +51,8 @@ func (a member) GetAll(ctx context.Context, callerId string, platformId string) 
 	return result, nil
 }
 
-func (a member) Get(ctx context.Context, callerId string, platformId string, memberId string) (model.PlatformMember, error) {
-	result := model.PlatformMember{}
+func (a member) Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
@@ -114,8 +114,8 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	return result, nil
 }
 
-func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (model.PlatformMember, error) {
-	result := model.PlatformMember{}
+func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
 
 	// Actual DB request
 	type UpdateRequest struct {
@@ -169,7 +169,7 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 
 func (a member) SendPasswordResetEmail(ctx context.Context, email string) error {
 	// Anyone can request this, so ensure member is associated with 'email'
-	member, err := a.repos.PlatformMember.GetByEmail(email)
+	member, err := a.repos.PlatformMember.GetByEmail(ctx, email)
 	if err != nil {
 		return common.StringError(err)
 	}
@@ -227,8 +227,8 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	return nil
 }
 
-func (a member) Deactivate(ctx context.Context, callerId string, memberId string) (model.PlatformMember, error) {
-	result := model.PlatformMember{}
+func (a member) Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
