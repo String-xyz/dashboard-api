@@ -13,6 +13,8 @@ import (
 
 type Login interface {
 	Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error)
+	RefreshToken(refreshToken string) (MemberCreateResponse, error)
+	InvalidateRefreshToken(refreshToken string) error
 }
 
 type login struct {
@@ -24,9 +26,9 @@ func NewLogin(repos repository.Repositories, redis database.RedisStore) Login {
 	return &login{repos, redis}
 }
 
-func (a login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
+func (l login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
 	jwt := JWT{}
-	member, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
+	member, err := l.repos.PlatformMember.GetByEmail(ctx, request.Email)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -36,17 +38,27 @@ func (a login) Login(ctx context.Context, request model.RequestLogin) (repositor
 		return member, jwt, common.StringError(errors.New("wrong password"))
 	}
 
-	platform, err := a.repos.MemberToPlatform.GetByMember(member.ID)
+	platform, err := l.repos.MemberToPlatform.GetByMember(member.ID)
 
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
-	auth := NewAuth(a.repos, a.redis)
+	auth := NewAuth(l.repos, l.redis)
 	jwt, err = auth.GenerateJWT(member.ID, platform.PlatformID)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
 	return member, jwt, nil
+}
+
+func (l login) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
+	auth := NewAuth(l.repos, l.redis)
+	return auth.RefreshToken(refreshToken)
+}
+
+func (l login) InvalidateRefreshToken(refreshToken string) error {
+	auth := NewAuth(l.repos, l.redis)
+	return auth.InvalidateRefreshToken(refreshToken)
 }
