@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/httperror"
