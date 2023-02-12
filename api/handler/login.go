@@ -59,10 +59,6 @@ func (l login) RefreshToken(c echo.Context) error {
 
 	resp, err := l.service.RefreshToken(cookie.Value)
 	if err != nil {
-		if strings.Contains(err.Error(), "wallet address not associated with this user") {
-			return httperror.BadRequestError(c, "wallet address not associated with this user")
-		}
-
 		common.LogStringError(c, err, "login: refresh token")
 		return httperror.BadRequestError(c, "Invalid or expired token")
 	}
