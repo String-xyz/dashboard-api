@@ -45,8 +45,8 @@ func (l login) Login(c echo.Context) error {
 		common.LogStringError(c, err, "login: set auth cookies")
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusOK, member)
 
+	return c.JSON(http.StatusOK, member)
 }
 
 func (l login) RefreshToken(c echo.Context) error {
