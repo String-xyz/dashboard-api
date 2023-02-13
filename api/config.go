@@ -27,7 +27,7 @@ func newServices(config APIConfig, repos repository.Repositories, redis database
 	plat := service.NewPlatform(repos, redis) // redis here is passed into Invite
 	member := service.NewMember(repos)
 	auth := service.NewAuth(repos, redis)
-	login := service.NewLogin(repos, redis, auth)
+	login := service.NewLogin(repos, auth)
 	invite := service.NewInvite(repos, redis)
 	apikey := service.NewApikey(repos)
 	return service.Services{Platform: plat, Member: member, Auth: auth, Login: login, Invite: invite, Apikey: apikey}

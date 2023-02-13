@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -17,12 +16,11 @@ type Login interface {
 
 type login struct {
 	repos repository.Repositories
-	redis database.RedisStore
 	auth  Auth
 }
 
-func NewLogin(repos repository.Repositories, redis database.RedisStore, auth Auth) Login {
-	return &login{repos, redis, auth}
+func NewLogin(repos repository.Repositories, auth Auth) Login {
+	return &login{repos, auth}
 }
 
 func (l login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
