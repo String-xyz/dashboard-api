@@ -55,9 +55,9 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 }
 
 func (l login) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
-	return auth.RefreshToken(refreshToken)
+	return l.auth.RefreshToken(refreshToken)
 }
 
 func (l login) InvalidateRefreshToken(refreshToken string) error {
-	return auth.InvalidateRefreshToken(refreshToken)
+	return l.auth.InvalidateRefreshToken(refreshToken)
 }
