@@ -14,8 +14,8 @@ import (
 )
 
 type MemberCreateResponse struct {
-	JWT  JWT                               `json:"authToken"`
-	User repository.PlatformMemberWithRole `json:"member"`
+	JWT    JWT                               `json:"authToken"`
+	Member repository.PlatformMemberWithRole `json:"member"`
 }
 
 type Member interface {

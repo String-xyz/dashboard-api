@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -17,16 +16,16 @@ type Login interface {
 
 type login struct {
 	repos repository.Repositories
-	redis database.RedisStore
+	auth  Auth
 }
 
-func NewLogin(repos repository.Repositories, redis database.RedisStore) Login {
-	return &login{repos, redis}
+func NewLogin(repos repository.Repositories, auth Auth) Login {
+	return &login{repos, auth}
 }
 
-func (a login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
+func (l login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
 	jwt := JWT{}
-	member, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
+	member, err := l.repos.PlatformMember.GetByEmail(ctx, request.Email)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -36,14 +35,13 @@ func (a login) Login(ctx context.Context, request model.RequestLogin) (repositor
 		return member, jwt, common.StringError(errors.New("wrong password"))
 	}
 
-	platform, err := a.repos.MemberToPlatform.GetByMember(member.ID)
+	platform, err := l.repos.MemberToPlatform.GetByMember(member.ID)
 
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
-	auth := NewAuth(a.repos, a.redis)
-	jwt, err = auth.GenerateJWT(member.ID, platform.PlatformID)
+	jwt, err = l.auth.GenerateJWT(member.ID, platform.PlatformID)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}

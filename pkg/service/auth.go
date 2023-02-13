@@ -58,7 +58,7 @@ type RefreshTokenResponse struct {
 
 type Auth interface {
 	GenerateJWT(memberId string, platformId string) (JWT, error)
-	RefreshToken(refreshToken string, platformId string) (MemberCreateResponse, error)
+	RefreshToken(refreshToken string) (MemberCreateResponse, error)
 	CreateJWTRefresh(key string, memberId string) (JWTStrategy, error)
 	ValidateJWT(token string) (bool, error)
 	InvalidateRefreshToken(refreshToken string) error
@@ -137,7 +137,7 @@ func (a auth) InvalidateRefreshToken(refreshToken string) error {
 	return a.Delete(toSha256(refreshToken))
 }
 
-func (a auth) RefreshToken(refreshToken string, platformId string) (MemberCreateResponse, error) {
+func (a auth) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
 	resp := MemberCreateResponse{}
 
 	// get user id from refresh token
@@ -166,11 +166,11 @@ func (a auth) RefreshToken(refreshToken string, platformId string) (MemberCreate
 	}
 
 	ctx := context.Background() // TODO: allow context into this function
-	user, err := a.repos.PlatformMember.GetById(ctx, memberId)
+	member, err := a.repos.PlatformMember.GetById(ctx, memberId)
 	if err != nil {
 		return resp, common.StringError(err)
 	}
-	resp.User = user
+	resp.Member = member
 
 	return resp, nil
 }
