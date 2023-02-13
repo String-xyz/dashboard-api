@@ -26,7 +26,8 @@ func newRedis() database.RedisStore {
 func newServices(config APIConfig, repos repository.Repositories, redis database.RedisStore) service.Services {
 	plat := service.NewPlatform(repos, redis) // redis here is passed into Invite
 	member := service.NewMember(repos)
-	login := service.NewLogin(repos, redis)
+	auth := service.NewAuth(repos, redis)
+	login := service.NewLogin(repos, redis, auth)
 	invite := service.NewInvite(repos, redis)
 	apikey := service.NewApikey(repos)
 	return service.Services{Platform: plat, Member: member, Login: login, Invite: invite, Apikey: apikey}

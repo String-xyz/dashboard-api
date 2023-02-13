@@ -20,10 +20,11 @@ type Login interface {
 type login struct {
 	repos repository.Repositories
 	redis database.RedisStore
+	auth  Auth
 }
 
-func NewLogin(repos repository.Repositories, redis database.RedisStore) Login {
-	return &login{repos, redis}
+func NewLogin(repos repository.Repositories, redis database.RedisStore, auth Auth) Login {
+	return &login{repos, redis, auth}
 }
 
 func (l login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
@@ -54,11 +55,9 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 }
 
 func (l login) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
-	auth := NewAuth(l.repos, l.redis)
 	return auth.RefreshToken(refreshToken)
 }
 
 func (l login) InvalidateRefreshToken(refreshToken string) error {
-	auth := NewAuth(l.repos, l.redis)
 	return auth.InvalidateRefreshToken(refreshToken)
 }
