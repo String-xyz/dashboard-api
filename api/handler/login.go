@@ -19,6 +19,7 @@ type Login interface {
 
 type login struct {
 	service service.Login
+	auth    service.Auth
 	group   *echo.Group
 }
 
@@ -56,7 +57,7 @@ func (l login) RefreshToken(c echo.Context) error {
 		return httperror.Unauthorized(c)
 	}
 
-	resp, err := l.service.RefreshToken(cookie.Value)
+	resp, err := l.auth.RefreshToken(cookie.Value)
 	if err != nil {
 		common.LogStringError(c, err, "login: refresh token")
 		return httperror.BadRequestError(c, "Invalid or expired token")
@@ -82,7 +83,7 @@ func (l login) Logout(c echo.Context) error {
 	}
 
 	// invalidate refresh token. Returns error if token is not found
-	err = l.service.InvalidateRefreshToken(cookie.Value)
+	err = l.auth.InvalidateRefreshToken(cookie.Value)
 	if err != nil {
 		common.LogStringError(c, err, "Token not found")
 	}

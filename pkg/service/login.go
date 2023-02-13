@@ -13,8 +13,6 @@ import (
 
 type Login interface {
 	Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error)
-	RefreshToken(refreshToken string) (MemberCreateResponse, error)
-	InvalidateRefreshToken(refreshToken string) error
 }
 
 type login struct {
@@ -45,19 +43,10 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 		return member, jwt, common.StringError(err)
 	}
 
-	auth := NewAuth(l.repos, l.redis)
-	jwt, err = auth.GenerateJWT(member.ID, platform.PlatformID)
+	jwt, err = l.auth.GenerateJWT(member.ID, platform.PlatformID)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
 	return member, jwt, nil
-}
-
-func (l login) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
-	return l.auth.RefreshToken(refreshToken)
-}
-
-func (l login) InvalidateRefreshToken(refreshToken string) error {
-	return l.auth.InvalidateRefreshToken(refreshToken)
 }
