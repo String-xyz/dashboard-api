@@ -23,8 +23,8 @@ type login struct {
 	group   *echo.Group
 }
 
-func NewLogin(service service.Login) Login {
-	return &login{service: service}
+func NewLogin(service service.Services) Login {
+	return &login{service: service.Login, auth: service.Auth}
 }
 
 func (l login) Login(c echo.Context) error {

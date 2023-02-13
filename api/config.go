@@ -30,5 +30,5 @@ func newServices(config APIConfig, repos repository.Repositories, redis database
 	login := service.NewLogin(repos, redis, auth)
 	invite := service.NewInvite(repos, redis)
 	apikey := service.NewApikey(repos)
-	return service.Services{Platform: plat, Member: member, Login: login, Invite: invite, Apikey: apikey}
+	return service.Services{Platform: plat, Member: member, Auth: auth, Login: login, Invite: invite, Apikey: apikey}
 }

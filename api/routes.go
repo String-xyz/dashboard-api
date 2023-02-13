@@ -18,7 +18,7 @@ func memberRoute(services service.Services, e *echo.Echo) {
 }
 
 func loginRoute(services service.Services, e *echo.Echo) {
-	handler := handler.NewLogin(services.Login)
+	handler := handler.NewLogin(services)
 	handler.RegisterRoutes(e.Group("/login"))
 }
 
