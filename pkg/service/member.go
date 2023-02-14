@@ -19,7 +19,7 @@ type MemberCreateResponse struct {
 }
 
 type Member interface {
-	GetAll(ctx context.Context, callerId string, platformId string) ([]repository.PlatformMemberWithRole, error)
+	GetAll(ctx context.Context, platformId string) ([]repository.PlatformMemberWithRole, error)
 	Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error)
 	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error)
 	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error)
@@ -36,7 +36,7 @@ func NewMember(repos repository.Repositories) Member {
 	return &member{repos}
 }
 
-func (a member) GetAll(ctx context.Context, callerId string, platformId string) ([]repository.PlatformMemberWithRole, error) {
+func (a member) GetAll(ctx context.Context, platformId string) ([]repository.PlatformMemberWithRole, error) {
 	result, err := a.repos.PlatformMember.List(ctx, platformId, 0, 0)
 	if err != nil {
 		return result, common.StringError(err)
