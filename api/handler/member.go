@@ -29,9 +29,8 @@ func NewMember(service service.Member) Member {
 }
 
 func (a member) GetAll(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
-	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
+	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
 		common.LogStringError(c, err, "member: get all")
 		return httperror.InternalError(c)
