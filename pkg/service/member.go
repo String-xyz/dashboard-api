@@ -37,13 +37,7 @@ func NewMember(repos repository.Repositories) Member {
 }
 
 func (a member) GetAll(ctx context.Context, callerId string, platformId string) ([]repository.PlatformMemberWithRole, error) {
-	result := []repository.PlatformMemberWithRole{}
-	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
-	if err != nil {
-		return result, common.StringError(err)
-	}
-
-	result, err = a.repos.PlatformMember.List(ctx, platformId, 0, 0)
+	result, err := a.repos.PlatformMember.List(ctx, platformId, 0, 0)
 	if err != nil {
 		return result, common.StringError(err)
 	}
