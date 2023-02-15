@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func JWT() echo.MiddlewareFunc {
+func JWT(auth service.Auth) echo.MiddlewareFunc {
 	config := echoMiddleware.JWTConfig{
 		TokenLookup: "cookie:StringJWT",
 		ParseTokenFunc: func(auth string, c echo.Context) (interface{}, error) {
@@ -33,6 +33,16 @@ func JWT() echo.MiddlewareFunc {
 
 			if strings.Contains(errors.Cause(err).Error(), "missing or malformed jwt") {
 				return httperror.MissingToken(c)
+			}
+			// If member is denied, do not honor JWT
+			var claims = &service.JWTClaims{}
+			denied, err := auth.IsDenied(claims.MemberId)
+			if err != nil {
+				return httperror.InternalError(c)
+			}
+			if denied {
+
+				return httperror.BadRequestError(c)
 			}
 
 			return httperror.Unauthorized(c)
