@@ -29,10 +29,14 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
+	// If member is denied, do not log in
+	if member.DeactivatedAt != nil {
+		return member, jwt, common.StringError(errors.New("login: user deactivated"))
+	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(request.Password))
 	if err != nil {
-		return member, jwt, common.StringError(errors.New("wrong password"))
+		return member, jwt, common.StringError(errors.New("login: wrong password"))
 	}
 
 	platform, err := l.repos.MemberToPlatform.GetByMember(member.ID)

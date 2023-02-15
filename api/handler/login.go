@@ -38,17 +38,10 @@ func (l login) Login(c echo.Context) error {
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
+		if err.Error() == "login: user deactivated" || err.Error() == "login: wrong password" {
+			return httperror.Unauthorized(c)
+		}
 		return httperror.InternalError(c)
-	}
-	// If member is denied, do not log in
-	denied, err := l.auth.IsDenied(member.ID)
-	if err != nil {
-		common.LogStringError(c, err, "login: denylist failed")
-		return httperror.InternalError(c)
-	}
-	if denied {
-		common.LogStringError(c, err, "login: access denied")
-		return httperror.Unauthorized(c)
 	}
 
 	err = SetAuthCookies(c, jwt)
