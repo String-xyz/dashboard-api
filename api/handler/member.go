@@ -94,7 +94,7 @@ func (a member) UpdateSelf(c echo.Context) error {
 func (a member) Deactivate(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	memberId := c.Param("id")
-	if memberId == "" {
+	if memberId == "" || memberId == callerId {
 		return httperror.BadRequestError(c)
 	}
 
