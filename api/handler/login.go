@@ -40,6 +40,14 @@ func (l login) Login(c echo.Context) error {
 		common.LogStringError(c, err, "login: login")
 		return httperror.InternalError(c)
 	}
+	// If member is denied, do not log in
+	denied, err := l.auth.IsDenied(member.ID)
+	if err != nil {
+		return httperror.InternalError(c)
+	}
+	if denied {
+		return httperror.BadRequestError(c)
+	}
 
 	err = SetAuthCookies(c, jwt)
 	if err != nil {
@@ -61,6 +69,15 @@ func (l login) RefreshToken(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "login: refresh token")
 		return httperror.BadRequestError(c, "Invalid or expired token")
+	}
+
+	// If member is denied, do not refresh token
+	denied, err := l.auth.IsDenied(resp.Member.ID)
+	if err != nil {
+		return httperror.InternalError(c)
+	}
+	if denied {
+		return httperror.BadRequestError(c)
 	}
 
 	// set auth in cookies

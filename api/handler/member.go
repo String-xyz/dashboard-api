@@ -21,11 +21,12 @@ type Member interface {
 
 type member struct {
 	service service.Member
+	auth    service.Auth
 	Group   *echo.Group
 }
 
-func NewMember(service service.Member) Member {
-	return &member{service: service}
+func NewMember(services service.Services) Member {
+	return &member{service: services.Member, auth: services.Auth}
 }
 
 func (a member) GetAll(c echo.Context) error {
@@ -103,6 +104,9 @@ func (a member) Deactivate(c echo.Context) error {
 		common.LogStringError(c, err, "member: deactivate")
 		return httperror.InternalError(c)
 	}
+	// add member to denylist
+	go a.auth.DenyMember(memberId)
+
 	return c.JSON(http.StatusOK, m)
 }
 
