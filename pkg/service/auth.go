@@ -206,7 +206,10 @@ func (a auth) IsDenied(memberId string) (bool, error) {
 	key := "deny_" + memberId
 	denied, err := a.redis.Get(key)
 	if err != nil {
-		return false, common.StringError(err)
+		if err.Error() != "redis: nil" {
+			return false, common.StringError(err)
+		}
+		return false, nil
 	}
 	if string(denied) == "true" {
 		return true, nil

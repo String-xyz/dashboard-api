@@ -43,10 +43,12 @@ func (l login) Login(c echo.Context) error {
 	// If member is denied, do not log in
 	denied, err := l.auth.IsDenied(member.ID)
 	if err != nil {
+		common.LogStringError(c, err, "login: denylist failed")
 		return httperror.InternalError(c)
 	}
 	if denied {
-		return httperror.BadRequestError(c)
+		common.LogStringError(c, err, "login: access denied")
+		return httperror.Unauthorized(c)
 	}
 
 	err = SetAuthCookies(c, jwt)
