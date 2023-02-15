@@ -41,7 +41,6 @@ func JWT(auth service.Auth) echo.MiddlewareFunc {
 				return httperror.InternalError(c)
 			}
 			if denied {
-
 				return httperror.BadRequestError(c)
 			}
 
