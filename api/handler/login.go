@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/httperror"
@@ -38,6 +39,9 @@ func (l login) Login(c echo.Context) error {
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
+		if strings.Contains(err.Error(), "login: user deactivated") || strings.Contains(err.Error(), "login: wrong password") {
+			return httperror.Unauthorized(c)
+		}
 		return httperror.InternalError(c)
 	}
 
@@ -61,6 +65,15 @@ func (l login) RefreshToken(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "login: refresh token")
 		return httperror.BadRequestError(c, "Invalid or expired token")
+	}
+
+	// If member is denied, do not refresh token
+	denied, err := l.auth.IsDenied(resp.Member.ID)
+	if err != nil {
+		return httperror.InternalError(c)
+	}
+	if denied {
+		return httperror.BadRequestError(c)
 	}
 
 	// set auth in cookies
