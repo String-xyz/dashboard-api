@@ -13,7 +13,7 @@ func platformRoute(services service.Services, e *echo.Echo) {
 }
 
 func memberRoute(services service.Services, e *echo.Echo) {
-	handler := handler.NewMember(services.Member)
+	handler := handler.NewMember(services)
 	handler.RegisterRoutes(e.Group("/members"), middleware.JWT())
 }
 
