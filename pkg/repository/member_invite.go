@@ -14,23 +14,27 @@ import (
 
 func GetInviteStatus(invite model.MemberInvite) string {
 	if invite.AcceptedAt != nil {
-		return "Accepted"
+		return "accepted"
 	} else if invite.ExpiredAt != nil {
-		return "Expired"
+		return "expired"
 	} else if invite.DeactivatedAt != nil {
-		return "Revoked"
+		return "revoked"
 	} else if invite.ID != "" {
-		return "Pending"
+		return "pending"
 	}
-	return "Not Found"
+	return "invalid"
 }
 
 type MemberInviteInfo struct {
-	ID           string `json:"id" db:"id"`
-	Name         string `json:"name" db:"name"`                  // user name
-	Email        string `json:"email" db:"email"`                // user name
-	Role         string `json:"role" db:"role"`                  // invite role
-	PlatformName string `json:"platformName" db:"platform_name"` // platform name
+	ID            string     `json:"id" db:"id"`
+	Name          string     `json:"name" db:"name"`                  // user name
+	Email         string     `json:"email" db:"email"`                // user name
+	Role          string     `json:"role" db:"role"`                  // invite role
+	PlatformName  string     `json:"platformName" db:"platform_name"` // platform name
+	Status        *string    `json:"status"`                          // invite status
+	AcceptedAt    *time.Time `json:"acceptedAt,omitempty" db:"accepted_at"`
+	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	ExpiredAt     *time.Time `json:"expiredAt,omitempty" db:"expired_at"`
 }
 
 type MemberInviteUpdates struct {
@@ -47,7 +51,7 @@ type MemberInvite interface {
 	GetById(ctx context.Context, ID string) (model.MemberInvite, error)
 	List(ctx context.Context, limit int, offset int) ([]model.MemberInvite, error)
 	Update(ctx context.Context, ID string, updates any) error
-	GetByPlatform(platformId string) ([]model.MemberInvite, error)
+	GetByPlatform(platformId string) ([]MemberInviteInfo, error)
 	GetMemberAndPlatformName(ctx context.Context, ID string) (MemberInviteInfo, error)
 	GetByEmail(email string) (model.MemberInvite, error)
 }
@@ -81,9 +85,18 @@ func (p memberInvite[T]) Create(ctx context.Context, m model.MemberInvite) (mode
 	return newModel, nil
 }
 
-func (p memberInvite[T]) GetByPlatform(platformId string) ([]model.MemberInvite, error) {
-	m := []model.MemberInvite{}
-	err := p.Store.Select(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
+func (p memberInvite[T]) GetByPlatform(platformId string) ([]MemberInviteInfo, error) {
+	m := []MemberInviteInfo{}
+
+	err := p.Store.Select(&m, `
+	SELECT member_invite.id, member_invite.name, member_invite.email, member_invite.accepted_at, member_invite.deactivated_at, member_invite.expired_at, member_role.name as role, platform.name as platform_name
+	FROM member_invite
+	LEFT JOIN platform
+	ON member_invite.platform_id = platform.id
+	LEFT JOIN member_role
+	ON member_invite.role_id = member_role.id
+	WHERE member_invite.platform_id = $1`, platformId)
+
 	if err != nil && err == sql.ErrNoRows {
 		return m, common.StringError(ErrNotFound)
 	} else if err != nil {
