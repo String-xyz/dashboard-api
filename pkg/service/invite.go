@@ -16,7 +16,7 @@ import (
 type Invite interface {
 	Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (model.MemberInvite, error)
 	Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, JWT, error)
-	List(ctx context.Context, status string, platformId string) ([]model.MemberInvite, error)
+	List(ctx context.Context, status string, platformId string) ([]repository.MemberInviteInfo, error)
 	Resend(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (model.MemberInvite, error)
 	Deactivate(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error)
@@ -89,7 +89,7 @@ func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAccep
 	}
 
 	// Check invite status
-	if repository.GetInviteStatus(invite) != "Pending" {
+	if repository.GetInviteStatus(invite) != "pending" {
 		return member, jwt, common.StringError(errors.New("invite is not pending"))
 	}
 
@@ -142,12 +142,13 @@ func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAccep
 	return member, jwt, nil
 }
 
-func (a invite) List(ctx context.Context, status string, platformId string) ([]model.MemberInvite, error) {
+func (a invite) List(ctx context.Context, status string, platformId string) ([]repository.MemberInviteInfo, error) {
 	result, err := a.repos.MemberInvite.GetByPlatform(platformId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
+	// TODO: Filter by status
 	// // If a status filter is provided, remove Invites which do not have the filter
 	// if status != "" {
 	// 	for i, j := range result {
@@ -156,6 +157,11 @@ func (a invite) List(ctx context.Context, status string, platformId string) ([]m
 	// 		}
 	// 	}
 	// }
+
+	for i := range result {
+		status := _GetInviteStatus(result[i])
+		result[i].Status = &status
+	}
 
 	return result, nil
 }
@@ -244,4 +250,21 @@ func (a invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo
 		return result, common.StringError(err)
 	}
 	return result, nil
+}
+
+/*
+ * Duplicate this function until we modify all of the invite endpoints responses to be consistent
+ * Ticket: https://stringxyz.atlassian.net/browse/STR-442
+ */
+func _GetInviteStatus(invite repository.MemberInviteInfo) string {
+	if invite.AcceptedAt != nil {
+		return "accepted"
+	} else if invite.ExpiredAt != nil {
+		return "expired"
+	} else if invite.DeactivatedAt != nil {
+		return "revoked"
+	} else if invite.ID != "" {
+		return "pending"
+	}
+	return "invalid"
 }
