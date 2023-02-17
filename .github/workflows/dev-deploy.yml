@@ -2,9 +2,9 @@ name: deploy to development
 permissions:
   id-token: write
   contents: read
-on: [push] 
-  # push:
-  #   branches: [develop]
+on: 
+  push:
+    branches: [develop]
 jobs:
   deploy:
     environment: 
@@ -24,7 +24,6 @@ jobs:
           cache: true
           cache-dependency-path: go.sum
       - name: install deps
-      ## TODO: Move all building into the docker container
         run: |
           go mod download
       
