@@ -7,4 +7,4 @@ EXPOSE 3000
 # Copy over the app files
 COPY ./main .
 
-CMD ["./main"]
+CMD ["/main"]
