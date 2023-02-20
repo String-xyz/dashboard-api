@@ -36,7 +36,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 		return model.Platform{}, common.StringError(errors.New("email already in use"))
 	}
 
-	pendingInvite, err := a.repos.MemberInvite.GetByEmail(request.Email)
+	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
 	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
 		return model.Platform{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email {

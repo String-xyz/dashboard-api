@@ -14,12 +14,12 @@ import (
 )
 
 type Invite interface {
-	Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (model.MemberInvite, error)
+	Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (repository.MemberInviteInfo, error)
 	Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, JWT, error)
 	List(ctx context.Context, status string, platformId string) ([]repository.MemberInviteInfo, error)
-	Resend(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error)
-	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (model.MemberInvite, error)
-	Deactivate(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error)
+	Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
+	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error)
+	Deactivate(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
 	Get(ctx context.Context, id string) (repository.MemberInviteInfo, error)
 }
 
@@ -32,25 +32,25 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 	return &invite{repos, redis}
 }
 
-func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (model.MemberInvite, error) {
+func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (repository.MemberInviteInfo, error) {
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
 	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
-		return model.MemberInvite{}, common.StringError(err)
+		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
-		return model.MemberInvite{}, common.StringError(errors.New("email already in use"))
+		return repository.MemberInviteInfo{}, common.StringError(errors.New("email already in use"))
 	}
 
 	// If there is a pending invite, update the role
-	pendingInvite, err := a.repos.MemberInvite.GetByEmail(request.Email)
+	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
 	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
-		return model.MemberInvite{}, common.StringError(err)
+		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email && callerId != nil {
 		// Update invite and resend it
 		newRequest := model.RequestInviteUpdate{Role: request.Role, Name: request.Name}
 		newInvite, err := a.Update(ctx, newRequest, pendingInvite.ID, *callerId)
 		if err != nil {
-			return model.MemberInvite{}, common.StringError(err)
+			return repository.MemberInviteInfo{}, common.StringError(err)
 		}
 		return a.Resend(ctx, newInvite.ID, *callerId)
 	}
@@ -143,7 +143,7 @@ func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAccep
 }
 
 func (a invite) List(ctx context.Context, status string, platformId string) ([]repository.MemberInviteInfo, error) {
-	result, err := a.repos.MemberInvite.GetByPlatform(platformId)
+	result, err := a.repos.MemberInvite.GetByPlatform(ctx, platformId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -158,16 +158,11 @@ func (a invite) List(ctx context.Context, status string, platformId string) ([]r
 	// 	}
 	// }
 
-	for i := range result {
-		status := _GetInviteStatus(result[i])
-		result[i].Status = &status
-	}
-
 	return result, nil
 }
 
-func (a invite) Resend(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error) {
-	result := model.MemberInvite{}
+func (a invite) Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return result, common.StringError(err)
@@ -193,8 +188,8 @@ func (a invite) Resend(ctx context.Context, inviteId string, callerId string) (m
 	return result, nil
 }
 
-func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (model.MemberInvite, error) {
-	result := model.MemberInvite{}
+func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return result, common.StringError(err)
@@ -220,8 +215,8 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	return result, nil
 }
 
-func (a invite) Deactivate(ctx context.Context, inviteId string, callerId string) (model.MemberInvite, error) {
-	result := model.MemberInvite{}
+func (a invite) Deactivate(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return result, common.StringError(err)
@@ -245,26 +240,9 @@ func (a invite) Deactivate(ctx context.Context, inviteId string, callerId string
 }
 
 func (a invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo, error) {
-	result, err := a.repos.MemberInvite.GetMemberAndPlatformName(ctx, id)
+	result, err := a.repos.MemberInvite.GetById(ctx, id)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 	return result, nil
-}
-
-/*
- * Duplicate this function until we modify all of the invite endpoints responses to be consistent
- * Ticket: https://stringxyz.atlassian.net/browse/STR-442
- */
-func _GetInviteStatus(invite repository.MemberInviteInfo) string {
-	if invite.AcceptedAt != nil {
-		return "accepted"
-	} else if invite.ExpiredAt != nil {
-		return "expired"
-	} else if invite.DeactivatedAt != nil {
-		return "revoked"
-	} else if invite.ID != "" {
-		return "pending"
-	}
-	return "invalid"
 }
