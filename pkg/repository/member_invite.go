@@ -21,6 +21,7 @@ func GetInviteStatus(invite MemberInviteInfo) string {
 	} else if invite.ID != "" {
 		return "pending"
 	}
+
 	return "invalid"
 }
 
@@ -71,7 +72,7 @@ func (p memberInvite[T]) Create(ctx context.Context, m model.MemberInvite) (Memb
 	}
 
 	// calculate status
-	status := GetInviteStatus(newModel)
+	status := "pending"
 	newModel.Status = &status
 
 	defer rows.Close()
