@@ -61,12 +61,19 @@ func NewMemberInvite(db database.Queryable) MemberInvite {
 func (p memberInvite[T]) Create(ctx context.Context, m model.MemberInvite) (MemberInviteInfo, error) {
 	newModel := MemberInviteInfo{}
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO member_invite (name, email, invited_by, platform_id, role_id) 
-		VALUES(:name, :email, :invited_by, :platform_id, :role_id) RETURNING *`, m)
+		INSERT INTO member_invite (name, email, invited_by, platform_id, role_id)
+		VALUES(:name, :email, :invited_by, :platform_id, :role_id)
+		RETURNING *, (SELECT name FROM member_role WHERE id = member_invite.role_id) as role, (SELECT name FROM platform WHERE id = member_invite.platform_id) as platform_name
+		`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)
 	}
+
+	// calculate status
+	status := GetInviteStatus(newModel)
+	newModel.Status = &status
+
 	defer rows.Close()
 
 	for rows.Next() {
