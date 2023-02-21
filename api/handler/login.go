@@ -70,9 +70,11 @@ func (l login) RefreshToken(c echo.Context) error {
 	// If member is denied, do not refresh token
 	denied, err := l.auth.IsDenied(resp.Member.ID)
 	if err != nil {
+		common.LogStringError(c, err, "login: fail denylist check")
 		return httperror.InternalError(c)
 	}
 	if denied {
+		common.LogStringError(c, err, "login: user is denied")
 		return httperror.BadRequestError(c)
 	}
 
