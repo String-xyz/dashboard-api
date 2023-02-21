@@ -145,7 +145,7 @@ func (p memberInvite[T]) GetByEmail(ctx context.Context, email string) (MemberIn
 
 func getBaseQuery() string {
 	return `
-		SELECT member_invite.id, member_invite.name, member_invite.email, member_invite.accepted_at, member_invite.deactivated_at, member_invite.expired_at, member_role.name as role, platform.name as platform_name, platform.id as platform_id, member_role.id as role_id
+		SELECT member_invite.*, member_role.name as role, platform.name as platform_name
 		FROM member_invite
 		LEFT JOIN platform
 		ON member_invite.platform_id = platform.id
