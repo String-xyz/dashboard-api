@@ -17,14 +17,6 @@ github.com/DataDog/sketches-go v1.2.1/go.mod h1:1xYmPLY1So10AwxV6MJV0J53XVH+WL9A
 github.com/Microsoft/go-winio v0.5.0/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/Microsoft/go-winio v0.5.1 h1:aPJp2QD7OOrhO5tQXqQoGSJc+DjDtWTGLOmNyAm6FgY=
 github.com/Microsoft/go-winio v0.5.1/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
-github.com/String-xyz/go-lib v1.0.5 h1:w6ijZ7O9VhhUoi5rjYRD0IyKSiVWvP0bYU5CBpVnGBc=
-github.com/String-xyz/go-lib v1.0.5/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
-github.com/String-xyz/go-lib v1.0.6-0.20230130183824-e5b07f980db9 h1:1N0C6FGp+zzBs/ESR+ajdLa5SkOPEpzrBpWCucLdSjg=
-github.com/String-xyz/go-lib v1.0.6-0.20230130183824-e5b07f980db9/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
-github.com/String-xyz/go-lib v1.0.6-0.20230130184920-26c04d86d49f h1:wfn8zZac+L7r48jtg+1G9DK8oidCwNcqBNH+Ql4exMU=
-github.com/String-xyz/go-lib v1.0.6-0.20230130184920-26c04d86d49f/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
-github.com/String-xyz/go-lib v1.0.6-0.20230202215655-c35dd5f79452 h1:9xjizzotVfTGLJ9EwulabhWNWtFSik3957/L5Ns73II=
-github.com/String-xyz/go-lib v1.0.6-0.20230202215655-c35dd5f79452/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
 github.com/String-xyz/go-lib v1.0.6 h1:MAQJDdoddgvEnl12zkdMorm2xM6t8up6/hWbXR9ejrQ=
 github.com/String-xyz/go-lib v1.0.6/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

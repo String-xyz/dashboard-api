@@ -31,7 +31,7 @@ func JWT(auth service.Auth) echo.MiddlewareFunc {
 				return httperror.TokenExpired(c)
 			}
 
-			if strings.Contains(errors.Cause(err).Error(), "missing or malformed jwt") {
+			if errors.Cause(err).Error() == "missing or malformed jwt" {
 				return httperror.MissingToken(c)
 			}
 			// If member is denied, do not honor JWT
