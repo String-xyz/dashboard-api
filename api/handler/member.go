@@ -2,12 +2,13 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/httperror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 type Member interface {
@@ -34,7 +35,7 @@ func (a member) GetAll(c echo.Context) error {
 	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
 		common.LogStringError(c, err, "member: get all")
-		return httperror.InternalError(c)
+		return InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -44,12 +45,12 @@ func (a member) Get(c echo.Context) error {
 	platformId := c.Get("platformId").(string)
 	memberId := c.Param("id")
 	if memberId == "" {
-		return httperror.BadRequestError(c)
+		return BadRequestError(c)
 	}
 	m, err := a.service.Get(c.Request().Context(), callerId, platformId, memberId)
 	if err != nil {
 		common.LogStringError(c, err, "member: get")
-		return httperror.InternalError(c)
+		return InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -57,20 +58,31 @@ func (a member) Get(c echo.Context) error {
 func (a member) Update(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	memberId := c.Param("id")
-	if memberId == "" {
-		return httperror.BadRequestError(c)
+
+	if !IsValidUUID(memberId) {
+		return BadRequestError(c, "invalid id")
 	}
+
 	body := model.RequestMemberUpdateOther{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "member: update bind")
-		return httperror.BadRequestError(c)
+		return BadRequestError(c)
 	}
 
 	m, err := a.service.UpdateMember(c.Request().Context(), body, callerId, memberId)
 	if err != nil {
 		common.LogStringError(c, err, "member: update")
-		return httperror.InternalError(c)
+
+		if errors.Cause(err).Error() == "invoking member lacks authority" {
+			return ForbiddenError(c, "invoking member lacks authority")
+		}
+
+		if errors.Cause(err).Error() == "not found" {
+			return NotFoundError(c, "member not found")
+		}
+
+		return InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -81,13 +93,23 @@ func (a member) UpdateSelf(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "member: update self bind")
-		return httperror.BadRequestError(c)
+		return BadRequestError(c)
+	}
+
+	// validate body
+	if err := c.Validate(body); err != nil {
+		return InvalidPayloadError(c, err)
 	}
 
 	m, err := a.service.UpdateSelf(c.Request().Context(), body, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "member: update self")
-		return httperror.InternalError(c)
+
+		if strings.Contains(errors.Cause(err).Error(), "invalid password") {
+			return BadRequestError(c, "invalid password")
+		}
+
+		return InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -95,14 +117,28 @@ func (a member) UpdateSelf(c echo.Context) error {
 func (a member) Deactivate(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	memberId := c.Param("id")
+
+	if !IsValidUUID(memberId) {
+		return BadRequestError(c, "invalid id")
+	}
+
 	if memberId == "" || memberId == callerId {
-		return httperror.BadRequestError(c)
+		return BadRequestError(c)
 	}
 
 	m, err := a.service.Deactivate(c.Request().Context(), callerId, memberId)
 	if err != nil {
 		common.LogStringError(c, err, "member: deactivate")
-		return httperror.InternalError(c)
+
+		if errors.Cause(err).Error() == "invoking member lacks authority" {
+			return ForbiddenError(c, "invoking member lacks authority")
+		}
+
+		if errors.Cause(err).Error() == "not found" {
+			return NotFoundError(c, "member not found")
+		}
+
+		return InternalError(c)
 	}
 
 	return c.JSON(http.StatusOK, m)
@@ -127,14 +163,19 @@ func (a member) Reactivate(c echo.Context) error {
 func (a member) SendPasswordResetEmail(c echo.Context) error {
 	email := c.QueryParam("email")
 	if email == "" {
-		return httperror.BadRequestError(c)
+		return BadRequestError(c, "email is required")
 	}
 	err := a.service.SendPasswordResetEmail(c.Request().Context(), email)
 	if err != nil {
 		common.LogStringError(c, err, "member: send password reset email")
-		return httperror.InternalError(c)
+
+		if errors.Cause(err).Error() == "not found" {
+			return NotFoundError(c, "member not found")
+		}
+
+		return InternalError(c)
 	}
-	return c.JSON(http.StatusOK, nil)
+	return c.JSON(http.StatusOK, map[string]string{"message": "email sent"})
 }
 
 func (a member) PasswordReset(c echo.Context) error {
@@ -142,15 +183,28 @@ func (a member) PasswordReset(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "member: password reset bind")
-		return httperror.BadRequestError(c)
+		return BadRequestError(c)
+	}
+
+	if err := c.Validate(body); err != nil {
+		return InvalidPayloadError(c, err)
 	}
 
 	err = a.service.PasswordReset(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "member: password reset")
-		return httperror.InternalError(c)
+
+		if errors.Cause(err).Error() == "invalid password reset token" {
+			return BadRequestError(c, "invalid password reset token")
+		}
+
+		if strings.Contains(errors.Cause(err).Error(), "invalid password") {
+			return BadRequestError(c, "invalid password")
+		}
+
+		return InternalError(c)
 	}
-	return c.JSON(http.StatusOK, nil)
+	return c.JSON(http.StatusOK, map[string]string{"message": "password reset"})
 }
 
 func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -161,6 +162,9 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	secret := os.Getenv("STRING_ENCRYPTION_KEY")
 	memberId, err := common.DecryptString(request.ResetToken, secret)
 	if err != nil {
+		if strings.Contains(err.Error(), "illegal base64") {
+			return common.StringError(errors.New("invalid password reset token"))
+		}
 		return common.StringError(err)
 	}
 

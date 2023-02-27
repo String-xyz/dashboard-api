@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/String-xyz/platform-admin-api/pkg/service"
+	guuid "github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -86,4 +87,9 @@ func getCookieSameSiteMode() http.SameSite {
 		sameSiteMode = http.SameSiteLaxMode // because SameSiteNoneMode is not allowed in localhost we use lax mode
 	}
 	return sameSiteMode
+}
+
+func IsValidUUID(u string) bool {
+	_, err := guuid.Parse(u)
+	return err == nil
 }

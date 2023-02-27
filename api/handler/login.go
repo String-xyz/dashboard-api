@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/httperror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -33,22 +32,28 @@ func (l login) Login(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login bind")
-		return httperror.BadRequestError(c)
+		return BadRequestError(c)
+	}
+
+	// validate body
+	if err := c.Validate(body); err != nil {
+		return InvalidPayloadError(c, err)
 	}
 
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
-		if strings.Contains(err.Error(), "login: user deactivated") || strings.Contains(err.Error(), "login: wrong password") {
-			return httperror.Unauthorized(c)
+		if strings.Contains(err.Error(), "login: user deactivated") || strings.Contains(err.Error(), "login: wrong password") || strings.Contains(err.Error(), "not found") {
+			return Unauthorized(c, "Invalid email or password")
 		}
-		return httperror.InternalError(c)
+
+		return InternalError(c)
 	}
 
 	err = SetAuthCookies(c, jwt)
 	if err != nil {
 		common.LogStringError(c, err, "login: set auth cookies")
-		return httperror.InternalError(c)
+		return InternalError(c)
 	}
 
 	return c.JSON(http.StatusOK, member)
@@ -58,31 +63,31 @@ func (l login) RefreshToken(c echo.Context) error {
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
 		common.LogStringError(c, err, "RefreshToken: unable to get refresh_token cookie")
-		return httperror.Unauthorized(c)
+		return Unauthorized(c, "Invalid or expired token")
 	}
 
 	resp, err := l.auth.RefreshToken(cookie.Value)
 	if err != nil {
 		common.LogStringError(c, err, "login: refresh token")
-		return httperror.BadRequestError(c, "Invalid or expired token")
+		return Unauthorized(c, "Invalid or expired token")
 	}
 
 	// If member is denied, do not refresh token
 	denied, err := l.auth.IsDenied(resp.Member.ID)
 	if err != nil {
 		common.LogStringError(c, err, "login: fail denylist check")
-		return httperror.InternalError(c)
+		return InternalError(c)
 	}
 	if denied {
 		common.LogStringError(c, err, "login: user is denied")
-		return httperror.BadRequestError(c)
+		return Unauthorized(c)
 	}
 
 	// set auth in cookies
 	err = SetAuthCookies(c, resp.JWT)
 	if err != nil {
 		common.LogStringError(c, err, "RefreshToken: unable to set auth cookies")
-		return httperror.InternalError(c)
+		return InternalError(c)
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -94,7 +99,7 @@ func (l login) Logout(c echo.Context) error {
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
 		common.LogStringError(c, err, "Logout: unable to get refresh_token cookie")
-		return httperror.Unauthorized(c)
+		return Unauthorized(c, "Invalid or expired token")
 	}
 
 	// invalidate refresh token. Returns error if token is not found
@@ -102,13 +107,12 @@ func (l login) Logout(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "Token not found")
 	}
-	// There is no need to invalidate the access token since it is a short lived token
 
 	// delete auth cookies
 	err = DeleteAuthCookies(c)
 	if err != nil {
 		common.LogStringError(c, err, "Logout: unable to delete auth cookies")
-		return httperror.InternalError(c)
+		return InternalError(c)
 	}
 
 	return c.JSON(http.StatusNoContent, nil)

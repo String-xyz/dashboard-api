@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/String-xyz/go-lib/httperror"
+	httperror "github.com/String-xyz/platform-admin-api/api/handler"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
@@ -27,13 +27,10 @@ func JWT(auth service.Auth) echo.MiddlewareFunc {
 		},
 		SigningKey: []byte(os.Getenv("JWT_SECRET_KEY")),
 		ErrorHandlerWithContext: func(err error, c echo.Context) error {
-			if strings.Contains(err.Error(), "token is expired") {
-				return httperror.TokenExpired(c)
+			if strings.Contains(err.Error(), "token is expired") || errors.Cause(err).Error() == "missing or malformed jwt" {
+				return httperror.Unauthorized(c)
 			}
 
-			if errors.Cause(err).Error() == "missing or malformed jwt" {
-				return httperror.MissingToken(c)
-			}
 			// If member is denied, do not honor JWT
 			var claims = &service.JWTClaims{}
 			denied, err := auth.IsDenied(claims.MemberId)
