@@ -104,8 +104,22 @@ func (a member) Deactivate(c echo.Context) error {
 		common.LogStringError(c, err, "member: deactivate")
 		return httperror.InternalError(c)
 	}
-	// add member to denylist
-	go a.auth.DenyMember(memberId)
+
+	return c.JSON(http.StatusOK, m)
+}
+
+func (a member) Reactivate(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
+	memberId := c.Param("id")
+	if memberId == "" || memberId == callerId {
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := a.service.Reactivate(c.Request().Context(), callerId, memberId)
+	if err != nil {
+		common.LogStringError(c, err, "member: deactivate")
+		return httperror.InternalError(c)
+	}
 
 	return c.JSON(http.StatusOK, m)
 }
@@ -150,6 +164,7 @@ func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.PUT("/:id", a.Update, ms...)
 	g.PUT("", a.UpdateSelf, ms...)
 	g.PUT("/:id/deactivate", a.Deactivate, ms...)
+	g.PUT("/:id/reactivate", a.Reactivate, ms...)
 	g.GET("/password-reset", a.SendPasswordResetEmail)
 	g.POST("/password-reset", a.PasswordReset)
 }

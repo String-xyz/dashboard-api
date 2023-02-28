@@ -13,7 +13,6 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	"github.com/pkg/errors"
 
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/golang-jwt/jwt"
@@ -64,7 +63,6 @@ type Auth interface {
 	ValidateJWT(token string) (bool, error)
 	InvalidateRefreshToken(refreshToken string) error
 	GetUserIdFromRefreshToken(refreshToken string) (string, error)
-	DenyMember(memberId string) error
 	IsDenied(memberId string) (bool, error)
 	Get(key string) (JWTStrategy, error)
 	Delete(key string) error
@@ -197,26 +195,8 @@ func (a auth) GetUserIdFromRefreshToken(refreshToken string) (string, error) {
 	return authStrat.Data, nil
 }
 
-func (a auth) DenyMember(memberId string) error {
-	expireAt := time.Hour * 24 * 7 // 7 days expiration
-	key := "deny_" + memberId
-	return a.redis.Set(key, "true", expireAt)
-}
-
 func (a auth) IsDenied(memberId string) (bool, error) {
-	key := "deny_" + memberId
-	denied, err := a.redis.Get(key)
-	if err != nil {
-		// Our implementatino of redis returns a REDIS_NOT_FOUND_ERROR if it can't find a key
-		if errors.Cause(err).Error() == "redis: nil" {
-			return false, nil // if we error for this reason, continue
-		}
-		return false, common.StringError(err)
-	}
-	if string(denied) == "true" {
-		return true, nil
-	}
-	return false, nil
+	return a.repos.DenyList.IsDenied(memberId)
 }
 
 func (a auth) Get(key string) (JWTStrategy, error) {

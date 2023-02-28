@@ -32,6 +32,8 @@ type PlatformMember interface {
 	List(ctx context.Context, platformId string, limit int, offset int) ([]PlatformMemberWithRole, error)
 	Update(ctx context.Context, ID string, updates any) error
 	GetByEmail(ctx context.Context, email string) (PlatformMemberWithRole, error)
+	Deactivate(ctx context.Context, ID string) error
+	Activate(ctx context.Context, ID string) error
 }
 
 type platformMember[T any] struct {
@@ -125,7 +127,7 @@ func (p platformMember[T]) List(ctx context.Context, platformId string, limit in
 		ON member_role.id = member_to_role.role_id 
 		LEFT JOIN member_to_platform
 		ON platform_member.id = member_to_platform.member_id 
-		LEFT JOIN platform
+		LEFT JOIN platform	
 		ON platform.id = member_to_platform.platform_id
 		WHERE platform.id = $1
 		LIMIT $2

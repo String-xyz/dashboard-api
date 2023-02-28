@@ -12,4 +12,5 @@ type Repositories struct {
 	MemberRole       MemberRole
 	MemberInvite     MemberInvite
 	Apikey           Apikey
+	DenyList         DenyList
 }
