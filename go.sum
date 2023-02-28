@@ -19,6 +19,12 @@ github.com/Microsoft/go-winio v0.5.1 h1:aPJp2QD7OOrhO5tQXqQoGSJc+DjDtWTGLOmNyAm6
 github.com/Microsoft/go-winio v0.5.1/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/String-xyz/go-lib v1.0.6 h1:MAQJDdoddgvEnl12zkdMorm2xM6t8up6/hWbXR9ejrQ=
 github.com/String-xyz/go-lib v1.0.6/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
+github.com/String-xyz/go-lib v1.0.7-0.20230228191817-90ff822cc33d h1:04HOzxeglsqOFheQNBrGUL9Lnlnysca/FTGwPke4+eA=
+github.com/String-xyz/go-lib v1.0.7-0.20230228191817-90ff822cc33d/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
+github.com/String-xyz/go-lib v1.0.7-0.20230228200221-11cd7061be1e h1:v7pLvYTepyZR9ZD7IgqY3uPwC0MBv7ysG6G+Sz1NXhc=
+github.com/String-xyz/go-lib v1.0.7-0.20230228200221-11cd7061be1e/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
+github.com/String-xyz/go-lib v1.0.7 h1:qbUWuFfpAV1+Fm0r0yft+RWNbruOieZAJgXa3dIIg8Q=
+github.com/String-xyz/go-lib v1.0.7/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
