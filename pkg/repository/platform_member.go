@@ -32,6 +32,8 @@ type PlatformMember interface {
 	List(ctx context.Context, platformId string, limit int, offset int) ([]PlatformMemberWithRole, error)
 	Update(ctx context.Context, ID string, updates any) error
 	GetByEmail(ctx context.Context, email string) (PlatformMemberWithRole, error)
+	Deactivate(ctx context.Context, ID string) error
+	Activate(ctx context.Context, ID string) error
 }
 
 type platformMember[T any] struct {

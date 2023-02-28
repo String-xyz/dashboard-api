@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/url"
 	"os"
-	"time"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -26,6 +25,7 @@ type Member interface {
 	SendPasswordResetEmail(ctx context.Context, email string) error
 	PasswordReset(ctx context.Context, request model.RequestPasswordReset) error
 	Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
+	Reactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 }
 
 type member struct {
@@ -65,45 +65,6 @@ func (a member) Get(ctx context.Context, callerId string, platformId string, mem
 	if err != nil {
 		return result, common.StringError(err)
 	}
-
-	return result, nil
-}
-
-func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error) {
-	result := model.MemberToRole{}
-	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
-	if err != nil {
-		return result, common.StringError(err)
-	}
-
-	// Admin's can't edit Owners or Admins
-	callerRole, err := GetRole(a.repos, callerId)
-	if err != nil {
-		return result, common.StringError(err)
-	}
-
-	memberRole, err := GetRole(a.repos, memberId)
-	if err != nil {
-		return result, common.StringError(err)
-	}
-
-	if callerRole == "Admin" && memberRole != "Member" {
-		return result, common.StringError(errors.New("admins can only update members"))
-	}
-
-	if request.Role == "Owner" || request.Role == "owner" {
-		return result, common.StringError(errors.New("cannot elevate member to owner"))
-	}
-
-	role, err := a.repos.MemberToRole.GetByMember(memberId)
-	if err != nil {
-		return result, common.StringError(err)
-	}
-
-	role.RoleID = GetRoleId(request.Role)
-	a.repos.MemberToRole.UpdateRole(memberId, role)
-
-	result = role
 
 	return result, nil
 }
@@ -221,8 +182,8 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	return nil
 }
 
-func (a member) Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
-	result := repository.PlatformMemberWithRole{}
+func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error) {
+	result := model.MemberToRole{}
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
@@ -243,25 +204,107 @@ func (a member) Deactivate(ctx context.Context, callerId string, memberId string
 		return result, common.StringError(errors.New("admins can only update members"))
 	}
 
+	if request.Role == "Owner" || request.Role == "owner" {
+		return result, common.StringError(errors.New("cannot elevate member to owner"))
+	}
+
+	role, err := a.repos.MemberToRole.GetByMember(memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	role.RoleID = GetRoleId(request.Role)
+	a.repos.MemberToRole.UpdateRole(memberId, role)
+
+	result = role
+
+	return result, nil
+}
+
+func (a member) Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
+
+	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	// Admin's can't edit Owners or Admins
+
+	/***** TODO: This code is repeated multiple times, refactor into a function *****/
+	callerRole, err := GetRole(a.repos, callerId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	memberRole, err := GetRole(a.repos, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	if callerRole == "Admin" && memberRole != "Member" {
+		return result, common.StringError(errors.New("admins can only update members"))
+	}
+	/**********************************************************************************/
+
 	// Ensure not already deactivated || never existed
 	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	type DeactivateMember struct {
-		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-	}
-	now := time.Now()
-	deactivateMember := DeactivateMember{DeactivatedAt: &now}
-
-	err = a.repos.PlatformMember.Update(ctx, memberId, deactivateMember)
+	a.repos.PlatformMember.Deactivate(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
 	// Once a member has been deactivated,
 	result, err = a.repos.PlatformMember.GetByIdIncludingDeactivated(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	// add member to denylist
+	go a.repos.DenyList.AddMember(memberId)
+
+	return result, nil
+}
+
+func (a member) Reactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
+
+	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	/***** TODO: This code is repeated multiple times, refactor into a function *****/
+	callerRole, err := GetRole(a.repos, callerId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	memberRole, err := GetRole(a.repos, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	if callerRole == "Admin" && memberRole != "Member" {
+		return result, common.StringError(errors.New("admins can only update members"))
+	}
+	/**********************************************************************************/
+
+	a.repos.PlatformMember.Activate(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	err = a.repos.DenyList.RemoveMember(memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
