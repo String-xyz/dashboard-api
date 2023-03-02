@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/String-xyz/go-lib/common"
+	httperror "github.com/String-xyz/go-lib/httperror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -32,11 +33,11 @@ func (p platform) Create(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create bind")
-		return BadRequestError(c)
+		return httperror.BadRequestError(c)
 	}
 
 	if err := c.Validate(body); err != nil {
-		return InvalidPayloadError(c, err)
+		return httperror.InvalidPayloadError(c, err)
 	}
 
 	m, err := p.service.Create(c.Request().Context(), body)
@@ -45,10 +46,10 @@ func (p platform) Create(c echo.Context) error {
 
 		errMessage := errors.Cause(err).Error()
 		if strings.Contains(errMessage, "already in use") {
-			return ConflictError(c, errMessage)
+			return httperror.ConflictError(c, errMessage)
 		}
 
-		return InternalError(c)
+		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusCreated, m)
 }
@@ -60,10 +61,10 @@ func (p platform) Get(c echo.Context) error {
 		common.LogStringError(c, err, "platform: get")
 
 		if errors.Cause(err).Error() == "sql: no rows in result set" || strings.Contains(errors.Cause(err).Error(), "not found") {
-			return NotFoundError(c)
+			return httperror.NotFoundError(c)
 		}
 
-		return InternalError(c)
+		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusAccepted, m)
 }
@@ -75,12 +76,12 @@ func (p platform) Update(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update bind")
-		return BadRequestError(c)
+		return httperror.BadRequestError(c)
 	}
 
 	// validate body
 	if err := c.Validate(body); err != nil {
-		return InvalidPayloadError(c, err)
+		return httperror.InvalidPayloadError(c, err)
 	}
 
 	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId)
@@ -88,10 +89,10 @@ func (p platform) Update(c echo.Context) error {
 		common.LogStringError(c, err, "platform: update")
 
 		if errors.Cause(err).Error() == "sql: no rows in result set" || strings.Contains(errors.Cause(err).Error(), "not found") {
-			return NotFoundError(c)
+			return httperror.NotFoundError(c)
 		}
 
-		return InternalError(c)
+		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }

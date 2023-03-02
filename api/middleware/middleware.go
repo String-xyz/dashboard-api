@@ -4,7 +4,9 @@ import (
 	"os"
 	"strings"
 
-	httperror "github.com/String-xyz/platform-admin-api/api/handler"
+	validator "github.com/String-xyz/go-lib/validator"
+
+	httperror "github.com/String-xyz/go-lib/httperror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
@@ -21,8 +23,14 @@ func JWT(auth service.Auth) echo.MiddlewareFunc {
 				return []byte(os.Getenv("JWT_SECRET_KEY")), nil
 			})
 
+			// validate claims
+			if !validator.IsUUID(claims.MemberId, claims.PlatformId) {
+				return nil, errors.New("missing or malformed jwt")
+			}
+
 			c.Set("memberId", claims.MemberId)
 			c.Set("platformId", claims.PlatformId)
+
 			return t, err
 		},
 		SigningKey: []byte(os.Getenv("JWT_SECRET_KEY")),

@@ -4,10 +4,11 @@ import (
 	"net/http"
 
 	"github.com/String-xyz/go-lib/common"
+	httperror "github.com/String-xyz/go-lib/httperror"
+	validator "github.com/String-xyz/go-lib/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 )
 
 type Apikey interface {
@@ -35,7 +36,7 @@ func (a apikey) Create(c echo.Context) error {
 	m, err := a.service.Create(c.Request().Context(), callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: create")
-		return InternalError(c)
+		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusCreated, m)
 }
@@ -47,7 +48,7 @@ func (a apikey) GetAll(c echo.Context) error {
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: get all")
-		return InternalError(c)
+		return DefaultErrorHandler(c, err)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -57,13 +58,13 @@ func (a apikey) Get(c echo.Context) error {
 	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
 	if keyId == "" {
-		return BadRequestError(c)
+		return httperror.BadRequestError(c)
 	}
 
 	m, err := a.service.Get(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: get all")
-		return InternalError(c)
+		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -72,19 +73,14 @@ func (a apikey) Deactivate(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
-	if !IsValidUUID(keyId) || !IsValidUUID(platformId) || !IsValidUUID(callerId) {
-		return BadRequestError(c, "invalid id")
+	if !validator.IsUUID(keyId, platformId, callerId) {
+		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: deactivate")
-
-		if errors.Cause(err).Error() == "not found" {
-			return NotFoundError(c)
-		}
-
-		return InternalError(c)
+		return DefaultErrorHandler(c, err)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -94,30 +90,26 @@ func (a apikey) Update(c echo.Context) error {
 	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
 	if platformId == "" || callerId == "" {
-		return BadRequestError(c)
+		return httperror.BadRequestError(c)
 	}
 
-	if !IsValidUUID(keyId) {
-		return BadRequestError(c, "invalid id")
+	if !validator.IsUUID(keyId) {
+		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestApikeyUpdate{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: update bind")
-		return BadRequestError(c)
+		return httperror.BadRequestError(c)
 	}
 
 	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, keyId)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: update")
-
-		if errors.Cause(err).Error() == "not found" {
-			return NotFoundError(c)
-		}
-
-		return InternalError(c)
+		return DefaultErrorHandler(c, err)
 	}
+
 	return c.JSON(http.StatusOK, m)
 }
 

@@ -5,8 +5,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/String-xyz/go-lib/common"
+	httperror "github.com/String-xyz/go-lib/httperror"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
-	guuid "github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -89,7 +91,45 @@ func getCookieSameSiteMode() http.SameSite {
 	return sameSiteMode
 }
 
-func IsValidUUID(u string) bool {
-	_, err := guuid.Parse(u)
-	return err == nil
+func DefaultErrorHandler(c echo.Context, err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		return httperror.NotFoundError(c)
+	}
+
+	if serrors.ErrorIs(err, serrors.ERR_FORBIDDEN) {
+		return httperror.ForbiddenError(c, "Invoking member lacks authority")
+	}
+
+	if serrors.ErrorIs(err, serrors.ERR_INVALID_RESET_TOKEN) {
+		return httperror.BadRequestError(c, "Invalid password reset token")
+	}
+
+	if serrors.ErrorIs(err, serrors.ERR_INVALID_PASSWORD) {
+		return httperror.BadRequestError(c, "Invalid password")
+	}
+
+	if serrors.ErrorIs(err, serrors.ERR_DUPLICATED) {
+		return httperror.ConflictError(c, "Already in use")
+	}
+
+	return httperror.InternalError(c)
+}
+
+func BindAndValidateBody[T any](c echo.Context, body *T) error {
+	err := c.Bind(&body)
+	if err != nil {
+		common.LogStringError(c, err, "invite: send bind")
+		return httperror.BadRequestError(c, "invalid payload", "invalid payload", "invite")
+	}
+
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "invite: send validate")
+		return httperror.InvalidPayloadError(c, err)
+	}
+
+	return nil
 }
