@@ -6,6 +6,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	validator "github.com/String-xyz/go-lib/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
@@ -70,8 +71,8 @@ func (i invite) Accept(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 
-		if strings.Contains(err.Error(), "invite is not pending") {
-			return httperror.ConflictError(c, errors.Cause(err).Error())
+		if serrors.ErrorIs(err, serrors.ERR_ALREADY_IN_USE) {
+			return httperror.ConflictError(c, "Invite is not pending")
 		}
 
 		return httperror.InternalError(c)

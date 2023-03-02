@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
 	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
@@ -112,7 +111,7 @@ func DefaultErrorHandler(c echo.Context, err error) error {
 		return httperror.BadRequestError(c, "Invalid password")
 	}
 
-	if serrors.ErrorIs(err, serrors.ERR_DUPLICATED) {
+	if serrors.ErrorIs(err, serrors.ERR_ALREADY_IN_USE) {
 		return httperror.ConflictError(c, "Already in use")
 	}
 
@@ -122,12 +121,10 @@ func DefaultErrorHandler(c echo.Context, err error) error {
 func BindAndValidateBody[T any](c echo.Context, body *T) error {
 	err := c.Bind(&body)
 	if err != nil {
-		common.LogStringError(c, err, "invite: send bind")
 		return httperror.BadRequestError(c, "invalid payload", "invalid payload", "invite")
 	}
 
 	if err := c.Validate(body); err != nil {
-		common.LogStringError(c, err, "invite: send validate")
 		return httperror.InvalidPayloadError(c, err)
 	}
 
