@@ -35,7 +35,7 @@ func JWT(auth service.Auth) echo.MiddlewareFunc {
 		},
 		SigningKey: []byte(os.Getenv("JWT_SECRET_KEY")),
 		ErrorHandlerWithContext: func(err error, c echo.Context) error {
-			if strings.Contains(err.Error(), "token is expired") || errors.Cause(err).Error() == "missing or malformed jwt" {
+			if strings.Contains(err.Error(), "token is expired") || strings.Contains(err.Error(), "missing or malformed jwt") {
 				return httperror.Unauthorized(c)
 			}
 

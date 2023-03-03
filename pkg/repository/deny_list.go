@@ -39,7 +39,7 @@ func (a denyList) IsDenied(memberId string) (bool, error) {
 	key := KEY_PREFIX + memberId
 	denied, err := a.redis.Get(key)
 	if err != nil {
-		if serrors.ErrorIs(err, serrors.REDIS_NOT_FOUND) {
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return false, nil // if we error for this reason, continue
 		}
 		return false, common.StringError(err)
