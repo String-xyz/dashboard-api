@@ -148,8 +148,8 @@ func (i invite) Update(c echo.Context) error {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if strings.Contains(err.Error(), "cannot elevate") {
-			return httperror.ForbiddenError(c, errors.Cause(err).Error())
+		if serrors.ErrorIs(err, serrors.ERR_FORBIDDEN) {
+			return httperror.ForbiddenError(c, "cannot elevate member to owner")
 		}
 
 		return httperror.InternalError(c)

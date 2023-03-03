@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/String-xyz/go-lib/common"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -209,7 +210,7 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	if request.Role == "Owner" || request.Role == "owner" {
-		return result, common.StringError(errors.New("cannot elevate member to owner"))
+		return result, common.StringError(serrors.ERR_FORBIDDEN)
 	}
 
 	role, err := a.repos.MemberToRole.GetByMember(memberId)

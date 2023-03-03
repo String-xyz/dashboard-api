@@ -197,7 +197,7 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	}
 
 	if request.Role == "Owner" || request.Role == "owner" {
-		return result, common.StringError(errors.New("cannot elevate member to owner"))
+		return result, common.StringError(serrors.ERR_FORBIDDEN)
 	}
 
 	type RoleUpdate struct {
