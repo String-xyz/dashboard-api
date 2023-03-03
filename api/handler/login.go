@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -45,7 +44,7 @@ func (l login) Login(c echo.Context) error {
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
-		if strings.Contains(err.Error(), "login: user deactivated") || strings.Contains(err.Error(), "login: wrong password") {
+		if serrors.ErrorIs(err, serrors.ERR_DEACTIVATED) || serrors.ErrorIs(err, serrors.ERR_INVALID_PASSWORD) || serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 

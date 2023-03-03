@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/String-xyz/go-lib/common"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -31,12 +31,12 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 	}
 	// If member is denied, do not log in
 	if member.DeactivatedAt != nil {
-		return member, jwt, common.StringError(errors.New("login: user deactivated"))
+		return member, jwt, common.StringError(serrors.ERR_DEACTIVATED)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(request.Password))
 	if err != nil {
-		return member, jwt, common.StringError(errors.New("login: wrong password"))
+		return member, jwt, common.StringError(serrors.ERR_INVALID_PASSWORD)
 	}
 
 	platform, err := l.repos.MemberToPlatform.GetByMember(member.ID)
