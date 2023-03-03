@@ -1,10 +1,10 @@
 package service
 
 import (
-	"errors"
 	"os"
 
 	"github.com/String-xyz/go-lib/common"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
 
@@ -40,7 +40,7 @@ func RequireAuthority(repos repository.Repositories, callerId string, rolesAllow
 		}
 	}
 
-	return common.StringError(errors.New("invoking member lacks authority"))
+	return common.StringError(serrors.ERR_FORBIDDEN)
 }
 
 func GetRole(repos repository.Repositories, memberId string) (string, error) {

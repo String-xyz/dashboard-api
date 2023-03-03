@@ -164,7 +164,7 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	memberId, err := common.DecryptString(request.ResetToken, secret)
 	if err != nil {
 		if strings.Contains(err.Error(), "illegal base64") {
-			return common.StringError(errors.New("invalid password reset token"))
+			return common.StringError(serrors.ERR_INVALID_RESET_TOKEN)
 		}
 		return common.StringError(err)
 	}
