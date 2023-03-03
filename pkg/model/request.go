@@ -41,7 +41,7 @@ type RequestLogin struct {
 
 type RequestInviteAcceptance struct {
 	Id       *string `json:"id"`
-	Password string  `json:"password"`
+	Password string  `json:"password" validate:"required,min=8,max=100"`
 }
 
 type RequestMemberUpdateSelf struct {
