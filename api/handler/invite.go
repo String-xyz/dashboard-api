@@ -112,7 +112,7 @@ func (i invite) Resend(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
 
-		if strings.Contains(err.Error(), "not found") {
+		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
@@ -144,7 +144,7 @@ func (i invite) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if strings.Contains(err.Error(), "not found") {
+		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
@@ -168,7 +168,7 @@ func (i invite) Deactivate(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if strings.Contains(err.Error(), "not found") {
+		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 

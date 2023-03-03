@@ -6,6 +6,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -44,7 +45,11 @@ func (l login) Login(c echo.Context) error {
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
-		if strings.Contains(err.Error(), "login: user deactivated") || strings.Contains(err.Error(), "login: wrong password") || strings.Contains(err.Error(), "not found") {
+		if strings.Contains(err.Error(), "login: user deactivated") || strings.Contains(err.Error(), "login: wrong password") {
+			return httperror.Unauthorized(c, "Invalid email or password")
+		}
+
+		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 

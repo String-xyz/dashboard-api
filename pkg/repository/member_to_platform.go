@@ -8,6 +8,7 @@ import (
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
 	strrepo "github.com/String-xyz/go-lib/repository"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
 
@@ -60,7 +61,7 @@ func (p memberToPlatform[T]) GetByMember(memberId string) (model.MemberToPlatfor
 	m := model.MemberToPlatform{}
 	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", p.Table), memberId)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(ErrNotFound)
+		return m, common.StringError(serrors.ERR_NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -71,7 +72,7 @@ func (p memberToPlatform[T]) GetByPlatform(platformId string) ([]model.MemberToP
 	m := []model.MemberToPlatform{}
 	err := p.Store.Select(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(ErrNotFound)
+		return m, common.StringError(serrors.ERR_NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}

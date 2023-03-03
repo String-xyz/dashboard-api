@@ -8,6 +8,7 @@ import (
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
 	strrepo "github.com/String-xyz/go-lib/repository"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
 
@@ -93,7 +94,7 @@ func (p memberInvite[T]) GetByPlatform(ctx context.Context, platformId string) (
 	err := p.Store.Select(&m, getBaseQuery()+`WHERE member_invite.platform_id = $1`, platformId)
 
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(ErrNotFound)
+		return m, common.StringError(serrors.ERR_NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -113,7 +114,7 @@ func (p memberInvite[T]) GetById(ctx context.Context, ID string) (MemberInviteIn
 	err := p.Store.GetContext(ctx, &m, getBaseQuery()+`WHERE member_invite.id = $1`, ID)
 
 	if err == sql.ErrNoRows {
-		return m, common.StringError(ErrNotFound)
+		return m, common.StringError(serrors.ERR_NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -131,7 +132,7 @@ func (p memberInvite[T]) GetByEmail(ctx context.Context, email string) (MemberIn
 	err := p.Store.GetContext(ctx, &m, getBaseQuery()+`WHERE member_invite.email = $1`, email)
 
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(ErrNotFound)
+		return m, common.StringError(serrors.ERR_NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/pkg/errors"
@@ -35,15 +36,15 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (repository.MemberInviteInfo, error) {
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
-	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
+	if err != nil && serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
-		return repository.MemberInviteInfo{}, common.StringError(errors.New("email already in use"))
+		return repository.MemberInviteInfo{}, common.StringError(serrors.ERR_ALREADY_IN_USE)
 	}
 
 	// If there is a pending invite, update the role
 	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
-	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
+	if err != nil && serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email && callerId != nil {
 		// Update invite and resend it

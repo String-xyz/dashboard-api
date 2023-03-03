@@ -5,9 +5,9 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
-	"github.com/pkg/errors"
 )
 
 type Platform interface {
@@ -30,17 +30,17 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
-	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
+	if err != nil && serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 		return model.Platform{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
-		return model.Platform{}, common.StringError(errors.New("email already in use"))
+		return model.Platform{}, common.StringError(serrors.ERR_ALREADY_IN_USE)
 	}
 
 	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
-	if err != nil && errors.Cause(err).Error() != repository.ErrNotFound.Error() {
+	if err != nil && serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 		return model.Platform{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email {
-		return model.Platform{}, common.StringError(errors.New("pending email already in use"))
+		return model.Platform{}, common.StringError(serrors.ERR_ALREADY_IN_USE)
 	}
 
 	// Generate new Platform with a Name

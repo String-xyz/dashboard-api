@@ -2,14 +2,13 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 )
 
 type Platform interface {
@@ -44,9 +43,8 @@ func (p platform) Create(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
 
-		errMessage := errors.Cause(err).Error()
-		if strings.Contains(errMessage, "already in use") {
-			return httperror.ConflictError(c, errMessage)
+		if serrors.ErrorIs(err, serrors.ERR_ALREADY_IN_USE) {
+			return httperror.ConflictError(c, "email already in use")
 		}
 
 		return httperror.InternalError(c)
@@ -60,7 +58,8 @@ func (p platform) Get(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: get")
 
-		if errors.Cause(err).Error() == "sql: no rows in result set" || strings.Contains(errors.Cause(err).Error(), "not found") {
+		// TODO: "sql: no rows in result set" should be handled by the repository and return an ERR_NOT_FOUND error
+		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 			return httperror.NotFoundError(c)
 		}
 
@@ -88,7 +87,9 @@ func (p platform) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: update")
 
-		if errors.Cause(err).Error() == "sql: no rows in result set" || strings.Contains(errors.Cause(err).Error(), "not found") {
+		// if errors.Cause(err).Error() == "sql: no rows in result set" || strings.Contains(errors.Cause(err).Error(), "not found") {
+		// TODO: "sql: no rows in result set" should be handled by the repository and return an ERR_NOT_FOUND error
+		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
 			return httperror.NotFoundError(c)
 		}
 
