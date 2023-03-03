@@ -77,7 +77,7 @@ func (p platformMember[T]) GetByEmail(ctx context.Context, email string) (Platfo
 		ON member_role.id = member_to_role.role_id 
 		WHERE platform_member.email = $1`, email)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serrors.ERR_NOT_FOUND)
+		return m, serrors.NOT_FOUND
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -95,7 +95,7 @@ func (p platformMember[T]) GetById(ctx context.Context, ID string) (PlatformMemb
 		ON member_role.id = member_to_role.role_id 
 		WHERE platform_member.id = $1`, ID)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serrors.ERR_NOT_FOUND)
+		return m, common.StringError(serrors.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -106,7 +106,7 @@ func (p platformMember[T]) GetByIdIncludingDeactivated(ctx context.Context, ID s
 	m := PlatformMemberWithRole{}
 	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /* AND deactivated_at IS NULL"*/, p.Table), ID)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serrors.ERR_NOT_FOUND)
+		return m, common.StringError(serrors.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -135,7 +135,7 @@ func (p platformMember[T]) List(ctx context.Context, platformId string, limit in
 		OFFSET $3;`, platformId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return m, common.StringError(serrors.ERR_NOT_FOUND)
+		return m, common.StringError(serrors.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}

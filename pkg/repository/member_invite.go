@@ -94,7 +94,7 @@ func (p memberInvite[T]) GetByPlatform(ctx context.Context, platformId string) (
 	err := p.Store.Select(&m, getBaseQuery()+`WHERE member_invite.platform_id = $1`, platformId)
 
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serrors.ERR_NOT_FOUND)
+		return m, common.StringError(serrors.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -114,7 +114,7 @@ func (p memberInvite[T]) GetById(ctx context.Context, ID string) (MemberInviteIn
 	err := p.Store.GetContext(ctx, &m, getBaseQuery()+`WHERE member_invite.id = $1`, ID)
 
 	if err == sql.ErrNoRows {
-		return m, common.StringError(serrors.ERR_NOT_FOUND)
+		return m, common.StringError(serrors.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -132,7 +132,7 @@ func (p memberInvite[T]) GetByEmail(ctx context.Context, email string) (MemberIn
 	err := p.Store.GetContext(ctx, &m, getBaseQuery()+`WHERE member_invite.email = $1`, email)
 
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serrors.ERR_NOT_FOUND)
+		return m, common.StringError(serrors.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}

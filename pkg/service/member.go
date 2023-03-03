@@ -164,7 +164,7 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	memberId, err := common.DecryptString(request.ResetToken, secret)
 	if err != nil {
 		if strings.Contains(err.Error(), "illegal base64") {
-			return common.StringError(serrors.ERR_INVALID_RESET_TOKEN)
+			return common.StringError(serrors.INVALID_RESET_TOKEN)
 		}
 		return common.StringError(err)
 	}
@@ -210,7 +210,7 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	if request.Role == "Owner" || request.Role == "owner" {
-		return result, common.StringError(serrors.ERR_FORBIDDEN)
+		return result, common.StringError(serrors.FORBIDDEN)
 	}
 
 	role, err := a.repos.MemberToRole.GetByMember(memberId)

@@ -40,7 +40,7 @@ func RequireAuthority(repos repository.Repositories, callerId string, rolesAllow
 		}
 	}
 
-	return common.StringError(serrors.ERR_FORBIDDEN)
+	return common.StringError(serrors.FORBIDDEN)
 }
 
 func GetRole(repos repository.Repositories, memberId string) (string, error) {

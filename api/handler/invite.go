@@ -70,7 +70,7 @@ func (i invite) Accept(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 
-		if serrors.ErrorIs(err, serrors.ERR_ALREADY_IN_USE) {
+		if serrors.ErrorIs(err, serrors.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, "Invite is not pending")
 		}
 
@@ -111,7 +111,7 @@ func (i invite) Resend(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
 
-		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
@@ -143,11 +143,11 @@ func (i invite) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serrors.ErrorIs(err, serrors.ERR_FORBIDDEN) {
+		if serrors.ErrorIs(err, serrors.FORBIDDEN) {
 			return httperror.ForbiddenError(c, "cannot elevate member to owner")
 		}
 
@@ -167,11 +167,11 @@ func (i invite) Deactivate(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serrors.ErrorIs(err, serrors.ERR_FORBIDDEN) {
+		if serrors.ErrorIs(err, serrors.FORBIDDEN) {
 			return httperror.ForbiddenError(c, errors.Cause(err).Error())
 		}
 

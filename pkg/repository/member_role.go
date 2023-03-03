@@ -60,7 +60,7 @@ func (p memberRole[T]) GetByName(ctx context.Context, m model.MemberRole) (model
 	result := model.MemberRole{}
 	err := p.Store.Get(&result, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1", p.Table), m.Name)
 	if err != nil && err == sql.ErrNoRows {
-		return result, common.StringError(serrors.ERR_NOT_FOUND)
+		return result, common.StringError(serrors.NOT_FOUND)
 	} else if err != nil {
 		return result, common.StringError(err)
 	}

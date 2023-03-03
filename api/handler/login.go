@@ -44,11 +44,11 @@ func (l login) Login(c echo.Context) error {
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
-		if serrors.ErrorIs(err, serrors.ERR_DEACTIVATED) || serrors.ErrorIs(err, serrors.ERR_INVALID_PASSWORD) || serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		if serrors.ErrorIs(err, serrors.DEACTIVATED) || serrors.ErrorIs(err, serrors.INVALID_PASSWORD) || serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 
-		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 

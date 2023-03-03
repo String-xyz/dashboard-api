@@ -30,17 +30,18 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
-	if err != nil && serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
-		return model.Platform{}, common.StringError(err)
+
+	if err != nil && serrors.ErrorIs(err, serrors.NOT_FOUND) {
+		return model.Platform{}, err
 	} else if preexisting.Email == request.Email {
-		return model.Platform{}, common.StringError(serrors.ERR_ALREADY_IN_USE)
+		return model.Platform{}, common.StringError(serrors.ALREADY_IN_USE)
 	}
 
 	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
-	if err != nil && serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+	if err != nil && serrors.ErrorIs(err, serrors.NOT_FOUND) {
 		return model.Platform{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email {
-		return model.Platform{}, common.StringError(serrors.ERR_ALREADY_IN_USE)
+		return model.Platform{}, common.StringError(serrors.ALREADY_IN_USE)
 	}
 
 	// Generate new Platform with a Name

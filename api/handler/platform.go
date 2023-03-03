@@ -43,7 +43,7 @@ func (p platform) Create(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
 
-		if serrors.ErrorIs(err, serrors.ERR_ALREADY_IN_USE) {
+		if serrors.ErrorIs(err, serrors.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, "email already in use")
 		}
 
@@ -58,8 +58,8 @@ func (p platform) Get(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: get")
 
-		// TODO: "sql: no rows in result set" should be handled by the repository and return an ERR_NOT_FOUND error
-		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		// TODO: "sql: no rows in result set" should be handled by the repository and return an NOT_FOUND error
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.NotFoundError(c)
 		}
 
@@ -88,8 +88,8 @@ func (p platform) Update(c echo.Context) error {
 		common.LogStringError(c, err, "platform: update")
 
 		// if errors.Cause(err).Error() == "sql: no rows in result set" || strings.Contains(errors.Cause(err).Error(), "not found") {
-		// TODO: "sql: no rows in result set" should be handled by the repository and return an ERR_NOT_FOUND error
-		if serrors.ErrorIs(err, serrors.ERR_NOT_FOUND) {
+		// TODO: "sql: no rows in result set" should be handled by the repository and return an NOT_FOUND error
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.NotFoundError(c)
 		}
 
