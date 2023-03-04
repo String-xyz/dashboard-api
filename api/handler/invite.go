@@ -37,10 +37,14 @@ func (i invite) Send(c echo.Context) error {
 	platformId := c.Get("platformId").(string)
 
 	body := model.RequestInviteSend{}
-	err := BindAndValidateBody(c, &body)
+	err := c.Bind(&body)
 	if err != nil {
+		return httperror.BadRequestError(c, "invalid payload", "invalid payload", "invite")
+	}
+
+	if err := c.Validate(body); err != nil {
 		common.LogStringError(c, err, "invite: send validate")
-		return err
+		return httperror.InvalidPayloadError(c, err)
 	}
 
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)

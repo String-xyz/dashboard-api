@@ -18,7 +18,7 @@ type RequestPlatformUpdate struct {
 type RequestInviteSend struct {
 	Name  string `json:"name"`
 	Email string `json:"email" validate:"required,email"`
-	Role  string `json:"role" validate:"required,oneof=admin member owner"`
+	Role  string `json:"role" validate:"required,oneof=admin member owner Admin Member Owner"`
 }
 
 type RequestInviteUpdate struct {
