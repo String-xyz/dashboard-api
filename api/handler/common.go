@@ -117,16 +117,3 @@ func DefaultErrorHandler(c echo.Context, err error) error {
 
 	return httperror.InternalError(c)
 }
-
-func BindAndValidateBody[T any](c echo.Context, body *T) error {
-	err := c.Bind(&body)
-	if err != nil {
-		return httperror.BadRequestError(c, "invalid payload", "invalid payload", "invite")
-	}
-
-	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
-	}
-
-	return nil
-}

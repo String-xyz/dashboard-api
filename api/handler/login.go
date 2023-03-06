@@ -104,7 +104,9 @@ func (l login) Logout(c echo.Context) error {
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
 		common.LogStringError(c, err, "Logout: unable to get refresh_token cookie")
-		return httperror.Unauthorized(c, "Invalid or expired token")
+
+		// already logged out, idempotent
+		return c.JSON(http.StatusNoContent, nil)
 	}
 
 	// invalidate refresh token. Returns error if token is not found

@@ -58,7 +58,6 @@ func (p platform) Get(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: get")
 
-		// TODO: "sql: no rows in result set" should be handled by the repository and return an NOT_FOUND error
 		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
 			return httperror.NotFoundError(c)
 		}
@@ -72,10 +71,15 @@ func (p platform) Update(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 	body := model.RequestPlatformUpdate{}
+
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update bind")
 		return httperror.BadRequestError(c)
+	}
+
+	if body == (model.RequestPlatformUpdate{}) {
+		return httperror.BadRequestError(c, "No fields to update")
 	}
 
 	// validate body
