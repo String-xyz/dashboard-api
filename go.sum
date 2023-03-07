@@ -65,6 +65,8 @@ github.com/String-xyz/go-lib v1.0.8-0.20230303234235-2705b67442c6 h1:vo6E5SaIjII
 github.com/String-xyz/go-lib v1.0.8-0.20230303234235-2705b67442c6/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
 github.com/String-xyz/go-lib v1.0.8-0.20230304000430-269af6bf56b8 h1:HpNrTIyslHE9xw+/N7T6ywP3P60/2KEEtDSGucoqD5E=
 github.com/String-xyz/go-lib v1.0.8-0.20230304000430-269af6bf56b8/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
+github.com/String-xyz/go-lib v1.2.0 h1:bjaWfoOtwbrbZ84XBtPLe4uG7wyXeLDmK+7WHyvANRQ=
+github.com/String-xyz/go-lib v1.2.0/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
