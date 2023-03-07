@@ -211,6 +211,6 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.POST("/:id/resend", i.Resend, ms...)
 	g.PUT("/:id", i.Update, ms...)
 	g.PUT("/:id/deactivate", i.Deactivate, ms...)
-	g.GET("/:id", i.Get)
+	g.GET("/:id", i.Get, ms...)
 
 }
