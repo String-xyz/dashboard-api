@@ -59,7 +59,8 @@ func (p platform) Get(c echo.Context) error {
 		common.LogStringError(c, err, "platform: get")
 
 		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
-			return httperror.NotFoundError(c)
+			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
+			return httperror.Unauthorized(c)
 		}
 
 		return httperror.InternalError(c)
@@ -91,10 +92,9 @@ func (p platform) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: update")
 
-		// if errors.Cause(err).Error() == "sql: no rows in result set" || strings.Contains(errors.Cause(err).Error(), "not found") {
-		// TODO: "sql: no rows in result set" should be handled by the repository and return an NOT_FOUND error
 		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
-			return httperror.NotFoundError(c)
+			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
+			return httperror.Unauthorized(c)
 		}
 
 		return httperror.InternalError(c)

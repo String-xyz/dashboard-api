@@ -5,7 +5,9 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
+	serrors "github.com/String-xyz/go-lib/stringerror"
 	validator "github.com/String-xyz/go-lib/validator"
+
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -89,14 +91,24 @@ func (a member) UpdateSelf(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	// validate body
-	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
+	// password must be at least 8 characters
+	if body.NewPassword != nil && len(*body.NewPassword) < 8 {
+		return httperror.BadRequestError(c, "password must be at least 8 characters")
 	}
+
+	// TODO: Fix this validation. This code breaks the update self name endpoint.
+	// if c.Validate(body) != nil {
+	// 	return httperror.BadRequestError(c)
+	// }
 
 	m, err := a.service.UpdateSelf(c.Request().Context(), body, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "member: update self")
+
+		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
+			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
+			return httperror.Unauthorized(c)
+		}
 
 		return DefaultErrorHandler(c, err)
 	}

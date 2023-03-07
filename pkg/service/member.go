@@ -84,14 +84,14 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 	// If password change is requested, verify the current password
 	if request.NewPassword != nil && request.OldPassword != nil {
 		if len(*request.NewPassword) < 8 {
-			return result, common.StringError(errors.New("invalid password length")) // TODO: intensify sophistication
+			return result, common.StringError(serrors.INVALID_PASSWORD)
 		}
 		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
 		if err != nil {
 			return result, common.StringError(err)
 		}
 		if bcrypt.CompareHashAndPassword([]byte(m.Password), []byte(*request.OldPassword)) != nil {
-			return result, common.StringError(errors.New("invalid password"))
+			return result, common.StringError(serrors.INVALID_PASSWORD)
 		}
 		hash, err := bcrypt.GenerateFromPassword([]byte(*request.NewPassword), 8)
 		if err != nil {
