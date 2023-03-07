@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	httperror "github.com/String-xyz/go-lib/httperror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
 )
@@ -86,4 +88,32 @@ func getCookieSameSiteMode() http.SameSite {
 		sameSiteMode = http.SameSiteLaxMode // because SameSiteNoneMode is not allowed in localhost we use lax mode
 	}
 	return sameSiteMode
+}
+
+func DefaultErrorHandler(c echo.Context, err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if serror.IsError(err, serror.NOT_FOUND) {
+		return httperror.NotFoundError(c)
+	}
+
+	if serror.IsError(err, serror.FORBIDDEN) {
+		return httperror.ForbiddenError(c, "Invoking member lacks authority")
+	}
+
+	if serror.IsError(err, serror.INVALID_RESET_TOKEN) {
+		return httperror.BadRequestError(c, "Invalid password reset token")
+	}
+
+	if serror.IsError(err, serror.INVALID_PASSWORD) {
+		return httperror.BadRequestError(c, "Invalid password")
+	}
+
+	if serror.IsError(err, serror.ALREADY_IN_USE) {
+		return httperror.ConflictError(c, "Already in use")
+	}
+
+	return httperror.InternalError(c)
 }

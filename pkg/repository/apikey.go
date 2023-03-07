@@ -9,6 +9,7 @@ import (
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
 	strrepo "github.com/String-xyz/go-lib/repository"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
 
@@ -62,7 +63,7 @@ func (p apikey[T]) GetById(ctx context.Context, ID string) (model.Apikey, error)
 	m := model.Apikey{}
 	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", p.Table), ID)
 	if err == sql.ErrNoRows {
-		return m, common.StringError(ErrNotFound)
+		return m, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}
@@ -78,7 +79,7 @@ func (p apikey[T]) List(ctx context.Context, platformId string, limit int, offse
 	err := p.Store.SelectContext(ctx, &m, `SELECT * FROM apikey WHERE apikey.platform_id = $1 LIMIT $2 OFFSET $3;`, platformId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return m, common.StringError(ErrNotFound)
+		return m, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
 		return m, common.StringError(err)
 	}

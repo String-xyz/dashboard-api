@@ -2,10 +2,10 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/httperror"
+	httperror "github.com/String-xyz/go-lib/httperror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -36,12 +36,22 @@ func (l login) Login(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	// validate body
+	if err := c.Validate(body); err != nil {
+		return httperror.InvalidPayloadError(c, err)
+	}
+
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
-		if strings.Contains(err.Error(), "login: user deactivated") || strings.Contains(err.Error(), "login: wrong password") {
-			return httperror.Unauthorized(c)
+		if serror.IsError(err, serror.DEACTIVATED, serror.INVALID_PASSWORD, serror.NOT_FOUND) {
+			return httperror.Unauthorized(c, "Invalid email or password")
 		}
+
+		if serror.IsError(err, serror.NOT_FOUND) {
+			return httperror.Unauthorized(c, "Invalid email or password")
+		}
+
 		return httperror.InternalError(c)
 	}
 
@@ -58,13 +68,13 @@ func (l login) RefreshToken(c echo.Context) error {
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
 		common.LogStringError(c, err, "RefreshToken: unable to get refresh_token cookie")
-		return httperror.Unauthorized(c)
+		return httperror.Unauthorized(c, "Invalid or expired token")
 	}
 
 	resp, err := l.auth.RefreshToken(cookie.Value)
 	if err != nil {
 		common.LogStringError(c, err, "login: refresh token")
-		return httperror.BadRequestError(c, "Invalid or expired token")
+		return httperror.Unauthorized(c, "Invalid or expired token")
 	}
 
 	// If member is denied, do not refresh token
@@ -75,7 +85,7 @@ func (l login) RefreshToken(c echo.Context) error {
 	}
 	if denied {
 		common.LogStringError(c, err, "login: user is denied")
-		return httperror.BadRequestError(c)
+		return httperror.Unauthorized(c)
 	}
 
 	// set auth in cookies
@@ -94,7 +104,9 @@ func (l login) Logout(c echo.Context) error {
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
 		common.LogStringError(c, err, "Logout: unable to get refresh_token cookie")
-		return httperror.Unauthorized(c)
+
+		// already logged out, idempotent
+		return c.JSON(http.StatusNoContent, nil)
 	}
 
 	// invalidate refresh token. Returns error if token is not found
@@ -102,7 +114,6 @@ func (l login) Logout(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "Token not found")
 	}
-	// There is no need to invalidate the access token since it is a short lived token
 
 	// delete auth cookies
 	err = DeleteAuthCookies(c)

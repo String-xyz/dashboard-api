@@ -4,10 +4,13 @@ import (
 	"net/http"
 
 	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/httperror"
+	httperror "github.com/String-xyz/go-lib/httperror"
+	serror "github.com/String-xyz/go-lib/stringerror"
+	validator "github.com/String-xyz/go-lib/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 type Invite interface {
@@ -36,14 +39,19 @@ func (i invite) Send(c echo.Context) error {
 	body := model.RequestInviteSend{}
 	err := c.Bind(&body)
 	if err != nil {
-		common.LogStringError(c, err, "invite: send bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequestError(c, "invalid payload", "invalid payload", "invite")
+	}
+
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "invite: send validate")
+		return httperror.InvalidPayloadError(c, err)
 	}
 
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: send")
-		return httperror.InternalError(c)
+
+		return DefaultErrorHandler(c, err)
 	}
 	return c.JSON(http.StatusCreated, m)
 }
@@ -56,13 +64,20 @@ func (i invite) Accept(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 	id := c.Param("id")
-	if id == "" {
-		return httperror.BadRequestError(c)
+
+	if !validator.IsUUID(id) {
+		return httperror.BadRequestError(c, "invalid id")
 	}
+
 	body.Id = &id
 	m, jwt, err := i.service.Accept(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
+
+		if serror.IsError(err, serror.ALREADY_IN_USE) {
+			return httperror.ConflictError(c, "Invite is not pending")
+		}
+
 		return httperror.InternalError(c)
 	}
 
@@ -92,12 +107,18 @@ func (i invite) List(c echo.Context) error {
 func (i invite) Resend(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	id := c.Param("id")
-	if id == "" {
-		return httperror.BadRequestError(c)
+	if !validator.IsUUID(id) {
+		return httperror.BadRequestError(c, "invalid id")
 	}
+
 	m, err := i.service.Resend(c.Request().Context(), id, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
+
+		if serror.IsError(err, serror.NOT_FOUND) {
+			return httperror.NotFoundError(c, errors.Cause(err).Error())
+		}
+
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
@@ -106,9 +127,10 @@ func (i invite) Resend(c echo.Context) error {
 func (i invite) Update(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	id := c.Param("id")
-	if id == "" {
-		return httperror.BadRequestError(c)
+	if !validator.IsUUID(id) {
+		return httperror.BadRequestError(c, "invalid id")
 	}
+
 	body := model.RequestInviteUpdate{}
 	err := c.Bind(&body)
 	if err != nil {
@@ -116,9 +138,23 @@ func (i invite) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "invite: update validate")
+		return httperror.InvalidPayloadError(c, err)
+	}
+
 	m, err := i.service.Update(c.Request().Context(), body, id, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
+
+		if serror.IsError(err, serror.NOT_FOUND) {
+			return httperror.NotFoundError(c, errors.Cause(err).Error())
+		}
+
+		if serror.IsError(err, serror.FORBIDDEN) {
+			return httperror.ForbiddenError(c, "cannot elevate member to owner")
+		}
+
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
@@ -127,12 +163,22 @@ func (i invite) Update(c echo.Context) error {
 func (i invite) Deactivate(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	id := c.Param("id")
-	if id == "" {
-		return httperror.BadRequestError(c)
+	if !validator.IsUUID(id) {
+		return httperror.BadRequestError(c, "invalid id")
 	}
+
 	m, err := i.service.Deactivate(c.Request().Context(), id, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
+
+		if serror.IsError(err, serror.NOT_FOUND) {
+			return httperror.NotFoundError(c, errors.Cause(err).Error())
+		}
+
+		if serror.IsError(err, serror.FORBIDDEN) {
+			return httperror.ForbiddenError(c, errors.Cause(err).Error())
+		}
+
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)
@@ -140,14 +186,15 @@ func (i invite) Deactivate(c echo.Context) error {
 
 func (i invite) Get(c echo.Context) error {
 	id := c.Param("id")
-	if id == "" {
-		return httperror.BadRequestError(c)
+	if !validator.IsUUID(id) {
+		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	m, err := i.service.Get(c.Request().Context(), id)
 	if err != nil {
 		common.LogStringError(c, err, "invite: get")
-		return httperror.InternalError(c)
+
+		return DefaultErrorHandler(c, err)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -164,6 +211,6 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.POST("/:id/resend", i.Resend, ms...)
 	g.PUT("/:id", i.Update, ms...)
 	g.PUT("/:id/deactivate", i.Deactivate, ms...)
-	g.GET("/:id", i.Get)
+	g.GET("/:id", i.Get) // No auth required. This is used for the invite link
 
 }

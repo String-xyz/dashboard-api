@@ -17,8 +17,8 @@ type RequestPlatformUpdate struct {
 
 type RequestInviteSend struct {
 	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Email string `json:"email" validate:"required,email"`
+	Role  string `json:"role" validate:"required,oneof=admin member owner Admin Member Owner"`
 }
 
 type RequestInviteUpdate struct {
@@ -27,8 +27,8 @@ type RequestInviteUpdate struct {
 }
 
 type RequestLogin struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8,max=100"`
 }
 
 // type RequestMemberUpdate struct {
@@ -41,13 +41,13 @@ type RequestLogin struct {
 
 type RequestInviteAcceptance struct {
 	Id       *string `json:"id"`
-	Password string  `json:"password"`
+	Password string  `json:"password" validate:"required,min=8,max=100"`
 }
 
 type RequestMemberUpdateSelf struct {
 	Name        *string `json:"name" db:"name"`
-	OldPassword *string `json:"oldPassword"`
-	NewPassword *string `json:"newPassword"`
+	OldPassword *string `json:"oldPassword" validate:"required_with=NewPassword,min=8,max=100"`
+	NewPassword *string `json:"newPassword" validate:"required_with=OldPassword,min=8,max=100"`
 }
 
 type RequestMemberUpdateOther struct {
@@ -59,6 +59,6 @@ type RequestApikeyUpdate struct {
 }
 
 type RequestPasswordReset struct {
-	Password   string `json:"password"`
-	ResetToken string `json:"resetToken"`
+	Password   string `json:"password" validate:"required,min=8,max=100"`
+	ResetToken string `json:"resetToken" validate:"required"`
 }

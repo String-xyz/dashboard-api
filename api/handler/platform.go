@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/httperror"
+	httperror "github.com/String-xyz/go-lib/httperror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -41,6 +42,11 @@ func (p platform) Create(c echo.Context) error {
 	m, err := p.service.Create(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
+
+		if serror.IsError(err, serror.ALREADY_IN_USE) {
+			return httperror.ConflictError(c, "email already in use")
+		}
+
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusCreated, m)
@@ -51,6 +57,12 @@ func (p platform) Get(c echo.Context) error {
 	m, err := p.service.Get(c.Request().Context(), platformId)
 	if err != nil {
 		common.LogStringError(c, err, "platform: get")
+
+		if serror.IsError(err, serror.NOT_FOUND) {
+			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
+			return httperror.Unauthorized(c)
+		}
+
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusAccepted, m)
@@ -60,15 +72,31 @@ func (p platform) Update(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 	body := model.RequestPlatformUpdate{}
+
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update bind")
 		return httperror.BadRequestError(c)
 	}
 
+	if body == (model.RequestPlatformUpdate{}) {
+		return httperror.BadRequestError(c, "No fields to update")
+	}
+
+	// validate body
+	if err := c.Validate(body); err != nil {
+		return httperror.InvalidPayloadError(c, err)
+	}
+
 	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update")
+
+		if serror.IsError(err, serror.NOT_FOUND) {
+			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
+			return httperror.Unauthorized(c)
+		}
+
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusOK, m)

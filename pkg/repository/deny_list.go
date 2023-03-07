@@ -5,7 +5,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	"github.com/pkg/errors"
+	serror "github.com/String-xyz/go-lib/stringerror"
 )
 
 const KEY_PREFIX = "deny_"
@@ -39,8 +39,7 @@ func (a denyList) IsDenied(memberId string) (bool, error) {
 	key := KEY_PREFIX + memberId
 	denied, err := a.redis.Get(key)
 	if err != nil {
-		// Our implementation of redis returns a REDIS_NOT_FOUND_ERROR if it can't find a key
-		if errors.Cause(err).Error() == "redis: nil" {
+		if serror.IsError(err, serror.NOT_FOUND) {
 			return false, nil // if we error for this reason, continue
 		}
 		return false, common.StringError(err)
