@@ -5,7 +5,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
-	serrors "github.com/String-xyz/go-lib/stringerror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -43,7 +43,7 @@ func (p platform) Create(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
 
-		if serrors.ErrorIs(err, serrors.ALREADY_IN_USE) {
+		if serror.IsError(err, serror.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, "email already in use")
 		}
 
@@ -58,7 +58,7 @@ func (p platform) Get(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: get")
 
-		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
+		if serror.IsError(err, serror.NOT_FOUND) {
 			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
 			return httperror.Unauthorized(c)
 		}
@@ -92,7 +92,7 @@ func (p platform) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: update")
 
-		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
+		if serror.IsError(err, serror.NOT_FOUND) {
 			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
 			return httperror.Unauthorized(c)
 		}

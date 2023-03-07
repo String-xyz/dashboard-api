@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/String-xyz/go-lib/common"
-	serrors "github.com/String-xyz/go-lib/stringerror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -84,14 +84,14 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 	// If password change is requested, verify the current password
 	if request.NewPassword != nil && request.OldPassword != nil {
 		if len(*request.NewPassword) < 8 {
-			return result, common.StringError(serrors.INVALID_PASSWORD)
+			return result, common.StringError(serror.INVALID_PASSWORD)
 		}
 		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
 		if err != nil {
 			return result, common.StringError(err)
 		}
 		if bcrypt.CompareHashAndPassword([]byte(m.Password), []byte(*request.OldPassword)) != nil {
-			return result, common.StringError(serrors.INVALID_PASSWORD)
+			return result, common.StringError(serror.INVALID_PASSWORD)
 		}
 		hash, err := bcrypt.GenerateFromPassword([]byte(*request.NewPassword), 8)
 		if err != nil {
@@ -164,7 +164,7 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	memberId, err := common.DecryptString(request.ResetToken, secret)
 	if err != nil {
 		if strings.Contains(err.Error(), "illegal base64") {
-			return common.StringError(serrors.INVALID_RESET_TOKEN)
+			return common.StringError(serror.INVALID_RESET_TOKEN)
 		}
 		return common.StringError(err)
 	}
@@ -210,7 +210,7 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	if request.Role == "Owner" || request.Role == "owner" {
-		return result, common.StringError(serrors.FORBIDDEN)
+		return result, common.StringError(serror.FORBIDDEN)
 	}
 
 	role, err := a.repos.MemberToRole.GetByMember(memberId)

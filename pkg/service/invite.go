@@ -7,7 +7,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	serrors "github.com/String-xyz/go-lib/stringerror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -35,15 +35,15 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (repository.MemberInviteInfo, error) {
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
-	if err != nil && !serrors.ErrorIs(err, serrors.NOT_FOUND) {
+	if err != nil && !serror.IsError(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
-		return repository.MemberInviteInfo{}, common.StringError(serrors.ALREADY_IN_USE)
+		return repository.MemberInviteInfo{}, common.StringError(serror.ALREADY_IN_USE)
 	}
 
 	// If there is a pending invite, update the role
 	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
-	if err != nil && !serrors.ErrorIs(err, serrors.NOT_FOUND) {
+	if err != nil && !serror.IsError(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email && callerId != nil {
 		// Update invite and resend it
@@ -90,7 +90,7 @@ func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAccep
 
 	// Check invite status
 	if repository.GetInviteStatus(invite) != "pending" {
-		return member, jwt, common.StringError(serrors.ALREADY_IN_USE)
+		return member, jwt, common.StringError(serror.ALREADY_IN_USE)
 	}
 
 	// Generate a new Platform Member with an Email
@@ -191,7 +191,7 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	}
 
 	if request.Role == "Owner" || request.Role == "owner" {
-		return result, common.StringError(serrors.FORBIDDEN)
+		return result, common.StringError(serror.FORBIDDEN)
 	}
 
 	type RoleUpdate struct {

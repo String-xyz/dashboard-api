@@ -5,7 +5,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
-	serrors "github.com/String-xyz/go-lib/stringerror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	validator "github.com/String-xyz/go-lib/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
@@ -74,7 +74,7 @@ func (i invite) Accept(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 
-		if serrors.ErrorIs(err, serrors.ALREADY_IN_USE) {
+		if serror.IsError(err, serror.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, "Invite is not pending")
 		}
 
@@ -115,7 +115,7 @@ func (i invite) Resend(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
 
-		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
+		if serror.IsError(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
@@ -147,11 +147,11 @@ func (i invite) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
+		if serror.IsError(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serrors.ErrorIs(err, serrors.FORBIDDEN) {
+		if serror.IsError(err, serror.FORBIDDEN) {
 			return httperror.ForbiddenError(c, "cannot elevate member to owner")
 		}
 
@@ -171,11 +171,11 @@ func (i invite) Deactivate(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
+		if serror.IsError(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serrors.ErrorIs(err, serrors.FORBIDDEN) {
+		if serror.IsError(err, serror.FORBIDDEN) {
 			return httperror.ForbiddenError(c, errors.Cause(err).Error())
 		}
 

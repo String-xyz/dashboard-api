@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/String-xyz/go-lib/common"
-	serrors "github.com/String-xyz/go-lib/stringerror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
 
@@ -40,7 +40,7 @@ func RequireAuthority(repos repository.Repositories, callerId string, rolesAllow
 		}
 	}
 
-	return common.StringError(serrors.FORBIDDEN)
+	return common.StringError(serror.FORBIDDEN)
 }
 
 func GetRole(repos repository.Repositories, memberId string) (string, error) {

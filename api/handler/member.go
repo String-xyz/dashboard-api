@@ -5,7 +5,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
-	serrors "github.com/String-xyz/go-lib/stringerror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	validator "github.com/String-xyz/go-lib/validator"
 
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -105,7 +105,7 @@ func (a member) UpdateSelf(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "member: update self")
 
-		if serrors.ErrorIs(err, serrors.NOT_FOUND) {
+		if serror.IsError(err, serror.NOT_FOUND) {
 			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
 			return httperror.Unauthorized(c)
 		}
