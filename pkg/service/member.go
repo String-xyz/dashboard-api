@@ -22,7 +22,7 @@ type MemberCreateResponse struct {
 type Member interface {
 	GetAll(ctx context.Context, platformId string) ([]repository.PlatformMemberWithRole, error)
 	Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error)
-	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error)
+	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error)
 	SendPasswordResetEmail(ctx context.Context, email string) error
 	PasswordReset(ctx context.Context, request model.RequestPasswordReset) error
@@ -187,8 +187,8 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	return nil
 }
 
-func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error) {
-	result := model.MemberToRole{}
+func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
@@ -221,7 +221,10 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	role.RoleID = GetRoleId(request.Role)
 	a.repos.MemberToRole.UpdateRole(memberId, role)
 
-	result = role
+	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 
 	return result, nil
 }
