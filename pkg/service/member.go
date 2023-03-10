@@ -208,7 +208,7 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	if callerRole == "Admin" && memberRole != "Member" {
-		return result, common.StringError(errors.New("admins can only update members"))
+		return result, common.StringError(serror.FORBIDDEN)
 	}
 
 	if strings.ToLower(request.Role) == "owner" {
