@@ -51,7 +51,8 @@ type RequestMemberUpdateSelf struct {
 }
 
 type RequestMemberUpdateOther struct {
-	Role string `json:"role" db:"role"`
+	Role     string  `json:"role" db:"role"`
+	Password *string `json:"password" validate:"min=8,max=100"`
 }
 
 type RequestApikeyUpdate struct {

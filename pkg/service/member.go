@@ -209,8 +209,36 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 		return result, common.StringError(errors.New("admins can only update members"))
 	}
 
+	// Transfer ownership
 	if request.Role == "Owner" || request.Role == "owner" {
-		return result, common.StringError(serror.FORBIDDEN)
+		if callerRole == "Owner" {
+			if request.Password == nil {
+				return result, common.StringError(errors.New("password required to transfer ownership"))
+			}
+
+			m, err := a.repos.PlatformMember.GetById(ctx, callerId)
+			if err != nil {
+				return result, common.StringError(err)
+			}
+
+			if bcrypt.CompareHashAndPassword([]byte(m.Password), []byte(*request.Password)) != nil {
+				return result, common.StringError(serror.INVALID_PASSWORD)
+			}
+
+			role, err := a.repos.MemberToRole.GetByMember(callerId)
+			if err != nil {
+				return result, common.StringError(err)
+			}
+
+			role.RoleID = GetRoleId("Admin")
+
+			err = a.repos.MemberToRole.UpdateRole(callerId, role)
+			if err != nil {
+				return result, common.StringError(err)
+			}
+		} else {
+			return result, common.StringError(serror.FORBIDDEN)
+		}
 	}
 
 	role, err := a.repos.MemberToRole.GetByMember(memberId)
@@ -219,7 +247,25 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	role.RoleID = GetRoleId(request.Role)
-	a.repos.MemberToRole.UpdateRole(memberId, role)
+	err = a.repos.MemberToRole.UpdateRole(memberId, role)
+
+	if err != nil {
+		// If promoting member to Owner fails, undo demoting previous Owner
+		if (request.Role == "Owner" || request.Role == "owner") && callerRole == "Owner" {
+			role, err := a.repos.MemberToRole.GetByMember(callerId)
+			if err != nil {
+				return result, common.StringError(err)
+			}
+
+			role.RoleID = GetRoleId(request.Role)
+			err = a.repos.MemberToRole.UpdateRole(callerId, role)
+			if err != nil {
+				return result, common.StringError(err)
+			}
+		}
+
+		return result, common.StringError(err)
+	}
 
 	result = role
 
