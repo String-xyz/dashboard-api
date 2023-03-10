@@ -55,7 +55,6 @@ type RequestMemberUpdateOther struct {
 }
 
 type RequestTransferOwnership struct {
-	Role     string `json:"role" db:"role"`
 	Password string `json:"password" validate:"required,min=8,max=100"`
 }
 
