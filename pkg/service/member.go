@@ -240,9 +240,19 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 	}
 
 	if callerRole == "Owner" {
+		// Check for redundancy
+		if callerId == memberId {
+			result, err := a.repos.PlatformMember.GetById(ctx, callerId)
+			if err != nil {
+				return result, common.StringError(err)
+			}
+
+			return result, nil
+		}
+
 		// Verify password
 		if request.Password == "" {
-			return result, common.StringError(errors.New("password required to transfer ownership"))
+			return result, common.StringError(serror.INVALID_PASSWORD)
 		}
 
 		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
