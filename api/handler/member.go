@@ -115,6 +115,31 @@ func (a member) UpdateSelf(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+func (a member) TransferOwnership(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
+	memberId := c.Param("id")
+
+	if !validator.IsUUID(memberId) {
+		return httperror.BadRequestError(c, "invalid id")
+	}
+
+	body := model.RequestTransferOwnership{}
+	err := c.Bind(&body)
+	if err != nil {
+		common.LogStringError(c, err, "member: transferOwnership bind")
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := a.service.TransferOwnership(c.Request().Context(), body, callerId, memberId)
+	if err != nil {
+		common.LogStringError(c, err, "member: transferOwnership")
+
+		return DefaultErrorHandler(c, err)
+	}
+
+	return c.JSON(http.StatusOK, m)
+}
+
 func (a member) Deactivate(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	memberId := c.Param("id")
@@ -200,6 +225,7 @@ func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("/:id", a.Get, ms...)
 	g.PUT("/:id", a.Update, ms...)
 	g.PUT("", a.UpdateSelf, ms...)
+	g.PUT("/:id/transferOwner", a.TransferOwnership, ms...)
 	g.PUT("/:id/deactivate", a.Deactivate, ms...)
 	g.PUT("/:id/reactivate", a.Reactivate, ms...)
 	g.GET("/password-reset", a.SendPasswordResetEmail)
