@@ -22,7 +22,7 @@ type MemberCreateResponse struct {
 type Member interface {
 	GetAll(ctx context.Context, platformId string) ([]repository.PlatformMemberWithRole, error)
 	Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error)
-	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error)
+	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error)
 	TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 	SendPasswordResetEmail(ctx context.Context, email string) error
@@ -188,8 +188,8 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	return nil
 }
 
-func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (model.MemberToRole, error) {
-	result := model.MemberToRole{}
+func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
 
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
@@ -212,7 +212,7 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	if strings.ToLower(request.Role) == "owner" {
-		return result, common.StringError(errors.New("use transferOwner endpoint"))
+		return result, common.StringError(serror.FORBIDDEN)
 	}
 
 	role, err := a.repos.MemberToRole.GetByMember(memberId)
@@ -226,7 +226,10 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 		return result, common.StringError(err)
 	}
 
-	result = role
+	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 
 	return result, nil
 }
