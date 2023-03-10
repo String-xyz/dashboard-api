@@ -211,7 +211,7 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 		return result, common.StringError(errors.New("admins can only update members"))
 	}
 
-	if request.Role == "Owner" || request.Role == "owner" {
+	if strings.ToLower(request.Role) == "owner" {
 		return result, common.StringError(errors.New("use transferOwner endpoint"))
 	}
 
