@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -104,7 +103,15 @@ func (p platformMember[T]) GetById(ctx context.Context, ID string) (PlatformMemb
 
 func (p platformMember[T]) GetByIdIncludingDeactivated(ctx context.Context, ID string) (PlatformMemberWithRole, error) {
 	m := PlatformMemberWithRole{}
-	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1" /* AND deactivated_at IS NULL"*/, p.Table), ID)
+	err := p.Store.GetContext(ctx, &m, `
+	SELECT platform_member.*, member_role.name AS member_role
+	FROM platform_member
+	LEFT JOIN member_to_role
+	ON platform_member.id = member_to_role.member_id
+	LEFT JOIN member_role 
+	ON member_role.id = member_to_role.role_id 
+	WHERE platform_member.id = $1`, ID)
+
 	if err != nil && err == sql.ErrNoRows {
 		return m, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
