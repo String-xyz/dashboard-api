@@ -237,75 +237,65 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 func (a member) TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
 	result := repository.PlatformMemberWithRole{}
 
-	callerRole, err := GetRole(a.repos, callerId)
+	caller, err := a.repos.PlatformMember.GetById(ctx, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	if callerRole == "Owner" {
-		// Check for redundancy
-		if callerId == memberId {
-			result, err := a.repos.PlatformMember.GetById(ctx, callerId)
-			if err != nil {
-				return result, common.StringError(err)
-			}
+	if caller.Role != "Owner" {
+		return result, common.StringError(serror.FORBIDDEN)
+	}
 
-			return result, nil
-		}
+	// Check for redundancy
+	if callerId == memberId {
+		return caller, nil
+	}
 
-		// Verify password
-		if request.Password == "" {
-			return result, common.StringError(serror.INVALID_PASSWORD)
-		}
+	// Verify password
+	if request.Password == "" {
+		return result, common.StringError(serror.INVALID_PASSWORD)
+	}
 
-		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
-		if err != nil {
-			return result, common.StringError(err)
-		}
+	if bcrypt.CompareHashAndPassword([]byte(caller.Password), []byte(request.Password)) != nil {
+		return result, common.StringError(serror.INVALID_PASSWORD)
+	}
 
-		if bcrypt.CompareHashAndPassword([]byte(m.Password), []byte(request.Password)) != nil {
-			return result, common.StringError(serror.INVALID_PASSWORD)
-		}
+	// Demote caller to Admin
+	roleObjCaller, err := a.repos.MemberToRole.GetByMember(callerId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 
-		// Demote caller to Admin
-		roleObjCaller, err := a.repos.MemberToRole.GetByMember(callerId)
-		if err != nil {
-			return result, common.StringError(err)
-		}
+	roleObjCaller.RoleID = GetRoleId("Admin")
 
-		roleObjCaller.RoleID = GetRoleId("Admin")
+	err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
+	if err != nil {
+		return result, common.StringError(err)
+	}
 
+	// Promote member to Owner
+	roleObjMember, err := a.repos.MemberToRole.GetByMember(memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	roleObjMember.RoleID = GetRoleId("Owner")
+
+	err = a.repos.MemberToRole.UpdateRole(memberId, roleObjMember)
+	if err != nil {
+		// If promoting member to Owner fails, undo demoting caller
+		roleObjCaller.RoleID = GetRoleId("Owner")
 		err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
 		if err != nil {
 			return result, common.StringError(err)
 		}
 
-		// Promote member to Owner
-		roleObjMember, err := a.repos.MemberToRole.GetByMember(memberId)
-		if err != nil {
-			return result, common.StringError(err)
-		}
+		return result, common.StringError(err)
+	}
 
-		roleObjMember.RoleID = GetRoleId("Owner")
-
-		err = a.repos.MemberToRole.UpdateRole(memberId, roleObjMember)
-		if err != nil {
-			// If promoting member to Owner fails, undo demoting caller
-			roleObjCaller.RoleID = GetRoleId("Owner")
-			err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
-			if err != nil {
-				return result, common.StringError(err)
-			}
-
-			return result, common.StringError(err)
-		}
-
-		result, err = a.repos.PlatformMember.GetById(ctx, memberId)
-		if err != nil {
-			return result, common.StringError(err)
-		}
-	} else {
-		return result, common.StringError(serror.FORBIDDEN)
+	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
 	}
 
 	return result, nil
