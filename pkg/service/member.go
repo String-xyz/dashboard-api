@@ -260,36 +260,28 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 		return result, common.StringError(serror.INVALID_PASSWORD)
 	}
 
-	// Demote caller to Admin
-	roleObjCaller, err := a.repos.MemberToRole.GetByMember(callerId)
-	if err != nil {
-		return result, common.StringError(err)
-	}
-
-	roleObjCaller.RoleID = GetRoleId("Admin")
-
-	err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
-	if err != nil {
-		return result, common.StringError(err)
-	}
+	// Execute role updates in single db transaction
+	a.repos.MemberToRole.MustBegin()
 
 	// Promote member to Owner
-	roleObjMember, err := a.repos.MemberToRole.GetByMember(memberId)
-	if err != nil {
-		return result, common.StringError(err)
-	}
-
-	roleObjMember.RoleID = GetRoleId("Owner")
+	roleObjMember := model.MemberToRole{MemberID: memberId, RoleID: GetRoleId("Owner")}
 
 	err = a.repos.MemberToRole.UpdateRole(memberId, roleObjMember)
 	if err != nil {
-		// If promoting member to Owner fails, undo demoting caller
-		roleObjCaller.RoleID = GetRoleId("Owner")
-		err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
-		if err != nil {
-			return result, common.StringError(err)
-		}
+		a.repos.MemberToRole.Rollback()
+		return result, common.StringError(serror.NOT_FOUND)
+	}
 
+	// Demote caller to Admin
+	roleObjCaller := model.MemberToRole{MemberID: callerId, RoleID: GetRoleId("Admin")}
+
+	err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
+	if err != nil {
+		a.repos.MemberToRole.Rollback()
+		return result, common.StringError(err)
+	}
+
+	if err := a.repos.MemberToRole.Commit(); err != nil {
 		return result, common.StringError(err)
 	}
 
