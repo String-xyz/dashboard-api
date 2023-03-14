@@ -251,6 +251,12 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 		return caller, nil
 	}
 
+	// Check member exists
+	_, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
 	// Verify password
 	if request.Password == "" {
 		return result, common.StringError(serror.INVALID_PASSWORD)
