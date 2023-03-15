@@ -187,6 +187,10 @@ func (a member) SendPasswordResetEmail(c echo.Context) error {
 	}
 	email = strings.ToLower(email)
 
+	if !IsValidEmail(email) {
+		return httperror.BadRequestError(c, "invalid email")
+	}
+
 	err := a.service.SendPasswordResetEmail(c.Request().Context(), email)
 	if err != nil {
 		common.LogStringError(c, err, "member: send password reset email")

@@ -42,6 +42,10 @@ func (p platform) Create(c echo.Context) error {
 
 	body.Email = strings.ToLower(body.Email)
 
+	if !IsValidEmail(body.Email) {
+		return httperror.BadRequestError(c, "invalid email")
+	}
+
 	m, err := p.service.Create(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/String-xyz/go-lib/common"
+
 	httperror "github.com/String-xyz/go-lib/httperror"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	validator "github.com/String-xyz/go-lib/validator"
@@ -49,6 +50,10 @@ func (i invite) Send(c echo.Context) error {
 	}
 
 	body.Email = strings.ToLower(body.Email)
+
+	if !IsValidEmail(body.Email) {
+		return httperror.BadRequestError(c, "invalid email")
+	}
 
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)
 	if err != nil {
