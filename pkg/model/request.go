@@ -54,6 +54,10 @@ type RequestMemberUpdateOther struct {
 	Role string `json:"role" db:"role"`
 }
 
+type RequestTransferOwnership struct {
+	Password string `json:"password" validate:"required,min=8,max=100"`
+}
+
 type RequestApikeyUpdate struct {
 	Description string `json:"description"`
 }

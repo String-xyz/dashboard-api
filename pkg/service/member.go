@@ -24,6 +24,7 @@ type Member interface {
 	Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error)
 	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error)
+	TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 	SendPasswordResetEmail(ctx context.Context, email string) error
 	PasswordReset(ctx context.Context, request model.RequestPasswordReset) error
 	Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
@@ -189,6 +190,7 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 
 func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
 	result := repository.PlatformMemberWithRole{}
+
 	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
@@ -206,10 +208,10 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	if callerRole == "Admin" && memberRole != "Member" {
-		return result, common.StringError(errors.New("admins can only update members"))
+		return result, common.StringError(serror.FORBIDDEN)
 	}
 
-	if request.Role == "Owner" || request.Role == "owner" {
+	if strings.ToLower(request.Role) == "owner" {
 		return result, common.StringError(serror.FORBIDDEN)
 	}
 
@@ -219,7 +221,77 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	}
 
 	role.RoleID = GetRoleId(request.Role)
-	a.repos.MemberToRole.UpdateRole(memberId, role)
+	err = a.repos.MemberToRole.UpdateRole(memberId, role)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	return result, nil
+}
+
+func (a member) TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
+	result := repository.PlatformMemberWithRole{}
+
+	caller, err := a.repos.PlatformMember.GetById(ctx, callerId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	if caller.Role != "Owner" {
+		return result, common.StringError(serror.FORBIDDEN)
+	}
+
+	// Check for redundancy
+	if callerId == memberId {
+		return caller, nil
+	}
+
+	// Check member exists
+	_, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	// Verify password
+	if request.Password == "" {
+		return result, common.StringError(serror.INVALID_PASSWORD)
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(caller.Password), []byte(request.Password)) != nil {
+		return result, common.StringError(serror.INVALID_PASSWORD)
+	}
+
+	// Execute role updates in single db transaction
+	a.repos.MemberToRole.MustBegin()
+
+	defer a.repos.MemberToRole.Reset()
+
+	// Promote member to Owner
+	roleObjMember := model.MemberToRole{MemberID: memberId, RoleID: GetRoleId("Owner")}
+
+	err = a.repos.MemberToRole.UpdateRole(memberId, roleObjMember)
+	if err != nil {
+		a.repos.MemberToRole.Rollback()
+		return result, common.StringError(serror.NOT_FOUND)
+	}
+
+	// Demote caller to Admin
+	roleObjCaller := model.MemberToRole{MemberID: callerId, RoleID: GetRoleId("Admin")}
+
+	err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
+	if err != nil {
+		a.repos.MemberToRole.Rollback()
+		return result, common.StringError(err)
+	}
+
+	if err := a.repos.MemberToRole.Commit(); err != nil {
+		return result, common.StringError(err)
+	}
 
 	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
 	if err != nil {
