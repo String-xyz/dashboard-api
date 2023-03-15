@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -184,6 +185,8 @@ func (a member) SendPasswordResetEmail(c echo.Context) error {
 	if email == "" {
 		return httperror.BadRequestError(c, "email is required")
 	}
+	email = strings.ToLower(email)
+
 	err := a.service.SendPasswordResetEmail(c.Request().Context(), email)
 	if err != nil {
 		common.LogStringError(c, err, "member: send password reset email")

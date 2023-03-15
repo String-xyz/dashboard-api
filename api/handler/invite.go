@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -46,6 +47,8 @@ func (i invite) Send(c echo.Context) error {
 		common.LogStringError(c, err, "invite: send validate")
 		return httperror.InvalidPayloadError(c, err)
 	}
+
+	body.Email = strings.ToLower(body.Email)
 
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)
 	if err != nil {

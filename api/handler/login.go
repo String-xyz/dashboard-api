@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -40,6 +41,8 @@ func (l login) Login(c echo.Context) error {
 	if err := c.Validate(body); err != nil {
 		return httperror.InvalidPayloadError(c, err)
 	}
+
+	body.Email = strings.ToLower(body.Email)
 
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
