@@ -37,15 +37,11 @@ func (l login) Login(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	body.Email = strings.ToLower(body.Email)
+
 	// validate body
 	if err := c.Validate(body); err != nil {
 		return httperror.InvalidPayloadError(c, err)
-	}
-
-	body.Email = strings.ToLower(body.Email)
-
-	if !IsValidEmail(body.Email) {
-		return httperror.BadRequestError(c, "invalid email")
 	}
 
 	member, jwt, err := l.service.Login(c.Request().Context(), body)

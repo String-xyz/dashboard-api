@@ -44,15 +44,11 @@ func (i invite) Send(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid payload", "invalid payload", "invite")
 	}
 
+	body.Email = strings.ToLower(body.Email)
+
 	if err := c.Validate(body); err != nil {
 		common.LogStringError(c, err, "invite: send validate")
 		return httperror.InvalidPayloadError(c, err)
-	}
-
-	body.Email = strings.ToLower(body.Email)
-
-	if !IsValidEmail(body.Email) {
-		return httperror.BadRequestError(c, "invalid email")
 	}
 
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)

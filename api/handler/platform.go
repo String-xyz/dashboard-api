@@ -36,14 +36,10 @@ func (p platform) Create(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
-	}
-
 	body.Email = strings.ToLower(body.Email)
 
-	if !IsValidEmail(body.Email) {
-		return httperror.BadRequestError(c, "invalid email")
+	if err := c.Validate(body); err != nil {
+		return httperror.InvalidPayloadError(c, err)
 	}
 
 	m, err := p.service.Create(c.Request().Context(), body)
