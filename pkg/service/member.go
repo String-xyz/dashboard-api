@@ -269,6 +269,8 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 	// Execute role updates in single db transaction
 	a.repos.MemberToRole.MustBegin()
 
+	defer a.repos.MemberToRole.Reset()
+
 	// Promote member to Owner
 	roleObjMember := model.MemberToRole{MemberID: memberId, RoleID: GetRoleId("Owner")}
 
