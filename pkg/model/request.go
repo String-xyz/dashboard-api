@@ -62,6 +62,10 @@ type RequestApikeyUpdate struct {
 	Description string `json:"description"`
 }
 
+type RequestPasswordResetEmail struct {
+	Email string `query:"email" validate:"required,email"`
+}
+
 type RequestPasswordReset struct {
 	Password   string `json:"password" validate:"required,min=8,max=100"`
 	ResetToken string `json:"resetToken" validate:"required"`
