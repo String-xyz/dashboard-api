@@ -5,8 +5,6 @@ import (
 	"os"
 	"time"
 
-	netmail "net/mail"
-
 	httperror "github.com/String-xyz/go-lib/httperror"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
@@ -82,11 +80,6 @@ func DeleteAuthCookies(c echo.Context) error {
 
 func IsLocalEnv() bool {
 	return os.Getenv("ENV") == "local"
-}
-
-func IsValidEmail(email string) bool {
-	_, err := netmail.ParseAddress(email)
-	return err == nil
 }
 
 func getCookieSameSiteMode() http.SameSite {
