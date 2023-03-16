@@ -16,7 +16,7 @@ locals {
 
 variable "versioning" {
   type    = string
-  default = "latest"
+  default = "v1.0.0"
 }
 
 locals {
@@ -40,28 +40,8 @@ locals {
           valueFrom = data.aws_ssm_parameter.string_encryption_secret.arn
         },
         {
-          name      = "IPSTACK_API_KEY"
-          valueFrom = data.aws_ssm_parameter.ipstack_api_key.arn
-        },
-        {
-          name      = "FINGERPRINT_API_KEY"
-          valueFrom = data.aws_ssm_parameter.fingerprint_api_key.arn
-        },
-        {
           name      = "SENDGRID_API_KEY"
           valuefrom = data.aws_ssm_parameter.sendgrid_api_key.arn
-        },
-        {
-          name      = "TWILIO_ACCOUNT_SID"
-          valueFrom = data.aws_ssm_parameter.twilio_account_sid.arn
-        },
-        {
-          name      = "TWILIO_SMS_SID"
-          valuefrom = data.aws_ssm_parameter.twilio_sms_sid.arn
-        },
-        {
-          name      = "TWILIO_AUTH_TOKEN"
-          valuefrom = data.aws_ssm_parameter.twilio_auth_token.arn
         },
         {
           name      = "DB_USERNAME"
@@ -89,6 +69,18 @@ locals {
         }
       ]
       environment = [
+        {
+          name  = "MEMBER_ROLE_OWNER_ID"
+          value = data.aws_ssm_parameter.member_role_admin_id.value
+        },
+        {
+          name  = "MEMBER_ROLE_ADMIN_ID"
+          value = data.aws_ssm_parameter.member_role_admin_id.value
+        },
+        {
+          name  = "MEMBER_ROLE_MEMBER_ID"
+          value = data.aws_ssm_parameter.member_role_member_id.value
+        },
         {
           name  = "PORT"
           value = local.container_port
@@ -191,4 +183,4 @@ locals {
     }
   }
 ])
-
+}
