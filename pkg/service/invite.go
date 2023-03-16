@@ -70,7 +70,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 
 	// Create encrypted token so that only the email owner can accept the invite
 	key := os.Getenv("STRING_ENCRYPTION_KEY")
-	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), Email: request.Email}, key)
+	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), Email: request.Email}, key)
 	if err != nil {
 		return invite, common.StringError(err)
 	}
@@ -98,7 +98,7 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 
 	// Create encrypted token so that only the email owner can accept the invite
 	key := os.Getenv("STRING_ENCRYPTION_KEY")
-	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), Email: result.Email}, key)
+	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), Email: result.Email}, key)
 	if err != nil {
 		return result, common.StringError(err)
 	}
