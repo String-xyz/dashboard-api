@@ -40,8 +40,8 @@ type RequestLogin struct {
 // }
 
 type RequestInviteAcceptance struct {
-	Id       *string `json:"id"`
-	Password string  `json:"password" validate:"required,min=8,max=100"`
+	Password string `json:"password" validate:"required,min=8,max=100"`
+	Token    string `json:"token" validate:"required,base64"`
 }
 
 type RequestMemberUpdateSelf struct {

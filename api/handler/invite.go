@@ -69,8 +69,7 @@ func (i invite) Accept(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	body.Id = &id
-	m, jwt, err := i.service.Accept(c.Request().Context(), body)
+	m, jwt, err := i.service.Accept(c.Request().Context(), id, body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 
