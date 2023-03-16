@@ -57,20 +57,24 @@ func (i invite) Send(c echo.Context) error {
 }
 
 func (i invite) Accept(c echo.Context) error {
+	id := c.Param("id")
+
 	body := model.RequestInviteAcceptance{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept bind")
 		return httperror.BadRequestError(c)
 	}
-	id := c.Param("id")
+
+	if err := c.Validate(body); err != nil {
+		return httperror.InvalidPayloadError(c, err)
+	}
 
 	if !validator.IsUUID(id) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	body.Id = &id
-	m, jwt, err := i.service.Accept(c.Request().Context(), body)
+	m, jwt, err := i.service.Accept(c.Request().Context(), id, body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 
@@ -78,7 +82,12 @@ func (i invite) Accept(c echo.Context) error {
 			return httperror.ConflictError(c, "Invite is not pending")
 		}
 
-		return httperror.InternalError(c)
+		// the token is invalid or expired
+		if serror.IsError(err, serror.FORBIDDEN) {
+			return httperror.BadRequestError(c, "Invalid password reset token")
+		}
+
+		return DefaultErrorHandler(c, err)
 	}
 
 	err = SetAuthCookies(c, jwt)

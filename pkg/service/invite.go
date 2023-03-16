@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net/url"
 	"os"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 
 type Invite interface {
 	Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (repository.MemberInviteInfo, error)
-	Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, JWT, error)
+	Accept(ctx context.Context, inviteId string, requestBody model.RequestInviteAcceptance) (model.PlatformMember, JWT, error)
 	List(ctx context.Context, status string, platformId string) ([]repository.MemberInviteInfo, error)
 	Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error)
@@ -26,6 +27,11 @@ type Invite interface {
 type invite struct {
 	repos repository.Repositories
 	redis database.RedisStore
+}
+
+type TokenPayload struct {
+	ExpiresAt int64  `json:"exp"`
+	Email     string `json:"email"`
 }
 
 func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite {
@@ -62,13 +68,14 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 		return invite, common.StringError(err)
 	}
 
-	body := "" +
-		"<a href='https://www.string.xyz'>" +
-		"<img src='https://uploads-ssl.webflow.com/63163482142485bcffc0cd47/6318c58524a46f188e0adef6_Logo-dark-lg-p-500.png'></img></a>" +
-		"<header>You have been invited to use the String API</header>" +
-		"<br>Dear " + request.Name + "," +
-		"<br>Thank you for signing up to use the String API.  Please click the link below to set your password and complete your registration process:" +
-		"<br><a href='" + os.Getenv("BASE_DASHBOARD_URL") + "/invite/" + invite.ID + "'>Accept Invitation</a>" // TODO: double check :id
+	// Create encrypted token so that only the email owner can accept the invite
+	key := os.Getenv("STRING_ENCRYPTION_KEY")
+	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), Email: request.Email}, key)
+	if err != nil {
+		return invite, common.StringError(err)
+	}
+
+	body := a.createEmailBody(invite.ID, request.Name, token)
 
 	err = SendEmail("String API", "New String API User", "auth@string.xyz", request.Email, "String API Invitation", body)
 	if err != nil {
@@ -78,12 +85,12 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	return invite, nil
 }
 
-func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAcceptance) (model.PlatformMember, JWT, error) {
+func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.RequestInviteAcceptance) (model.PlatformMember, JWT, error) {
 	member := model.PlatformMember{}
 	jwt := JWT{}
 
 	// Ensure that an invite exists
-	invite, err := a.repos.MemberInvite.GetById(ctx, *requestBody.Id)
+	invite, err := a.repos.MemberInvite.GetById(ctx, inviteId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -91,6 +98,24 @@ func (a invite) Accept(ctx context.Context, requestBody model.RequestInviteAccep
 	// Check invite status
 	if repository.GetInviteStatus(invite) != "pending" {
 		return member, jwt, common.StringError(serror.ALREADY_IN_USE)
+	}
+
+	// Ensure that the token is valid
+	key := os.Getenv("STRING_ENCRYPTION_KEY")
+	token := requestBody.Token
+	payload, err := common.Decrypt[TokenPayload](token, key)
+	if err != nil {
+		return member, jwt, common.StringError(err)
+	}
+
+	// Ensure that the token is not expired
+	if payload.ExpiresAt < time.Now().Unix() {
+		return member, jwt, common.StringError(serror.FORBIDDEN)
+	}
+
+	// Ensure that the token is for the correct email
+	if payload.Email != invite.Email {
+		return member, jwt, common.StringError(serror.FORBIDDEN)
 	}
 
 	// Generate a new Platform Member with an Email
@@ -156,24 +181,25 @@ func (a invite) List(ctx context.Context, status string, platformId string) ([]r
 	return result, nil
 }
 
-func (a invite) Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
 	result := repository.MemberInviteInfo{}
-	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
+	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return result, common.StringError(err)
 	}
-	result, err = a.repos.MemberInvite.GetById(ctx, inviteId)
+	result, err = i.repos.MemberInvite.GetById(ctx, inviteId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	body := "" +
-		"<a href='https://www.string.xyz'>" +
-		"<img src='https://uploads-ssl.webflow.com/63163482142485bcffc0cd47/6318c58524a46f188e0adef6_Logo-dark-lg-p-500.png'></img></a>" +
-		"<header>You have been invited to use the String API</header>" +
-		"<br>Dear " + result.Name + "," +
-		"<br>Thank you for signing up to use the String API.  Please click the link below to set your password and complete your registration process:" +
-		"<br><a href='" + os.Getenv("BASE_DASHBOARD_URL") + "/invite/" + result.ID + "'>Accept Invitation</a>" // TODO: double check :id
+	// Create encrypted token so that only the email owner can accept the invite
+	key := os.Getenv("STRING_ENCRYPTION_KEY")
+	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), Email: result.Email}, key)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	body := i.createEmailBody(result.ID, result.Name, token)
 
 	err = SendEmail("String API", "New String API User", "auth@string.xyz", result.Email, "String API Invitation", body)
 	if err != nil {
@@ -250,4 +276,20 @@ func (a invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo
 		return result, common.StringError(err)
 	}
 	return result, nil
+}
+
+func (i invite) createEmailBody(inviteId, userName, token string) string {
+	token = url.QueryEscape(token) // make
+
+	href := os.Getenv("BASE_DASHBOARD_URL") + "/invite/" + inviteId + "?token=" + token
+
+	body := "" +
+		"<a href='https://www.string.xyz'>" +
+		"<img src='https://uploads-ssl.webflow.com/63163482142485bcffc0cd47/6318c58524a46f188e0adef6_Logo-dark-lg-p-500.png'></img></a>" +
+		"<header>You have been invited to use the String API</header>" +
+		"<br>Dear " + userName + "," +
+		"<br>Thank you for signing up to use the String API.  Please click the link below to set your password and complete your registration process:" +
+		"<br><a href='" + href + "'>Accept Invitation</a>"
+
+	return body
 }
