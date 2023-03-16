@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -124,8 +125,8 @@ func (a member) TransferOwnership(c echo.Context) error {
 	}
 
 	body := model.RequestTransferOwnership{}
-	err := c.Bind(&body)
-	if err != nil {
+
+	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "member: transferOwnership bind")
 		return httperror.BadRequestError(c)
 	}
@@ -180,11 +181,20 @@ func (a member) Reactivate(c echo.Context) error {
 }
 
 func (a member) SendPasswordResetEmail(c echo.Context) error {
-	email := c.QueryParam("email")
-	if email == "" {
-		return httperror.BadRequestError(c, "email is required")
+	body := model.RequestPasswordResetEmail{}
+
+	if err := c.Bind(&body); err != nil {
+		common.LogStringError(c, err, "member: send password reset email bind")
+		return httperror.BadRequestError(c)
 	}
-	err := a.service.SendPasswordResetEmail(c.Request().Context(), email)
+
+	if err := c.Validate(body); err != nil {
+		return httperror.InvalidPayloadError(c, err)
+	}
+
+	body.Email = strings.ToLower(body.Email)
+
+	err := a.service.SendPasswordResetEmail(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "member: send password reset email")
 

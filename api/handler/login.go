@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -35,6 +36,8 @@ func (l login) Login(c echo.Context) error {
 		common.LogStringError(c, err, "login: login bind")
 		return httperror.BadRequestError(c)
 	}
+
+	body.Email = strings.ToLower(body.Email)
 
 	// validate body
 	if err := c.Validate(body); err != nil {

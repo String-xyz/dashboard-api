@@ -25,7 +25,7 @@ type Member interface {
 	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error)
 	TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
-	SendPasswordResetEmail(ctx context.Context, email string) error
+	SendPasswordResetEmail(ctx context.Context, request model.RequestPasswordResetEmail) error
 	PasswordReset(ctx context.Context, request model.RequestPasswordReset) error
 	Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
 	Reactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
@@ -125,7 +125,9 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 	return result, nil
 }
 
-func (a member) SendPasswordResetEmail(ctx context.Context, email string) error {
+func (a member) SendPasswordResetEmail(ctx context.Context, request model.RequestPasswordResetEmail) error {
+	email := request.Email
+
 	// Anyone can request this, so ensure member is associated with 'email'
 	member, err := a.repos.PlatformMember.GetByEmail(ctx, email)
 	if err != nil {

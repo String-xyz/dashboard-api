@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -34,6 +35,8 @@ func (p platform) Create(c echo.Context) error {
 		common.LogStringError(c, err, "platform: create bind")
 		return httperror.BadRequestError(c)
 	}
+
+	body.Email = strings.ToLower(body.Email)
 
 	if err := c.Validate(body); err != nil {
 		return httperror.InvalidPayloadError(c, err)

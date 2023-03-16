@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	netmail "net/mail"
 	"os"
 	"strings"
 	"time"
@@ -215,12 +214,6 @@ func (a auth) Get(key string) (JWTStrategy, error) {
 
 func (a auth) Delete(key string) error {
 	return a.redis.Delete(key)
-}
-
-// Use native mail package to check if email a valid email
-func validEmail(email string) bool {
-	_, err := netmail.ParseAddress(email)
-	return err == nil
 }
 
 func uuidWithoutHyphens() string {
