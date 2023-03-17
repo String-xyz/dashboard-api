@@ -1,5 +1,5 @@
 locals {
-  cluster_name       = "string-core"
+  cluster_name       = "core-sandbox"
   env                = "sandbox"
   service_name       = "sandbox-platform-api"
   root_domain        = "sandbox.string-api.xyz"
@@ -69,6 +69,10 @@ locals {
         }
       ]
       environment = [
+        {
+          name  = "BASE_DASHBOARD_URL"
+          value = "https://sandbox.string.xyz"
+        },
         {
           name  = "MEMBER_ROLE_OWNER_ID"
           value = data.aws_ssm_parameter.member_role_admin_id.value
