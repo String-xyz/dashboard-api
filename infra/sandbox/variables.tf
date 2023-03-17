@@ -1,5 +1,5 @@
 locals {
-  cluster_name       = "string-core"
+  cluster_name       = "core-sandbox"
   env                = "sandbox"
   service_name       = "sandbox-platform-api"
   root_domain        = "sandbox.string-api.xyz"
