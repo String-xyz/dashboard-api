@@ -41,16 +41,13 @@ func NewApikey(repos repository.Repositories) Apikey {
 func (a apikey) Create(ctx context.Context, callerId string, platformId string) (key model.Apikey, err error) {
 
 	uuiKey := "str." + uuidWithoutHyphens()
-	hashed := common.ToSha256(uuiKey)
 
-	key = model.Apikey{Type: "public", Data: hashed, PlatformID: platformId, CreatedBy: callerId}
+	key = model.Apikey{Type: "public", Data: uuiKey, PlatformID: platformId, CreatedBy: callerId}
 	key, err = a.repos.Apikey.Create(ctx, key)
 	if err != nil {
 		return key, common.StringError(err)
 	}
 
-	// return the unhashed key
-	key.Data = uuiKey
 	return key, nil
 }
 
