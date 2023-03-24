@@ -51,7 +51,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.IsError(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
-	} else if pendingInvite.Email == request.Email && callerId != nil {
+	} else if pendingInvite.Email == request.Email && callerId != nil && pendingInvite.DeactivatedAt == nil {
 		// Update invite and resend it
 		newRequest := model.RequestInviteUpdate{Role: request.Role, Name: request.Name}
 		newInvite, err := a.Update(ctx, newRequest, pendingInvite.ID, *callerId)
