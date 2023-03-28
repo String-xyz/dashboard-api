@@ -6,12 +6,20 @@ data "aws_ssm_parameter" "string_encryption_secret" {
   name = "string-encryption-secret"  
 }
 
-data "aws_ssm_parameter" "user_jwt_secret" {
-  name = "user-jwt-secret"
+data "aws_ssm_parameter" "member_role_owner_id" {
+  name = "${local.env}-platform-member-role-owner-id"
 }
 
-data "aws_ssm_parameter" "ipstack_api_key" {
-  name = "ipstack-api-key"
+data "aws_ssm_parameter" "member_role_member_id" {
+  name = "${local.env}-platform-member-role-member-id"
+}
+
+data "aws_ssm_parameter" "member_role_admin_id" {
+  name = "${local.env}-platform-member-role-admin-id"
+}
+
+data "aws_ssm_parameter" "user_jwt_secret" {
+  name = "user-jwt-secret"
 }
 
 data "aws_ssm_parameter" "fingerprint_api_key" { 
@@ -20,18 +28,6 @@ data "aws_ssm_parameter" "fingerprint_api_key" {
 
 data "aws_ssm_parameter" "sendgrid_api_key" {
   name = "sendgrid-api-key"
-}
-
-data "aws_ssm_parameter" "twilio_sms_sid" {
-  name = "twilio-sms-sid"  
-}
-
-data "aws_ssm_parameter" "twilio_account_sid" {
- name = "twilio-account-sid"  
-}
-
-data "aws_ssm_parameter" "twilio_auth_token" {
-  name = "twilio-auth-token"
 }
 
 data "aws_ssm_parameter" "db_password" {
