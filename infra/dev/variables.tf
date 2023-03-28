@@ -39,29 +39,10 @@ locals {
           valueFrom = data.aws_ssm_parameter.string_encryption_secret.arn
         },
         {
-          name      = "IPSTACK_API_KEY"
-          valueFrom = data.aws_ssm_parameter.ipstack_api_key.arn
-        },
-        {
-          name      = "FINGERPRINT_API_KEY"
-          valueFrom = data.aws_ssm_parameter.fingerprint_api_key.arn
-        },
-        {
           name      = "SENDGRID_API_KEY"
           valuefrom = data.aws_ssm_parameter.sendgrid_api_key.arn
         },
-        {
-          name      = "TWILIO_ACCOUNT_SID"
-          valueFrom = data.aws_ssm_parameter.twilio_account_sid.arn
-        },
-        {
-          name      = "TWILIO_SMS_SID"
-          valuefrom = data.aws_ssm_parameter.twilio_sms_sid.arn
-        },
-        {
-          name      = "TWILIO_AUTH_TOKEN"
-          valuefrom = data.aws_ssm_parameter.twilio_auth_token.arn
-        },
+       
         {
           name      = "DB_USERNAME"
           valueFrom = data.aws_ssm_parameter.db_username.arn
@@ -108,6 +89,7 @@ locals {
           name  = "AWS_REGION"
           value = local.region
         },
+
         {
           name  = "AWS_KMS_KEY_ID"
           value = data.aws_kms_key.kms_key.key_id
