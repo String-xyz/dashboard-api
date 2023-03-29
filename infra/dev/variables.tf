@@ -89,7 +89,22 @@ locals {
           name  = "AWS_REGION"
           value = local.region
         },
-
+        {
+          name  = "BASE_DASHBOARD_URL"
+          value = "https://dashboard.dev.string-api.xyz"
+        },
+        {
+          name  = "MEMBER_ROLE_OWNER_ID"
+          value = data.aws_ssm_parameter.member_role_admin_id.value
+        },
+        {
+          name  = "MEMBER_ROLE_ADMIN_ID"
+          value = data.aws_ssm_parameter.member_role_admin_id.value
+        },
+        {
+          name  = "MEMBER_ROLE_MEMBER_ID"
+          value = data.aws_ssm_parameter.member_role_member_id.value
+        },
         {
           name  = "AWS_KMS_KEY_ID"
           value = data.aws_kms_key.kms_key.key_id
