@@ -59,15 +59,9 @@ func (p platform) Get(c echo.Context) error {
 	platformId := c.Get("platformId").(string)
 	m, err := p.service.Get(c.Request().Context(), platformId)
 	if err != nil {
-		common.LogStringError(c, err, "platform: get")
-
-		if serror.IsError(err, serror.NOT_FOUND) {
-			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
-			return httperror.Unauthorized(c)
-		}
-
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "platform: get")
 	}
+
 	return c.JSON(http.StatusAccepted, m)
 }
 
@@ -93,14 +87,7 @@ func (p platform) Update(c echo.Context) error {
 
 	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId)
 	if err != nil {
-		common.LogStringError(c, err, "platform: update")
-
-		if serror.IsError(err, serror.NOT_FOUND) {
-			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
-			return httperror.Unauthorized(c)
-		}
-
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "platform: update")
 	}
 	return c.JSON(http.StatusOK, m)
 }

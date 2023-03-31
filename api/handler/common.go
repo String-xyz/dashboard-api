@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
@@ -92,10 +93,13 @@ func getCookieSameSiteMode() http.SameSite {
 	return sameSiteMode
 }
 
-func DefaultErrorHandler(c echo.Context, err error) error {
+func DefaultErrorHandler(c echo.Context, err error, handlerName string) error {
 	if err == nil {
 		return nil
 	}
+
+	// always log the error
+	common.LogStringError(c, err, handlerName)
 
 	if serror.IsError(err, serror.NOT_FOUND) {
 		return httperror.NotFoundError(c)
