@@ -41,12 +41,13 @@ func Start(config APIConfig) {
 	repos := newRepos(config)
 	redis := newRedis()
 	service := newServices(config, repos, redis)
-
 	platformRoute(service, e)
 	memberRoute(service, e)
 	loginRoute(service, e)
 	inviteRoute(service, e)
 	apikeyRoute(service, e)
+	contractRoute(service, e)
+	networkRoute(service, e)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
 }

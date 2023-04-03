@@ -17,6 +17,8 @@ func newRepos(config APIConfig) repository.Repositories {
 		MemberInvite:     repository.NewMemberInvite(config.DB),
 		Apikey:           repository.NewApikey(config.DB),
 		DenyList:         repository.NewDenyList(config.Redis),
+		Contract:         repository.NewContract(config.DB),
+		Network:          repository.NewNetwork(config.DB),
 	}
 }
 
@@ -31,6 +33,8 @@ func newServices(config APIConfig, repos repository.Repositories, redis database
 	login := service.NewLogin(repos, auth)
 	invite := service.NewInvite(repos, redis)
 	apikey := service.NewApikey(repos)
+	contract := service.NewContract(repos)
+	network := service.NewNetwork(repos)
 
-	return service.Services{Platform: plat, Member: member, Auth: auth, Login: login, Invite: invite, Apikey: apikey}
+	return service.Services{Platform: plat, Member: member, Auth: auth, Login: login, Invite: invite, Apikey: apikey, Contract: contract, Network: network}
 }

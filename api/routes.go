@@ -31,3 +31,13 @@ func apikeyRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewApikey(services.Apikey)
 	handler.RegisterRoutes(e.Group("/apikeys"), middleware.JWT(services.Auth))
 }
+
+func contractRoute(services service.Services, e *echo.Echo) {
+	handler := handler.NewContract(services.Contract)
+	handler.RegisterRoutes(e.Group("/contracts"), middleware.JWT(services.Auth))
+}
+
+func networkRoute(services service.Services, e *echo.Echo) {
+	handler := handler.NewNetwork(services.Network)
+	handler.RegisterRoutes(e.Group("/networks"))
+}

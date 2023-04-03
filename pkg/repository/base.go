@@ -10,4 +10,5 @@ type Repositories struct {
 	Apikey           Apikey
 	DenyList         DenyList
 	Contract         Contract
+	Network          Network
 }

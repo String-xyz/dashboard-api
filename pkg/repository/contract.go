@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/String-xyz/go-lib/common"
 	libcommon "github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/go-lib/repository"
@@ -33,8 +34,8 @@ func NewContract(db database.Queryable) Contract {
 func (u contract[T]) Create(insert model.Contract) (model.Contract, error) {
 	m := model.Contract{}
 	rows, err := u.Store.NamedQuery(`
-		INSERT INTO contact (user_id, data, type, status) 
-		VALUES(:user_id, :data, :type, :status) RETURNING *`, insert)
+		INSERT INTO contract (name, address, functions, network_id, platform_id) 
+		VALUES(:name, :address, :functions, :network_id, :platform_id) RETURNING *`, insert)
 	if err != nil {
 		return m, libcommon.StringError(err)
 	}
@@ -72,4 +73,15 @@ func (u contract[T]) GetByAddressAndNetworkAndPlatform(address string, networkId
 		return m, serror.NOT_FOUND
 	}
 	return m, libcommon.StringError(err)
+}
+
+func (u contract[T]) GetById(ctx context.Context, ID string) (model.Contract, error) {
+	m := model.Contract{}
+	err := u.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", u.Table), ID)
+	if err == sql.ErrNoRows {
+		return m, common.StringError(serror.NOT_FOUND)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
 }

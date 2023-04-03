@@ -83,3 +83,8 @@ type Contract struct {
 	NetworkID     string         `json:"networkId" db:"network_id"`
 	PlatformID    string         `json:"platformId" db:"platform_id"`
 }
+
+type NetworkData struct {
+	ID   string `json:"id,omitempty" db:"id"`
+	Name string `json:"name" db:"name"`
+}
