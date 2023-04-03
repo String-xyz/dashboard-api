@@ -95,7 +95,7 @@ locals {
         },
         {
           name  = "MEMBER_ROLE_OWNER_ID"
-          value = data.aws_ssm_parameter.member_role_admin_id.value
+          value = data.aws_ssm_parameter.member_role_owner_id.value
         },
         {
           name  = "MEMBER_ROLE_ADMIN_ID"
