@@ -9,4 +9,5 @@ type Repositories struct {
 	MemberInvite     MemberInvite
 	Apikey           Apikey
 	DenyList         DenyList
+	Contract         Contract
 }
