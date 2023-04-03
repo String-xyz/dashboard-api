@@ -46,7 +46,7 @@ func (p platform) Create(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
 
-		if serror.IsError(err, serror.ALREADY_IN_USE) {
+		if serror.Is(err, serror.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, "email already in use")
 		}
 

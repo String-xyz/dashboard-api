@@ -48,15 +48,15 @@ func (l login) Login(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
 
-		if serror.IsError(err, serror.DEACTIVATED, serror.INVALID_PASSWORD, serror.NOT_FOUND) {
+		if serror.Is(err, serror.DEACTIVATED, serror.INVALID_PASSWORD, serror.NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "login: login")
 	}
 
 	err = SetAuthCookies(c, jwt)

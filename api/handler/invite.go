@@ -81,12 +81,12 @@ func (i invite) Accept(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 
-		if serror.IsError(err, serror.ALREADY_IN_USE) {
+		if serror.Is(err, serror.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, "Invite is not pending")
 		}
 
 		// the token is invalid or expired
-		if serror.IsError(err, serror.FORBIDDEN) {
+		if serror.Is(err, serror.FORBIDDEN) {
 			return httperror.BadRequestError(c, "Invalid password reset token")
 		}
 
@@ -126,7 +126,7 @@ func (i invite) Resend(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
@@ -158,11 +158,11 @@ func (i invite) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serror.IsError(err, serror.FORBIDDEN) {
+		if serror.Is(err, serror.FORBIDDEN) {
 			return httperror.ForbiddenError(c, "cannot elevate member to owner")
 		}
 
@@ -182,11 +182,11 @@ func (i invite) Deactivate(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serror.IsError(err, serror.FORBIDDEN) {
+		if serror.Is(err, serror.FORBIDDEN) {
 			return httperror.ForbiddenError(c, errors.Cause(err).Error())
 		}
 
