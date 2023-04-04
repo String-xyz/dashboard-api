@@ -47,6 +47,8 @@ func Start(config APIConfig) {
 	loginRoute(service, e)
 	inviteRoute(service, e)
 	apikeyRoute(service, e)
+	contractRoute(service, e)
+	networkRoute(service, e)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
 }
