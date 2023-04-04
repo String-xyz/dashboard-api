@@ -2,9 +2,8 @@ name: deploy to sandbox
 permissions:
   id-token: write
   contents: read
-on: 
-  push: 
-    branches: [sandbox]
+on: push  
+    #   branches: [sandbox]
 jobs:
   deploy:
     environment: 
