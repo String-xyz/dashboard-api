@@ -20,7 +20,7 @@ type Contract interface {
 	ListByPlatformId(ctx context.Context, platformId string, limit int, offset int) ([]model.Contract, error)
 	List(ctx context.Context, limit int, offset int) ([]model.Contract, error)
 	Update(ctx context.Context, id string, updates any) error
-	GetByAddressAndNetworkAndPlatform(address string, networkId string, platformId string) (model.Contract, error)
+	GetByAddressAndNetworkAndPlatform(ctx context.Context, address string, networkId string, platformId string) (model.Contract, error)
 	Activate(ctx context.Context, ID string) error
 }
 
@@ -67,9 +67,9 @@ func (u contract[T]) ListByPlatformId(ctx context.Context, platformId string, li
 	return list, nil
 }
 
-func (u contract[T]) GetByAddressAndNetworkAndPlatform(address string, networkId string, platformId string) (model.Contract, error) {
+func (u contract[T]) GetByAddressAndNetworkAndPlatform(ctx context.Context, address string, networkId string, platformId string) (model.Contract, error) {
 	m := model.Contract{}
-	err := u.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE address = $1 AND network_id = $2 AND platform_id = $3 LIMIT 1", u.Table), address, networkId, platformId)
+	err := u.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE address = $1 AND network_id = $2 AND platform_id = $3 LIMIT 1", u.Table), address, networkId, platformId)
 	if err != nil && err == sql.ErrNoRows {
 		return m, serror.NOT_FOUND
 	}
