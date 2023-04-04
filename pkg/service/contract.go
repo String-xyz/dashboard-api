@@ -35,7 +35,7 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 	}
 
 	// Check if contract already exists
-	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(create.Address, create.NetworkID, platformId)
+	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkID, platformId)
 	if err != nil && err != serror.NOT_FOUND {
 		return model.Contract{}, common.StringError(err)
 	} else if exists.ID != "" {
