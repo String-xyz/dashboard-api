@@ -12,10 +12,11 @@ import (
 )
 
 type Contract interface {
-	Create(ctx context.Context, create model.RequestContractUpdate, callerId string, platformId string) (model.Contract, error)
+	Create(ctx context.Context, create model.RequestContractCreate, callerId string, platformId string) (model.Contract, error)
 	GetAll(ctx context.Context, platformId string) ([]model.Contract, error)
 	Get(ctx context.Context, platformId string, contractId string) (model.Contract, error)
 	Deactivate(ctx context.Context, callerId string, platformId string, contractId string) (model.Contract, error)
+	Reactivate(ctx context.Context, callerId string, platformId string, contractId string) (model.Contract, error)
 	Update(ctx context.Context, request model.RequestContractUpdate, callerId string, platformId string, contractId string) (model.Contract, error)
 }
 
@@ -27,7 +28,7 @@ func NewContract(repos repository.Repositories) Contract {
 	return &contract{repos}
 }
 
-func (c contract) Create(ctx context.Context, create model.RequestContractUpdate, callerId string, platformId string) (model.Contract, error) {
+func (c contract) Create(ctx context.Context, create model.RequestContractCreate, callerId string, platformId string) (model.Contract, error) {
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -101,6 +102,39 @@ func (c contract) Deactivate(ctx context.Context, callerId string, platformId st
 	}
 
 	return deactivate, nil
+}
+
+func (c contract) Reactivate(ctx context.Context, callerId string, platformId string, contractId string) (model.Contract, error) {
+	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+
+	reactivate, err := c.repos.Contract.GetById(ctx, contractId)
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+	if reactivate.PlatformID != platformId {
+		return model.Contract{}, common.StringError(errors.New("contract not maintained by accessing platform"))
+	}
+
+	type ReactivateUpdate struct {
+		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	}
+
+	update := ReactivateUpdate{DeactivatedAt: nil}
+
+	err = c.repos.Contract.Update(ctx, contractId, update)
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+
+	reactivate, err = c.repos.Contract.GetById(ctx, contractId)
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+
+	return reactivate, nil
 }
 
 func (c contract) Update(ctx context.Context, request model.RequestContractUpdate, callerId string, platformId string, contractId string) (model.Contract, error) {

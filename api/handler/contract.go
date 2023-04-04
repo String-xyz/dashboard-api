@@ -17,6 +17,7 @@ type Contract interface {
 	GetAll(e echo.Context) error
 	Get(e echo.Context) error
 	Deactivate(e echo.Context) error
+	Reactivate(e echo.Context) error
 	Update(e echo.Context) error
 	RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc)
 }
@@ -34,7 +35,7 @@ func (a contract) Create(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 
-	body := model.RequestContractUpdate{}
+	body := model.RequestContractCreate{}
 	if err := c.Bind(&body); err != nil {
 		return httperror.BadRequestError(c)
 	}
@@ -92,6 +93,22 @@ func (a contract) Deactivate(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+func (a contract) Reactivate(c echo.Context) error {
+	callerId := c.Get("memberId").(string)
+	platformId := c.Get("platformId").(string)
+	contractId := c.Param("id")
+	if !validator.IsUUID(contractId, platformId, callerId) {
+		return httperror.BadRequestError(c, "invalid id")
+	}
+
+	m, err := a.service.Reactivate(c.Request().Context(), callerId, platformId, contractId)
+	if err != nil {
+		common.LogStringError(c, err, "contract: reactivate")
+		return DefaultErrorHandler(c, err)
+	}
+	return c.JSON(http.StatusOK, m)
+}
+
 func (a contract) Update(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
@@ -129,6 +146,7 @@ func (a contract) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.POST("", a.Create, ms...)
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
-	g.PUT("/:id/deactivate", a.Deactivate, ms...)
-	g.PUT("/:id", a.Update, ms...)
+	g.PATCH("/:id/deactivate", a.Deactivate, ms...)
+	g.PATCH("/:id/reactivate", a.Deactivate, ms...)
+	g.PATCH("/:id", a.Update, ms...)
 }
