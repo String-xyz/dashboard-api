@@ -5,11 +5,12 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	validator "github.com/String-xyz/go-lib/validator"
+
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 )
 
 type Contract interface {
@@ -42,10 +43,11 @@ func (a contract) Create(c echo.Context) error {
 
 	m, err := a.service.Create(c.Request().Context(), body, callerId, platformId)
 	if err != nil {
-		if errors.Cause(err).Error() == "contract already exists" {
+		common.LogStringError(c, err, "contract: create")
+
+		if serror.Is(err, serror.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, err.Error())
 		}
-		common.LogStringError(c, err, "contract: create")
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusCreated, m)
@@ -56,8 +58,7 @@ func (a contract) GetAll(c echo.Context) error {
 
 	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
-		common.LogStringError(c, err, "contract: get all")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "contract: get all")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -71,8 +72,7 @@ func (a contract) Get(c echo.Context) error {
 
 	m, err := a.service.Get(c.Request().Context(), platformId, contractId)
 	if err != nil {
-		common.LogStringError(c, err, "contract: get")
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "contract: get")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -87,8 +87,7 @@ func (a contract) Deactivate(c echo.Context) error {
 
 	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, contractId)
 	if err != nil {
-		common.LogStringError(c, err, "contract: deactivate")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "contract: deactivate")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -103,8 +102,7 @@ func (a contract) Reactivate(c echo.Context) error {
 
 	m, err := a.service.Reactivate(c.Request().Context(), callerId, platformId, contractId)
 	if err != nil {
-		common.LogStringError(c, err, "contract: reactivate")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "contract: reactivate")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -130,8 +128,7 @@ func (a contract) Update(c echo.Context) error {
 
 	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, contractId)
 	if err != nil {
-		common.LogStringError(c, err, "contract: update")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "contract: update")
 	}
 
 	return c.JSON(http.StatusOK, m)

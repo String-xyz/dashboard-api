@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -38,11 +37,11 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkID, platformId)
 	if err != nil && err != serror.NOT_FOUND {
 		return model.Contract{}, common.StringError(err)
-	} else if exists.ID != "" {
-		return model.Contract{}, common.StringError(errors.New("contract already exists"))
+	} else if exists.Id != "" {
+		return model.Contract{}, common.StringError(serror.ALREADY_IN_USE)
 	}
 
-	row := model.Contract{Name: create.Name, PlatformID: platformId, Address: create.Address, Functions: create.Functions, NetworkID: create.NetworkID}
+	row := model.Contract{Name: create.Name, PlatformId: platformId, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkID}
 	row, err = c.repos.Contract.Create(row)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -64,8 +63,8 @@ func (c contract) Get(ctx context.Context, platformId string, contractId string)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if contract.PlatformID != platformId {
-		return model.Contract{}, common.StringError(errors.New("contract not maintained by accessing platform"))
+	if contract.PlatformId != platformId {
+		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 	return contract, nil
 }
@@ -80,8 +79,8 @@ func (c contract) Deactivate(ctx context.Context, callerId string, platformId st
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if deactivate.PlatformID != platformId {
-		return model.Contract{}, common.StringError(errors.New("contract not maintained by accessing platform"))
+	if deactivate.PlatformId != platformId {
+		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 
 	type DeactivateUpdate struct {
@@ -114,8 +113,8 @@ func (c contract) Reactivate(ctx context.Context, callerId string, platformId st
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if reactivate.PlatformID != platformId {
-		return model.Contract{}, common.StringError(errors.New("contract not maintained by accessing platform"))
+	if reactivate.PlatformId != platformId {
+		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 
 	err = c.repos.Contract.Activate(ctx, contractId)
@@ -141,8 +140,8 @@ func (c contract) Update(ctx context.Context, request model.RequestContractUpdat
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if update.PlatformID != platformId {
-		return model.Contract{}, common.StringError(errors.New("contract not maintained by accessing platform"))
+	if update.PlatformId != platformId {
+		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 
 	err = c.repos.Contract.Update(ctx, contractId, request)

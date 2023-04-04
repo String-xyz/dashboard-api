@@ -55,7 +55,7 @@ func (p network[T]) List(ctx context.Context, limit int, offset int) ([]model.Ne
 
 	result := []model.NetworkData{}
 	for i := range m {
-		result = append(result, model.NetworkData{ID: m[i].Id, Name: m[i].Name})
+		result = append(result, model.NetworkData{Id: m[i].Id, Name: m[i].Name})
 	}
 	return result, nil
 }
