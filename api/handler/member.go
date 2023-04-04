@@ -6,7 +6,6 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
 	validator "github.com/String-xyz/go-lib/validator"
 
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -47,14 +46,16 @@ func (a member) Get(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 	memberId := c.Param("id")
+
 	if memberId == "" {
 		return httperror.BadRequestError(c)
 	}
+
 	m, err := a.service.Get(c.Request().Context(), callerId, platformId, memberId)
 	if err != nil {
-		common.LogStringError(c, err, "member: get")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: get")
 	}
+
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -75,9 +76,7 @@ func (a member) Update(c echo.Context) error {
 
 	m, err := a.service.UpdateMember(c.Request().Context(), body, callerId, memberId)
 	if err != nil {
-		common.LogStringError(c, err, "member: update")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: update")
 	}
 
 	return c.JSON(http.StatusOK, m)
@@ -104,14 +103,7 @@ func (a member) UpdateSelf(c echo.Context) error {
 
 	m, err := a.service.UpdateSelf(c.Request().Context(), body, callerId)
 	if err != nil {
-		common.LogStringError(c, err, "member: update self")
-
-		if serror.IsError(err, serror.NOT_FOUND) {
-			/* Since we get the callerId from the token, this should never happen. If it does, it means the token is invalid */
-			return httperror.Unauthorized(c)
-		}
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: update self")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -133,9 +125,7 @@ func (a member) TransferOwnership(c echo.Context) error {
 
 	m, err := a.service.TransferOwnership(c.Request().Context(), body, callerId, memberId)
 	if err != nil {
-		common.LogStringError(c, err, "member: transferOwnership")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: transferOwnership")
 	}
 
 	return c.JSON(http.StatusOK, m)
@@ -155,9 +145,7 @@ func (a member) Deactivate(c echo.Context) error {
 
 	m, err := a.service.Deactivate(c.Request().Context(), callerId, memberId)
 	if err != nil {
-		common.LogStringError(c, err, "member: deactivate")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: deactivate")
 	}
 
 	return c.JSON(http.StatusOK, m)
@@ -172,9 +160,7 @@ func (a member) Reactivate(c echo.Context) error {
 
 	m, err := a.service.Reactivate(c.Request().Context(), callerId, memberId)
 	if err != nil {
-		common.LogStringError(c, err, "member: deactivate")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: reactivate")
 	}
 
 	return c.JSON(http.StatusOK, m)
@@ -196,10 +182,9 @@ func (a member) SendPasswordResetEmail(c echo.Context) error {
 
 	err := a.service.SendPasswordResetEmail(c.Request().Context(), body)
 	if err != nil {
-		common.LogStringError(c, err, "member: send password reset email")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: send password reset email")
 	}
+
 	return c.JSON(http.StatusOK, map[string]string{"message": "email sent"})
 }
 
@@ -217,9 +202,7 @@ func (a member) PasswordReset(c echo.Context) error {
 
 	err = a.service.PasswordReset(c.Request().Context(), body)
 	if err != nil {
-		common.LogStringError(c, err, "member: password reset")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "member: password reset")
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "password reset"})

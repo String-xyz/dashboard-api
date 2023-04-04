@@ -35,9 +35,9 @@ func (a apikey) Create(c echo.Context) error {
 
 	m, err := a.service.Create(c.Request().Context(), callerId, platformId)
 	if err != nil {
-		common.LogStringError(c, err, "apikey: create")
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "apikey: create")
 	}
+
 	return c.JSON(http.StatusCreated, m)
 }
 
@@ -47,9 +47,9 @@ func (a apikey) GetAll(c echo.Context) error {
 
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
 	if err != nil {
-		common.LogStringError(c, err, "apikey: get all")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "apikey: get all")
 	}
+
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -57,15 +57,16 @@ func (a apikey) Get(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
+
 	if keyId == "" {
 		return httperror.BadRequestError(c)
 	}
 
 	m, err := a.service.Get(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
-		common.LogStringError(c, err, "apikey: get all")
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "apikey: get")
 	}
+
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -73,15 +74,16 @@ func (a apikey) Deactivate(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
+
 	if !validator.IsUUID(keyId, platformId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
-		common.LogStringError(c, err, "apikey: deactivate")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "apikey: deactivate")
 	}
+
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -89,6 +91,7 @@ func (a apikey) Update(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 	keyId := c.Param("id")
+
 	if platformId == "" || callerId == "" {
 		return httperror.BadRequestError(c)
 	}
@@ -106,8 +109,7 @@ func (a apikey) Update(c echo.Context) error {
 
 	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, keyId)
 	if err != nil {
-		common.LogStringError(c, err, "apikey: update")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "apikey: update")
 	}
 
 	return c.JSON(http.StatusOK, m)

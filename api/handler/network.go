@@ -27,7 +27,7 @@ func (a network) GetAll(c echo.Context) error {
 	m, err := a.service.GetAll(c.Request().Context())
 	if err != nil {
 		common.LogStringError(c, err, "network: get all")
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "network: get all")
 	}
 	return c.JSON(http.StatusOK, m)
 }

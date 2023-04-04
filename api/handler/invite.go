@@ -41,7 +41,7 @@ func (i invite) Send(c echo.Context) error {
 	body := model.RequestInviteSend{}
 	err := c.Bind(&body)
 	if err != nil {
-		return httperror.BadRequestError(c, "invalid payload", "invalid payload", "invite")
+		return httperror.BadRequestError(c, "invalid payload")
 	}
 
 	body.Email = strings.ToLower(body.Email)
@@ -53,10 +53,9 @@ func (i invite) Send(c echo.Context) error {
 
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)
 	if err != nil {
-		common.LogStringError(c, err, "invite: send")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "invite: send")
 	}
+
 	return c.JSON(http.StatusCreated, m)
 }
 
@@ -82,16 +81,16 @@ func (i invite) Accept(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept")
 
-		if serror.IsError(err, serror.ALREADY_IN_USE) {
+		if serror.Is(err, serror.ALREADY_IN_USE) {
 			return httperror.ConflictError(c, "Invite is not pending")
 		}
 
 		// the token is invalid or expired
-		if serror.IsError(err, serror.FORBIDDEN) {
+		if serror.Is(err, serror.FORBIDDEN) {
 			return httperror.BadRequestError(c, "Invalid password reset token")
 		}
 
-		return DefaultErrorHandler(c, err)
+		return httperror.InternalError(c)
 	}
 
 	err = SetAuthCookies(c, jwt)
@@ -111,8 +110,7 @@ func (i invite) List(c echo.Context) error {
 	// }
 	m, err := i.service.List(c.Request().Context(), status, platformId)
 	if err != nil {
-		common.LogStringError(c, err, "invite: list")
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "invite: list")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -128,7 +126,7 @@ func (i invite) Resend(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
@@ -160,11 +158,11 @@ func (i invite) Update(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serror.IsError(err, serror.FORBIDDEN) {
+		if serror.Is(err, serror.FORBIDDEN) {
 			return httperror.ForbiddenError(c, "cannot elevate member to owner")
 		}
 
@@ -184,11 +182,11 @@ func (i invite) Deactivate(c echo.Context) error {
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.NotFoundError(c, errors.Cause(err).Error())
 		}
 
-		if serror.IsError(err, serror.FORBIDDEN) {
+		if serror.Is(err, serror.FORBIDDEN) {
 			return httperror.ForbiddenError(c, errors.Cause(err).Error())
 		}
 
@@ -205,9 +203,7 @@ func (i invite) Get(c echo.Context) error {
 
 	m, err := i.service.Get(c.Request().Context(), id)
 	if err != nil {
-		common.LogStringError(c, err, "invite: get")
-
-		return DefaultErrorHandler(c, err)
+		return DefaultErrorHandler(c, err, "invite: get")
 	}
 	return c.JSON(http.StatusOK, m)
 }

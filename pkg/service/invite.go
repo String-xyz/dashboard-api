@@ -41,7 +41,7 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, platformId string) (repository.MemberInviteInfo, error) {
 	// Ensure there are no duplicate emails
 	preexisting, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
-	if err != nil && !serror.IsError(err, serror.NOT_FOUND) {
+	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
 		return repository.MemberInviteInfo{}, common.StringError(serror.ALREADY_IN_USE)
@@ -49,7 +49,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 
 	// If there is a pending invite, update the role
 	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
-	if err != nil && !serror.IsError(err, serror.NOT_FOUND) {
+	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email && callerId != nil && pendingInvite.DeactivatedAt == nil {
 		// Update invite and resend it

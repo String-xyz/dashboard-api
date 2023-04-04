@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
@@ -92,28 +93,31 @@ func getCookieSameSiteMode() http.SameSite {
 	return sameSiteMode
 }
 
-func DefaultErrorHandler(c echo.Context, err error) error {
+func DefaultErrorHandler(c echo.Context, err error, handlerName string) error {
 	if err == nil {
 		return nil
 	}
 
-	if serror.IsError(err, serror.NOT_FOUND) {
+	// always log the error
+	common.LogStringError(c, err, handlerName)
+
+	if serror.Is(err, serror.NOT_FOUND) {
 		return httperror.NotFoundError(c)
 	}
 
-	if serror.IsError(err, serror.FORBIDDEN) {
+	if serror.Is(err, serror.FORBIDDEN) {
 		return httperror.ForbiddenError(c, "Invoking member lacks authority")
 	}
 
-	if serror.IsError(err, serror.INVALID_RESET_TOKEN) {
+	if serror.Is(err, serror.INVALID_RESET_TOKEN) {
 		return httperror.BadRequestError(c, "Invalid password reset token")
 	}
 
-	if serror.IsError(err, serror.INVALID_PASSWORD) {
+	if serror.Is(err, serror.INVALID_PASSWORD) {
 		return httperror.BadRequestError(c, "Invalid password")
 	}
 
-	if serror.IsError(err, serror.ALREADY_IN_USE) {
+	if serror.Is(err, serror.ALREADY_IN_USE) {
 		return httperror.ConflictError(c, "Already in use")
 	}
 
