@@ -147,6 +147,6 @@ func (a contract) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
 	g.PATCH("/:id/deactivate", a.Deactivate, ms...)
-	g.PATCH("/:id/reactivate", a.Deactivate, ms...)
+	g.PATCH("/:id/reactivate", a.Reactivate, ms...)
 	g.PATCH("/:id", a.Update, ms...)
 }
