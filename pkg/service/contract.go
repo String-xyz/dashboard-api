@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
@@ -31,6 +32,15 @@ func (c contract) Create(ctx context.Context, create model.RequestContractUpdate
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
+
+	// Check if contract already exists
+	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(create.Address, create.NetworkID, platformId)
+	if err != nil && err != serror.NOT_FOUND {
+		return model.Contract{}, common.StringError(err)
+	} else if exists.ID != "" {
+		return model.Contract{}, common.StringError(errors.New("contract already exists"))
+	}
+
 	row := model.Contract{Name: create.Name, PlatformID: platformId, Address: create.Address, Functions: create.Functions, NetworkID: create.NetworkID}
 	row, err = c.repos.Contract.Create(row)
 	if err != nil {
