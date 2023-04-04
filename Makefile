@@ -19,7 +19,7 @@ test-envvars:
 	@[ "${tag}" ] || ( echo "env tag is not set"; exit 1 )
 
 build: test-envvars
-	GOOS=linux GOARCH=amd64 go build -o ./cmd/app/main ./cmd/app/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./cmd/app/main ./cmd/app/main.go
 	docker build --platform linux/amd64 -t $(ECS_API_REPO):${TAG} cmd/app/
 	rm cmd/app/main
 
