@@ -9,6 +9,7 @@ import (
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 type Contract interface {
@@ -40,7 +41,10 @@ func (a contract) Create(c echo.Context) error {
 
 	m, err := a.service.Create(c.Request().Context(), body, callerId, platformId)
 	if err != nil {
-		common.LogStringError(c, err, "contract: create bind")
+		if errors.Cause(err).Error() == "contract already exists" {
+			return httperror.ConflictError(c, err.Error())
+		}
+		common.LogStringError(c, err, "contract: create")
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusCreated, m)
