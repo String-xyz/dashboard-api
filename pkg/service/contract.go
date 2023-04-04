@@ -118,13 +118,7 @@ func (c contract) Reactivate(ctx context.Context, callerId string, platformId st
 		return model.Contract{}, common.StringError(errors.New("contract not maintained by accessing platform"))
 	}
 
-	type ReactivateUpdate struct {
-		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-	}
-
-	update := ReactivateUpdate{DeactivatedAt: nil}
-
-	err = c.repos.Contract.Update(ctx, contractId, update)
+	err = c.repos.Contract.Activate(ctx, contractId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}

@@ -21,6 +21,7 @@ type Contract interface {
 	List(ctx context.Context, limit int, offset int) ([]model.Contract, error)
 	Update(ctx context.Context, id string, updates any) error
 	GetByAddressAndNetworkAndPlatform(address string, networkId string, platformId string) (model.Contract, error)
+	Activate(ctx context.Context, ID string) error
 }
 
 type contract[T any] struct {
