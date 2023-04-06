@@ -34,6 +34,10 @@ func (a apikey) Create(c echo.Context) error {
 	platformId := c.Get("platformId").(string)
 	keyType := c.QueryParam("type")
 
+	if keyType == "" {
+		keyType = "public"
+	}
+
 	m, err := a.service.Create(c.Request().Context(), callerId, platformId, keyType)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: create")

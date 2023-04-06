@@ -27,28 +27,24 @@ func NewApikey(repos repository.Repositories) Apikey {
 	return &apikey{repos}
 }
 
-//	type Apikey struct {
-//		ID            string     `json:"id,omitempty" db:"id"`
-//		CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
-//		UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
-//		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-//		Type          string     `json:"type" db:"type"`
-//		Data          string     `json:"data" db:"data"`
-//		Description   string     `json:"description" db:"description"`
-//		CreatedBy     string     `json:"createdBy" db:"created_by"`
-//		PlatformId    string     `json:"platformId" db:"platform_id"`
-//	}
 func (a apikey) Create(ctx context.Context, callerId string, platformId string, keyType string) (key model.Apikey, err error) {
+	key = model.Apikey{Type: keyType, Data: "", PlatformId: platformId, CreatedBy: callerId}
 
-	publicKey := "str." + uuidWithoutHyphens()
-	key = model.Apikey{Type: keyType, Data: publicKey, PlatformId: platformId, CreatedBy: callerId}
+	// only admins+
+	err = RequireAuthority(a.repos, callerId, "Owner", "Admin")
+	if err != nil {
+		return key, err
+	}
+
 	secretKey := "strsk." + uuidWithoutHyphens()
 
 	if keyType == "secret" {
 		key.Data = common.ToSha256(secretKey)
-
 		secretHint := secretKey[len(secretKey)-4:]
 		key.Hint = &secretHint
+	} else {
+		publicKey := "str." + uuidWithoutHyphens()
+		key.Data = publicKey
 	}
 
 	key, err = a.repos.Apikey.Create(ctx, key)
