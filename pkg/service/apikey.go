@@ -12,7 +12,7 @@ import (
 )
 
 type Apikey interface {
-	Create(ctx context.Context, callerId string, platformId string, withSecret bool) (model.Apikey, error)
+	Create(ctx context.Context, callerId string, platformId string, keyType string) (model.Apikey, error)
 	GetAll(ctx context.Context, callerId string, platformId string) ([]model.Apikey, error)
 	Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error)
 	Deactivate(ctx context.Context, callerId string, platformId string, keyId string) (model.Apikey, error)
@@ -38,15 +38,17 @@ func NewApikey(repos repository.Repositories) Apikey {
 //		CreatedBy     string     `json:"createdBy" db:"created_by"`
 //		PlatformId    string     `json:"platformId" db:"platform_id"`
 //	}
-func (a apikey) Create(ctx context.Context, callerId string, platformId string, withSecret bool) (key model.Apikey, err error) {
+func (a apikey) Create(ctx context.Context, callerId string, platformId string, keyType string) (key model.Apikey, err error) {
 
 	publicKey := "str." + uuidWithoutHyphens()
-	key = model.Apikey{Type: "public", Public: publicKey, PlatformId: platformId, CreatedBy: callerId}
+	key = model.Apikey{Type: keyType, Data: publicKey, PlatformId: platformId, CreatedBy: callerId}
 	secretKey := "strsk." + uuidWithoutHyphens()
 
-	if withSecret {
-		hash := common.ToSha256(secretKey)
-		key.Secret = &hash
+	if keyType == "secret" {
+		key.Data = common.ToSha256(secretKey)
+
+		secretHint := secretKey[len(secretKey)-4:]
+		key.Hint = &secretHint
 	}
 
 	key, err = a.repos.Apikey.Create(ctx, key)
@@ -54,9 +56,9 @@ func (a apikey) Create(ctx context.Context, callerId string, platformId string, 
 		return key, common.StringError(err)
 	}
 
-	// save a hash but return the secret
-	if withSecret {
-		key.Secret = &secretKey
+	if keyType == "secret" {
+		// save a hash but return the secret
+		key.Data = secretKey
 	}
 
 	return key, nil
@@ -72,7 +74,7 @@ func (a apikey) GetAll(ctx context.Context, callerId string, platformId string) 
 }
 
 func (a apikey) Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error) {
-	return model.Apikey{}, nil
+	return a.repos.Apikey.GetById(ctx, id)
 }
 
 func (a apikey) Deactivate(ctx context.Context, callerId string, platformId string, keyId string) (key model.Apikey, err error) {

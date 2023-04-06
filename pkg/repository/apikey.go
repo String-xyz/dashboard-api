@@ -41,8 +41,8 @@ func NewApikey(db database.Queryable) Apikey {
 func (a apikey[T]) Create(ctx context.Context, m model.Apikey) (model.Apikey, error) {
 	newModel := model.Apikey{}
 	rows, err := a.Store.NamedQuery(`
-		INSERT INTO apikey (type, public, secret, description, created_by, platform_id) 
-		VALUES(:type, :public, :secret, :description, :created_by, :platform_id) RETURNING *`, m)
+		INSERT INTO apikey (type, data, hint, description, created_by, platform_id) 
+		VALUES(:type, :data, :hint, :description, :created_by, :platform_id) RETURNING *`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)
