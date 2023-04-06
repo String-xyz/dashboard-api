@@ -27,37 +27,49 @@ func NewApikey(repos repository.Repositories) Apikey {
 	return &apikey{repos}
 }
 
-func (a apikey) Create(ctx context.Context, callerId string, platformId string, keyType string) (key model.Apikey, err error) {
-	key = model.Apikey{Type: keyType, Data: "", PlatformId: platformId, CreatedBy: callerId}
-
-	// only admins+
-	err = RequireAuthority(a.repos, callerId, "Owner", "Admin")
-	if err != nil {
-		return key, err
+func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType string) (model.Apikey, error) {
+	// Create the base key object
+	key := model.Apikey{
+		Type:       keyType,
+		Data:       "",
+		PlatformId: platformId,
+		CreatedBy:  callerID,
 	}
 
-	secretKey := "strsk." + uuidWithoutHyphens()
+	// Only admins can create secret keys
+	if keyType == "secret" {
+		if err := RequireAuthority(a.repos, callerID, "Owner", "Admin"); err != nil {
+			return model.Apikey{}, err
+		}
+	}
+
+	// Generate the key
+	var keyValue string
+	var hint *string
 
 	if keyType == "secret" {
-		key.Data = common.ToSha256(secretKey)
-		secretHint := secretKey[len(secretKey)-4:]
-		key.Hint = &secretHint
+		keyValue = "strsk." + uuidWithoutHyphens()
+		key.Data = common.ToSha256(keyValue)
+		secretHint := keyValue[len(keyValue)-6:]
+		hint = &secretHint
 	} else {
-		publicKey := "str." + uuidWithoutHyphens()
-		key.Data = publicKey
+		keyValue = "str." + uuidWithoutHyphens()
+		key.Data = keyValue
 	}
 
-	key, err = a.repos.Apikey.Create(ctx, key)
+	// Save the key
+	createdKey, err := a.repos.Apikey.Create(ctx, key)
 	if err != nil {
-		return key, common.StringError(err)
+		return model.Apikey{}, common.StringError(err)
 	}
 
+	// Return the key with the correct value (the secret for secret keys)
 	if keyType == "secret" {
-		// save a hash but return the secret
-		key.Data = secretKey
+		createdKey.Data = keyValue
+		createdKey.Hint = hint
 	}
 
-	return key, nil
+	return createdKey, nil
 }
 
 func (a apikey) GetAll(ctx context.Context, callerId string, platformId string) (keys []model.Apikey, err error) {
