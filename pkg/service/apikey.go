@@ -29,35 +29,32 @@ func NewApikey(repos repository.Repositories) Apikey {
 
 func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType string) (model.Apikey, error) {
 	// Create the base key object
+	var keyValue string
 	key := model.Apikey{
 		Type:       keyType,
-		Data:       "",
 		PlatformId: platformId,
 		CreatedBy:  callerID,
 	}
 
 	// Only admins can create secret keys
 	if keyType == "secret" {
-		if err := RequireAuthority(a.repos, callerID, "Owner", "Admin"); err != nil {
+		err := RequireAuthority(a.repos, callerID, "Owner", "Admin")
+		if err != nil {
 			return model.Apikey{}, err
 		}
 	}
 
-	// Generate the key
-	var keyValue string
-	var hint *string
-
+	// Generate the key either as a secret or a public key
 	if keyType == "secret" {
 		keyValue = "strsk." + uuidWithoutHyphens()
 		key.Data = common.ToSha256(keyValue)
-		secretHint := keyValue[len(keyValue)-6:]
-		hint = &secretHint
-	} else {
+	} else { // public
 		keyValue = "str." + uuidWithoutHyphens()
 		key.Data = keyValue
 	}
 
 	// Save the key
+	key.Hint = keyValue[len(keyValue)-6:]
 	createdKey, err := a.repos.Apikey.Create(ctx, key)
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
@@ -66,7 +63,6 @@ func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType strin
 	// Return the key with the correct value (the secret for secret keys)
 	if keyType == "secret" {
 		createdKey.Data = keyValue
-		createdKey.Hint = hint
 	}
 
 	return createdKey, nil
