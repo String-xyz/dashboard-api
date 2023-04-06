@@ -63,7 +63,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 
 	roleId := GetRoleId(request.Role)
 	// TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
-	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformID: platformId, Name: request.Name, RoleID: roleId})
+	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformId: platformId, Name: request.Name, RoleID: roleId})
 	if err != nil {
 		return invite, common.StringError(err)
 	}
@@ -132,7 +132,7 @@ func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	}
 
 	// Create Member-To-Platform relationship
-	memberToPlatform := model.MemberToPlatform{MemberID: member.ID, PlatformID: invite.PlatformID}
+	memberToPlatform := model.MemberToPlatform{MemberID: member.ID, PlatformId: invite.PlatformId}
 	memberToPlatform, err = a.repos.MemberToPlatform.Create(ctx, memberToPlatform)
 	if err != nil {
 		return member, jwt, common.StringError(err)
@@ -154,7 +154,7 @@ func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 
 	// Create a JWT
 	auth := NewAuth(a.repos, a.redis)
-	jwt, err = auth.GenerateJWT(member.ID, invite.PlatformID)
+	jwt, err = auth.GenerateJWT(member.ID, invite.PlatformId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}

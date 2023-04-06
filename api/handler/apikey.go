@@ -33,7 +33,12 @@ func (a apikey) Create(c echo.Context) error {
 	callerId := c.Get("memberId").(string)
 	platformId := c.Get("platformId").(string)
 
-	m, err := a.service.Create(c.Request().Context(), callerId, platformId)
+	withSecret := false
+	if c.QueryParam("withSecret") == "true" {
+		withSecret = true
+	}
+
+	m, err := a.service.Create(c.Request().Context(), callerId, platformId, withSecret)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: create")
 	}

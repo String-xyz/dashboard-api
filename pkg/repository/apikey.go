@@ -19,13 +19,13 @@ type ApikeyUpdates struct {
 	Data          *string    `json:"data" db:"data"`
 	Description   *string    `json:"description" db:"description"`
 	CreatedBy     *string    `json:"createdBy" db:"created_by"`
-	PlatformID    *string    `json:"platformId" db:"platform_id"`
+	PlatformId    *string    `json:"platformId" db:"platform_id"`
 }
 
 type Apikey interface {
 	database.Transactable
 	Create(ctx context.Context, model model.Apikey) (model.Apikey, error)
-	GetById(ctx context.Context, ID string) (model.Apikey, error)
+	GetById(ctx context.Context, id string) (model.Apikey, error)
 	List(ctx context.Context, platformId string, limit int, offset int) ([]model.Apikey, error)
 	Update(ctx context.Context, ID string, updates any) error
 }
@@ -41,8 +41,8 @@ func NewApikey(db database.Queryable) Apikey {
 func (a apikey[T]) Create(ctx context.Context, m model.Apikey) (model.Apikey, error) {
 	newModel := model.Apikey{}
 	rows, err := a.Store.NamedQuery(`
-		INSERT INTO apikey (type, data, description, created_by, platform_id) 
-		VALUES(:type, :data, :description, :created_by, :platform_id) RETURNING *`, m)
+		INSERT INTO apikey (type, public, secret, description, created_by, platform_id) 
+		VALUES(:type, :public, :secret, :description, :created_by, :platform_id) RETURNING *`, m)
 
 	if err != nil {
 		return newModel, common.StringError(err)
@@ -59,9 +59,9 @@ func (a apikey[T]) Create(ctx context.Context, m model.Apikey) (model.Apikey, er
 	return newModel, nil
 }
 
-func (p apikey[T]) GetById(ctx context.Context, ID string) (model.Apikey, error) {
+func (p apikey[T]) GetById(ctx context.Context, id string) (model.Apikey, error) {
 	m := model.Apikey{}
-	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", p.Table), ID)
+	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", p.Table), id)
 	if err == sql.ErrNoRows {
 		return m, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
