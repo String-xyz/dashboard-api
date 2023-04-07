@@ -54,7 +54,7 @@ func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType strin
 	}
 
 	// Save the key
-	key.Hint = keyValue[len(keyValue)-6:]
+	key.Hint = keyValue[0:10]
 	createdKey, err := a.repos.Apikey.Create(ctx, key)
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
