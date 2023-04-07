@@ -153,7 +153,7 @@ func (a auth) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
 	}
 
 	// create new jwt
-	jwt, err := a.GenerateJWT(memberId, platform.PlatformID)
+	jwt, err := a.GenerateJWT(memberId, platform.PlatformId)
 	if err != nil {
 		return resp, common.StringError(err)
 	}

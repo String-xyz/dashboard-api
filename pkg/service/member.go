@@ -59,7 +59,7 @@ func (a member) Get(ctx context.Context, callerId string, platformId string, mem
 		return result, common.StringError(err)
 	}
 
-	if memberToPlatform.PlatformID != platformId {
+	if memberToPlatform.PlatformId != platformId {
 		return result, common.StringError(serror.FORBIDDEN)
 	}
 

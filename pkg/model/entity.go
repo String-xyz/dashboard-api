@@ -29,7 +29,7 @@ type PlatformMember struct {
 }
 
 type MemberToPlatform struct {
-	PlatformID string `json:"platformId" db:"platform_id"`
+	PlatformId string `json:"platformId" db:"platform_id"`
 	MemberID   string `json:"memberId" db:"member_id"`
 }
 
@@ -55,23 +55,23 @@ type MemberInvite struct {
 	AcceptedAt    *time.Time `json:"acceptedAt,omitempty" db:"accepted_at"`
 	Email         string     `json:"email" db:"email"`
 	InvitedBy     *string    `json:"invitedBy,omitempty" db:"invited_by"`
-	PlatformID    string     `json:"platformId" db:"platform_id"`
+	PlatformId    string     `json:"platformId" db:"platform_id"`
 	RoleID        string     `json:"roleId" db:"role_id"`
 	Name          string     `json:"name" db:"name"`
 }
 
 type Apikey struct {
-	ID            string     `json:"id,omitempty" db:"id"`
+	Id            string     `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
 	Type          string     `json:"type" db:"type"`
 	Data          string     `json:"data" db:"data"`
-	Description   *string    `json:"description" db:"description"`
+	Hint          string     `json:"hint,omitempty" db:"hint"`
+	Description   *string    `json:"description,omitempty" db:"description"`
 	CreatedBy     string     `json:"createdBy" db:"created_by"`
-	PlatformID    string     `json:"platformId" db:"platform_id"`
+	PlatformId    string     `json:"platformId" db:"platform_id"`
 }
-
 type Contract struct {
 	Id            string         `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time      `json:"createdAt,omitempty" db:"created_at"`

@@ -14,7 +14,7 @@ import (
 
 // May not be needed, unless platform ID changes
 type MemberToPlatformUpdates struct {
-	PlatformID *string `json:"platformId" db:"platform_id"`
+	PlatformId *string `json:"platformId" db:"platform_id"`
 	MemberID   *string `json:"memberId" db:"member_id"`
 }
 
