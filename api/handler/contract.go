@@ -41,6 +41,8 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	SanitizeChecksums(&body.Address)
+
 	m, err := a.service.Create(c.Request().Context(), body, callerId, platformId)
 	if err != nil {
 		common.LogStringError(c, err, "contract: create")
@@ -125,6 +127,8 @@ func (a contract) Update(c echo.Context) error {
 		common.LogStringError(c, err, "contract: update bind")
 		return httperror.BadRequestError(c)
 	}
+
+	SanitizeChecksums(body.Address)
 
 	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, contractId)
 	if err != nil {

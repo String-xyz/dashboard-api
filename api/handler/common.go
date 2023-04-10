@@ -3,6 +3,8 @@ package handler
 import (
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -10,6 +12,7 @@ import (
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/sha3"
 )
 
 // TODO: Move all of this into the go-lib
@@ -122,4 +125,33 @@ func DefaultErrorHandler(c echo.Context, err error, handlerName string) error {
 	}
 
 	return httperror.InternalError(c)
+}
+
+func validAddress(addr string) bool {
+	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
+	return re.MatchString(addr)
+}
+
+func SanitizeChecksums(addrs ...*string) {
+	for _, addr := range addrs {
+		if !validAddress(*addr) {
+			continue
+		}
+		lowerCase := strings.ToLower(*addr)[2:]
+		hash := sha3.NewLegacyKeccak256()
+		hash.Write([]byte(lowerCase))
+		hashBytes := hash.Sum(nil)
+
+		valid := "0x"
+		for i, b := range lowerCase {
+			c := string(b)
+			if b < '0' || b > '9' {
+				if hashBytes[i/2]&byte(128-i%2*120) != 0 {
+					c = string(b - 32)
+				}
+			}
+			valid += c
+		}
+		*addr = valid
+	}
 }
