@@ -12,7 +12,7 @@ import (
 )
 
 type Apikey interface {
-	Create(ctx context.Context, callerId string, platformId string) (model.Apikey, error)
+	Create(ctx context.Context, callerId string, platformId string, keyType string) (model.Apikey, error)
 	GetAll(ctx context.Context, callerId string, platformId string) ([]model.Apikey, error)
 	Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error)
 	Deactivate(ctx context.Context, callerId string, platformId string, keyId string) (model.Apikey, error)
@@ -27,28 +27,45 @@ func NewApikey(repos repository.Repositories) Apikey {
 	return &apikey{repos}
 }
 
-//	type Apikey struct {
-//		ID            string     `json:"id,omitempty" db:"id"`
-//		CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
-//		UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
-//		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-//		Type          string     `json:"type" db:"type"`
-//		Data          string     `json:"data" db:"data"`
-//		Description   string     `json:"description" db:"description"`
-//		CreatedBy     string     `json:"createdBy" db:"created_by"`
-//		PlatformID    string     `json:"platformId" db:"platform_id"`
-//	}
-func (a apikey) Create(ctx context.Context, callerId string, platformId string) (key model.Apikey, err error) {
-
-	uuiKey := "str." + uuidWithoutHyphens()
-
-	key = model.Apikey{Type: "public", Data: uuiKey, PlatformID: platformId, CreatedBy: callerId}
-	key, err = a.repos.Apikey.Create(ctx, key)
-	if err != nil {
-		return key, common.StringError(err)
+func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType string) (model.Apikey, error) {
+	// Create the base key object
+	var keyValue string
+	key := model.Apikey{
+		Type:       keyType,
+		PlatformId: platformId,
+		CreatedBy:  callerID,
 	}
 
-	return key, nil
+	// Only admins can create secret keys
+	if keyType == "secret" {
+		err := RequireAuthority(a.repos, callerID, "Owner", "Admin")
+		if err != nil {
+			return model.Apikey{}, err
+		}
+	}
+
+	// Generate the key either as a secret or a public key
+	if keyType == "secret" {
+		keyValue = "strsk." + uuidWithoutHyphens()
+		key.Data = common.ToSha256(keyValue)
+	} else { // public
+		keyValue = "str." + uuidWithoutHyphens()
+		key.Data = keyValue
+	}
+
+	// Save the key
+	key.Hint = keyValue[0:10]
+	createdKey, err := a.repos.Apikey.Create(ctx, key)
+	if err != nil {
+		return model.Apikey{}, common.StringError(err)
+	}
+
+	// Return the key with the correct value (the secret for secret keys)
+	if keyType == "secret" {
+		createdKey.Data = keyValue
+	}
+
+	return createdKey, nil
 }
 
 func (a apikey) GetAll(ctx context.Context, callerId string, platformId string) (keys []model.Apikey, err error) {
@@ -61,7 +78,7 @@ func (a apikey) GetAll(ctx context.Context, callerId string, platformId string) 
 }
 
 func (a apikey) Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error) {
-	return model.Apikey{}, nil
+	return a.repos.Apikey.GetById(ctx, id)
 }
 
 func (a apikey) Deactivate(ctx context.Context, callerId string, platformId string, keyId string) (key model.Apikey, err error) {
@@ -74,7 +91,7 @@ func (a apikey) Deactivate(ctx context.Context, callerId string, platformId stri
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
 	}
-	if key.PlatformID != platformId {
+	if key.PlatformId != platformId {
 		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing platform %s", platformId))
 	}
 
@@ -104,7 +121,7 @@ func (a apikey) Update(ctx context.Context, request model.RequestApikeyUpdate, c
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
 	}
-	if key.PlatformID != platformId {
+	if key.PlatformId != platformId {
 		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing platform %s", platformId))
 	}
 	type KeyUpdate struct {

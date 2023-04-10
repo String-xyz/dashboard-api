@@ -7,4 +7,6 @@ type Services struct {
 	Login    Login
 	Invite   Invite
 	Apikey   Apikey
+	Contract Contract
+	Network  Network
 }

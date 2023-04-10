@@ -24,7 +24,7 @@ func heartbeat(c echo.Context) error {
 func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
 	e.Use(middleware.Tracer())
 	e.Use(middleware.CORS())
-	e.Use(middleware.RequestID())
+	e.Use(middleware.RequestId())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger(logger))
 	e.Use(middleware.LogRequest())
@@ -47,6 +47,8 @@ func Start(config APIConfig) {
 	loginRoute(service, e)
 	inviteRoute(service, e)
 	apikeyRoute(service, e)
+	contractRoute(service, e)
+	networkRoute(service, e)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
 }

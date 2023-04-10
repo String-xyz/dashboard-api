@@ -3,12 +3,16 @@ package handler
 import (
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
+	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/sha3"
 )
 
 // TODO: Move all of this into the go-lib
@@ -92,30 +96,62 @@ func getCookieSameSiteMode() http.SameSite {
 	return sameSiteMode
 }
 
-func DefaultErrorHandler(c echo.Context, err error) error {
+func DefaultErrorHandler(c echo.Context, err error, handlerName string) error {
 	if err == nil {
 		return nil
 	}
 
-	if serror.IsError(err, serror.NOT_FOUND) {
+	// always log the error
+	common.LogStringError(c, err, handlerName)
+
+	if serror.Is(err, serror.NOT_FOUND) {
 		return httperror.NotFoundError(c)
 	}
 
-	if serror.IsError(err, serror.FORBIDDEN) {
+	if serror.Is(err, serror.FORBIDDEN) {
 		return httperror.ForbiddenError(c, "Invoking member lacks authority")
 	}
 
-	if serror.IsError(err, serror.INVALID_RESET_TOKEN) {
+	if serror.Is(err, serror.INVALID_RESET_TOKEN) {
 		return httperror.BadRequestError(c, "Invalid password reset token")
 	}
 
-	if serror.IsError(err, serror.INVALID_PASSWORD) {
+	if serror.Is(err, serror.INVALID_PASSWORD) {
 		return httperror.BadRequestError(c, "Invalid password")
 	}
 
-	if serror.IsError(err, serror.ALREADY_IN_USE) {
+	if serror.Is(err, serror.ALREADY_IN_USE) {
 		return httperror.ConflictError(c, "Already in use")
 	}
 
 	return httperror.InternalError(c)
+}
+
+func validAddress(addr string) bool {
+	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
+	return re.MatchString(addr)
+}
+
+func SanitizeChecksums(addrs ...*string) {
+	for _, addr := range addrs {
+		if !validAddress(*addr) {
+			continue
+		}
+		lowerCase := strings.ToLower(*addr)[2:]
+		hash := sha3.NewLegacyKeccak256()
+		hash.Write([]byte(lowerCase))
+		hashBytes := hash.Sum(nil)
+
+		valid := "0x"
+		for i, b := range lowerCase {
+			c := string(b)
+			if b < '0' || b > '9' {
+				if hashBytes[i/2]&byte(128-i%2*120) != 0 {
+					c = string(b - 32)
+				}
+			}
+			valid += c
+		}
+		*addr = valid
+	}
 }

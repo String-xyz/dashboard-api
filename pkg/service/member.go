@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"os"
 	"strings"
@@ -60,8 +59,8 @@ func (a member) Get(ctx context.Context, callerId string, platformId string, mem
 		return result, common.StringError(err)
 	}
 
-	if memberToPlatform.PlatformID != platformId {
-		return result, common.StringError(errors.New("member not associated with callers platform"))
+	if memberToPlatform.PlatformId != platformId {
+		return result, common.StringError(serror.FORBIDDEN)
 	}
 
 	result, err = a.repos.PlatformMember.GetById(ctx, memberToPlatform.MemberID)
@@ -325,7 +324,7 @@ func (a member) Deactivate(ctx context.Context, callerId string, memberId string
 	}
 
 	if callerRole == "Admin" && memberRole != "Member" {
-		return result, common.StringError(errors.New("admins can only update members"))
+		return result, common.StringError(serror.FORBIDDEN)
 	}
 	/**********************************************************************************/
 
@@ -360,7 +359,7 @@ func (a member) Reactivate(ctx context.Context, callerId string, memberId string
 		return result, common.StringError(err)
 	}
 
-	/***** TODO: This code is repeated multiple times, refactor into a function *****/
+	// Refactor this into it's own function, since it's called in several places ---
 	callerRole, err := GetRole(a.repos, callerId)
 	if err != nil {
 		return result, common.StringError(err)
@@ -372,9 +371,9 @@ func (a member) Reactivate(ctx context.Context, callerId string, memberId string
 	}
 
 	if callerRole == "Admin" && memberRole != "Member" {
-		return result, common.StringError(errors.New("admins can only update members"))
+		return result, common.StringError(serror.FORBIDDEN)
 	}
-	/**********************************************************************************/
+	// -----------------------------------------------------------------------------
 
 	a.repos.PlatformMember.Activate(ctx, memberId)
 	if err != nil {

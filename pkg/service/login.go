@@ -45,7 +45,7 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 		return member, jwt, common.StringError(err)
 	}
 
-	jwt, err = l.auth.GenerateJWT(member.ID, platform.PlatformID)
+	jwt, err = l.auth.GenerateJWT(member.ID, platform.PlatformId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}

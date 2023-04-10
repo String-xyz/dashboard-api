@@ -47,15 +47,16 @@ func (l login) Login(c echo.Context) error {
 	member, jwt, err := l.service.Login(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "login: login")
-		if serror.IsError(err, serror.DEACTIVATED, serror.INVALID_PASSWORD, serror.NOT_FOUND) {
+
+		if serror.Is(err, serror.DEACTIVATED, serror.INVALID_PASSWORD, serror.NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 
-		if serror.IsError(err, serror.NOT_FOUND) {
+		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.Unauthorized(c, "Invalid email or password")
 		}
 
-		return httperror.InternalError(c)
+		return DefaultErrorHandler(c, err, "login: login")
 	}
 
 	err = SetAuthCookies(c, jwt)
@@ -106,8 +107,6 @@ func (l login) Logout(c echo.Context) error {
 	// get refresh token from cookie
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
-		common.LogStringError(c, err, "Logout: unable to get refresh_token cookie")
-
 		// already logged out, idempotent
 		return c.JSON(http.StatusNoContent, nil)
 	}
