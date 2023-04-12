@@ -220,7 +220,7 @@ func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.PATCH("", a.UpdateSelf, ms...)
 	g.PATCH("/:id/transferOwner", a.TransferOwnership, ms...)
 	g.PATCH("/:id/deactivate", a.Deactivate, ms...)
-	g.POST("/:id/reactivate", a.Reactivate, ms...)
+	g.PATCH("/:id/reactivate", a.Reactivate, ms...)
 	g.GET("/password-reset", a.SendPasswordResetEmail)
 	g.POST("/password-reset", a.PasswordReset)
 }
