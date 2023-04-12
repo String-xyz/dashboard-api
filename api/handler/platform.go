@@ -99,5 +99,5 @@ func (p platform) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	p.Group = g
 	g.POST("", p.Create)
 	g.GET("", p.Get, ms...)
-	g.PUT("", p.Update, ms...)
+	g.PATCH("", p.Update, ms...)
 }
