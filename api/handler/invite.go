@@ -219,7 +219,7 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", i.List, ms...)
 	g.POST("/:id/resend", i.Resend, ms...)
 	g.PATCH("/:id", i.Update, ms...)
-	g.DELETE("/:id", i.Deactivate, ms...)
+	g.PATCH("/:id/deactivate", i.Deactivate, ms...)
 	g.GET("/:id", i.Get) // No auth required. This is used for the invite link
 
 }

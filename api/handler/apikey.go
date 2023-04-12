@@ -129,6 +129,6 @@ func (a apikey) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.POST("", a.Create, ms...)
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
-	g.DELETE("/:id", a.Deactivate, ms...)
+	g.PATCH("/:id/deactivate", a.Deactivate, ms...)
 	g.PATCH("/:id", a.Update, ms...)
 }
