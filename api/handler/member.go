@@ -216,13 +216,11 @@ func (a member) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
-	g.PUT("/:id", a.Update, ms...)
-	g.PUT("", a.UpdateSelf, ms...)
-	g.PUT("/:id/transferOwner", a.TransferOwnership, ms...)
-	g.PUT("/:id/deactivate", a.Deactivate, ms...)
-	g.PUT("/:id/reactivate", a.Reactivate, ms...)
+	g.PATCH("/:id", a.Update, ms...)
+	g.PATCH("", a.UpdateSelf, ms...)
+	g.PATCH("/:id/transferOwner", a.TransferOwnership, ms...)
+	g.PATCH("/:id/deactivate", a.Deactivate, ms...)
+	g.PATCH("/:id/reactivate", a.Reactivate, ms...)
 	g.GET("/password-reset", a.SendPasswordResetEmail)
 	g.POST("/password-reset", a.PasswordReset)
 }
-
-// custom error messages
