@@ -77,7 +77,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 
 	body := a.createEmailBody(invite.ID, request.Name, token)
 
-	err = SendEmail("String API", "New String API User", "auth@string.xyz", request.Email, "String API Invitation", body)
+	err = SendEmail("String API", "New String API User", request.Email, "String API Invitation", body)
 	if err != nil {
 		return invite, common.StringError(err)
 	}
@@ -201,7 +201,7 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 
 	body := i.createEmailBody(result.ID, result.Name, token)
 
-	err = SendEmail("String API", "New String API User", "auth@string.xyz", result.Email, "String API Invitation", body)
+	err = SendEmail("String API", "New String API User", result.Email, "String API Invitation", body)
 	if err != nil {
 		return result, common.StringError(err)
 	}

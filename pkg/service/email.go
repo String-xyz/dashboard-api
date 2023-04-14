@@ -9,10 +9,9 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-func SendEmail(from string, to string, fromAddress string, toAddress string, subject string, body string) error {
-	if fromAddress != "auth@string.xyz" {
-		fromAddress = "auth@string.xyz" // TODO: create a new sender
-	}
+func SendEmail(from string, to string, toAddress string, subject string, body string) error {
+	fromAddress := os.Getenv("EMAIL_FROM_ADDRESS")
+
 	f := mail.NewEmail(from, fromAddress)
 	t := mail.NewEmail(to, toAddress)
 	textContent := ""
