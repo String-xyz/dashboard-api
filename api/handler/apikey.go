@@ -30,8 +30,16 @@ func NewApikey(service service.Apikey) Apikey {
 }
 
 func (a apikey) Create(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	keyType := c.QueryParam("type")
 
 	if keyType == "" {
@@ -47,8 +55,15 @@ func (a apikey) Create(c echo.Context) error {
 }
 
 func (a apikey) GetAll(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
 
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
 	if err != nil {
@@ -59,8 +74,16 @@ func (a apikey) GetAll(c echo.Context) error {
 }
 
 func (a apikey) Get(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	keyId := c.Param("id")
 
 	if keyId == "" {
@@ -76,8 +99,16 @@ func (a apikey) Get(c echo.Context) error {
 }
 
 func (a apikey) Deactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid callerId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	keyId := c.Param("id")
 
 	if !validator.IsUUID(keyId, platformId, callerId) {
@@ -93,8 +124,16 @@ func (a apikey) Deactivate(c echo.Context) error {
 }
 
 func (a apikey) Update(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	keyId := c.Param("id")
 
 	if platformId == "" || callerId == "" {

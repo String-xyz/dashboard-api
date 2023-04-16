@@ -33,8 +33,15 @@ func NewContract(service service.Contract) Contract {
 }
 
 func (a contract) Create(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
 
 	body := model.RequestContractCreate{}
 	if err := c.Bind(&body); err != nil {
@@ -56,7 +63,10 @@ func (a contract) Create(c echo.Context) error {
 }
 
 func (a contract) GetAll(c echo.Context) error {
-	platformId := c.Get("platformId").(string)
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
 
 	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
@@ -66,7 +76,11 @@ func (a contract) GetAll(c echo.Context) error {
 }
 
 func (a contract) Get(c echo.Context) error {
-	platformId := c.Get("platformId").(string)
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	contractId := c.Param("id")
 	if contractId == "" {
 		return httperror.BadRequestError(c)
@@ -80,8 +94,16 @@ func (a contract) Get(c echo.Context) error {
 }
 
 func (a contract) Deactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid callerId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	contractId := c.Param("id")
 	if !validator.IsUUID(contractId, platformId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
@@ -95,8 +117,16 @@ func (a contract) Deactivate(c echo.Context) error {
 }
 
 func (a contract) Reactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid callerId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	contractId := c.Param("id")
 	if !validator.IsUUID(contractId, platformId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
@@ -110,8 +140,16 @@ func (a contract) Reactivate(c echo.Context) error {
 }
 
 func (a contract) Update(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid callerId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	contractId := c.Param("id")
 	if platformId == "" || callerId == "" {
 		return httperror.BadRequestError(c)
