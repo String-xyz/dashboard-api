@@ -33,7 +33,11 @@ func NewMember(services service.Services) Member {
 }
 
 func (a member) GetAll(c echo.Context) error {
-	platformId := c.Get("platformId").(string)
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
 		common.LogStringError(c, err, "member: get all")
@@ -43,8 +47,16 @@ func (a member) GetAll(c echo.Context) error {
 }
 
 func (a member) Get(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	memberId := c.Param("id")
 
 	if memberId == "" {
@@ -60,7 +72,11 @@ func (a member) Get(c echo.Context) error {
 }
 
 func (a member) Update(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
 	memberId := c.Param("id")
 
 	if !validator.IsUUID(memberId) {
@@ -83,7 +99,11 @@ func (a member) Update(c echo.Context) error {
 }
 
 func (a member) UpdateSelf(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
 	body := model.RequestMemberUpdateSelf{}
 	err := c.Bind(&body)
 	if err != nil {
@@ -109,7 +129,11 @@ func (a member) UpdateSelf(c echo.Context) error {
 }
 
 func (a member) TransferOwnership(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
 	memberId := c.Param("id")
 
 	if !validator.IsUUID(memberId) {
@@ -132,7 +156,11 @@ func (a member) TransferOwnership(c echo.Context) error {
 }
 
 func (a member) Deactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
 	memberId := c.Param("id")
 
 	if !validator.IsUUID(memberId) {
@@ -152,7 +180,11 @@ func (a member) Deactivate(c echo.Context) error {
 }
 
 func (a member) Reactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
 	memberId := c.Param("id")
 	if memberId == "" || memberId == callerId {
 		return httperror.BadRequestError(c)

@@ -35,8 +35,15 @@ func NewInvite(service service.Invite) Invite {
 }
 
 func (i invite) Send(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid callerId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
 
 	body := model.RequestInviteSend{}
 	err := c.Bind(&body)
@@ -103,7 +110,11 @@ func (i invite) Accept(c echo.Context) error {
 }
 
 func (i invite) List(c echo.Context) error {
-	platformId := c.Get("platformId").(string)
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	status := c.QueryParam("status") // optional
 	// if status == "" {
 	// 	return httperror.BadRequestError(c)
@@ -116,7 +127,11 @@ func (i invite) List(c echo.Context) error {
 }
 
 func (i invite) Resend(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid callerId")
+	}
+
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
 		return httperror.BadRequestError(c, "invalid id")
@@ -136,7 +151,11 @@ func (i invite) Resend(c echo.Context) error {
 }
 
 func (i invite) Update(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
 		return httperror.BadRequestError(c, "invalid id")
@@ -172,7 +191,11 @@ func (i invite) Update(c echo.Context) error {
 }
 
 func (i invite) Deactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
 		return httperror.BadRequestError(c, "invalid id")

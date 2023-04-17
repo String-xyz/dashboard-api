@@ -56,7 +56,11 @@ func (p platform) Create(c echo.Context) error {
 }
 
 func (p platform) Get(c echo.Context) error {
-	platformId := c.Get("platformId").(string)
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	m, err := p.service.Get(c.Request().Context(), platformId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "platform: get")
@@ -66,8 +70,16 @@ func (p platform) Get(c echo.Context) error {
 }
 
 func (p platform) Update(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	platformId, ok := c.Get("platformId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid platformId")
+	}
+
 	body := model.RequestPlatformUpdate{}
 
 	err := c.Bind(&body)
