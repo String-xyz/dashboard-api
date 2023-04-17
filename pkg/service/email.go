@@ -10,7 +10,7 @@ import (
 )
 
 func SendEmail(from string, to string, toAddress string, subject string, body string) error {
-	fromAddress := os.Getenv("EMAIL_FROM_ADDRESS")
+	fromAddress := os.Getenv("AUTH_EMAIL_ADDRESS")
 
 	f := mail.NewEmail(from, fromAddress)
 	t := mail.NewEmail(to, toAddress)
