@@ -69,9 +69,9 @@ func (l login) Login(c echo.Context) error {
 }
 
 func (l login) RefreshToken(c echo.Context) error {
-	cookie, err := c.Cookie("refresh_token")
+	cookie, err := c.Cookie("StringAdminRefreshToken")
 	if err != nil {
-		common.LogStringError(c, err, "RefreshToken: unable to get refresh_token cookie")
+		common.LogStringError(c, err, "RefreshToken: unable to get StringAdminRefreshToken cookie")
 		return httperror.Unauthorized(c, "Invalid or expired token")
 	}
 
@@ -105,7 +105,7 @@ func (l login) RefreshToken(c echo.Context) error {
 // logout
 func (l login) Logout(c echo.Context) error {
 	// get refresh token from cookie
-	cookie, err := c.Cookie("refresh_token")
+	cookie, err := c.Cookie("StringAdminRefreshToken")
 	if err != nil {
 		// already logged out, idempotent
 		return c.JSON(http.StatusNoContent, nil)

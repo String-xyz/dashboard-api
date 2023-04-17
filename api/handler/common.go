@@ -19,7 +19,7 @@ import (
 
 func SetJWTCookie(c echo.Context, jwt service.JWT) error {
 	cookie := new(http.Cookie)
-	cookie.Name = "StringJWT"
+	cookie.Name = "StringAdminJWT"
 	cookie.Value = jwt.Token
 	cookie.HttpOnly = true
 	cookie.Expires = jwt.ExpAt // we want the cookie to expire at the same time as the token
@@ -33,7 +33,7 @@ func SetJWTCookie(c echo.Context, jwt service.JWT) error {
 
 func SetRefreshTokenCookie(c echo.Context, refresh service.RefreshTokenResponse) error {
 	cookie := new(http.Cookie)
-	cookie.Name = "refresh_token"
+	cookie.Name = "StringAdminRefreshToken"
 	cookie.Value = refresh.Token
 	cookie.HttpOnly = true
 	cookie.Expires = refresh.ExpAt // we want the cookie to expire at the same time as the token
@@ -62,7 +62,7 @@ func SetAuthCookies(c echo.Context, jwt service.JWT) error {
 func DeleteAuthCookies(c echo.Context) error {
 	// in order to delete a cookie we need to set it with an expired date
 	cookie := new(http.Cookie)
-	cookie.Name = "StringJWT"
+	cookie.Name = "StringAdminJWT"
 	cookie.Value = ""
 	cookie.HttpOnly = true
 	cookie.Expires = time.Now()
@@ -72,7 +72,7 @@ func DeleteAuthCookies(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	cookie = new(http.Cookie)
-	cookie.Name = "refresh_token"
+	cookie.Name = "StringAdminRefreshToken"
 	cookie.Value = ""
 	cookie.Expires = time.Now()
 	cookie.HttpOnly = true
