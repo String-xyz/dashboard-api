@@ -152,7 +152,7 @@ func (a member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 		"<br>If you have forgotten your password, click the link below to reset it:" +
 		"<br><a href='" + os.Getenv("BASE_DASHBOARD_URL") + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
 
-	err = SendEmail("String API", member.Name, "auth@string.xyz", email, "String API Password Reset", body)
+	err = SendEmail("String API", member.Name, email, "String API Password Reset", body)
 	if err != nil {
 		return common.StringError(err)
 	}
