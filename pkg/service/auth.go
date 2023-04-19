@@ -36,7 +36,7 @@ type JWTClaims struct {
 }
 
 type JWTStrategy struct {
-	ID            string     `json:"id,omitempty" db:"id"`
+	Id            string     `json:"id,omitempty" db:"id"`
 	Type          string     `json:"authType" db:"type"`
 	EntityType    string     `json:"entityType,omitempty"`
 	Data          string     `json:"data" data:"data"`
@@ -114,7 +114,7 @@ func (a auth) GenerateJWT(memberId string, organizationId string) (JWT, error) {
 func (a auth) CreateJWTRefresh(key string, memberId string) (JWTStrategy, error) {
 	expireAt := time.Hour * 24 * 7 // 7 days expiration
 	m := JWTStrategy{
-		ID:         key,
+		Id:         key,
 		CreatedAt:  time.Now(),
 		Type:       "JWT",
 		EntityType: "Member",

@@ -44,12 +44,12 @@ type MemberInviteUpdates struct {
 
 type MemberInvite interface {
 	database.Transactable
-	Create(ctx context.Context, model model.MemberInvite) (MemberInviteInfo, error)
-	GetById(ctx context.Context, ID string) (MemberInviteInfo, error)
-	List(ctx context.Context, limit int, offset int) ([]model.MemberInvite, error)
-	Update(ctx context.Context, ID string, updates any) error
-	GetByOrganization(ctx context.Context, organizationId string) ([]MemberInviteInfo, error)
-	GetByEmail(ctx context.Context, email string) (MemberInviteInfo, error)
+	Create(ctx context.Context, request model.MemberInvite) (invite MemberInviteInfo, err error)
+	GetById(ctx context.Context, id string) (invite MemberInviteInfo, err error)
+	List(ctx context.Context, limit int, offset int) (invites []model.MemberInvite, err error)
+	Update(ctx context.Context, id string, updates any) error
+	GetByOrganization(ctx context.Context, organizationId string) (invites []MemberInviteInfo, err error)
+	GetByEmail(ctx context.Context, email string) (invite MemberInviteInfo, err error)
 }
 
 type memberInvite[T any] struct {
@@ -60,88 +60,81 @@ func NewMemberInvite(db database.Queryable) MemberInvite {
 	return &memberInvite[model.MemberInvite]{strrepo.Base[model.MemberInvite]{Store: db, Table: "member_invite"}}
 }
 
-func (p memberInvite[T]) Create(ctx context.Context, m model.MemberInvite) (MemberInviteInfo, error) {
-	newModel := MemberInviteInfo{}
-	rows, err := p.Store.NamedQuery(`
+func (i memberInvite[T]) Create(ctx context.Context, request model.MemberInvite) (invite MemberInviteInfo, err error) {
+	rows, err := i.Store.NamedQuery(`
 		INSERT INTO member_invite (name, email, invited_by, organization_id, role_id)
 		VALUES(:name, :email, :invited_by, :organization_id, :role_id)
 		RETURNING *, (SELECT name FROM member_role WHERE id = member_invite.role_id) as role, (SELECT name FROM organization WHERE id = member_invite.organization_id) as organization_name
-		`, m)
+		`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return invite, common.StringError(err)
 	}
 
 	// calculate status
 	status := "pending"
-	newModel.Status = &status
+	invite.Status = &status
 
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&invite)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return invite, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return invite, nil
 }
 
-func (p memberInvite[T]) GetByOrganization(ctx context.Context, organizationId string) ([]MemberInviteInfo, error) {
-	m := []MemberInviteInfo{}
-
-	err := p.Store.Select(&m, getBaseQuery()+`WHERE member_invite.organization_id = $1`, organizationId)
+func (i memberInvite[T]) GetByOrganization(ctx context.Context, organizationId string) (invites []MemberInviteInfo, err error) {
+	err = i.Store.Select(&invites, getBaseQuery()+`WHERE member_invite.organization_id = $1`, organizationId)
 
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return invites, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return invites, common.StringError(err)
 	}
 
 	// calculate status for each invite
-	for i := range m {
-		status := GetInviteStatus(m[i])
-		m[i].Status = &status
+	for i := range invites {
+		status := GetInviteStatus(invites[i])
+		invites[i].Status = &status
 	}
 
-	return m, nil
+	return invites, nil
 }
 
-func (p memberInvite[T]) GetById(ctx context.Context, ID string) (MemberInviteInfo, error) {
-	m := MemberInviteInfo{}
-
-	err := p.Store.GetContext(ctx, &m, getBaseQuery()+`WHERE member_invite.id = $1`, ID)
+func (i memberInvite[T]) GetById(ctx context.Context, id string) (invite MemberInviteInfo, err error) {
+	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.id = $1`, id)
 
 	if err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return invite, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return invite, common.StringError(err)
 	}
 
 	// calculate status
-	status := GetInviteStatus(m)
-	m.Status = &status
+	status := GetInviteStatus(invite)
+	invite.Status = &status
 
-	return m, nil
+	return invite, nil
 }
 
-func (p memberInvite[T]) GetByEmail(ctx context.Context, email string) (MemberInviteInfo, error) {
-	m := MemberInviteInfo{}
-
-	err := p.Store.GetContext(ctx, &m, getBaseQuery()+`WHERE member_invite.email = $1`, email)
+func (i memberInvite[T]) GetByEmail(ctx context.Context, email string) (invite MemberInviteInfo, err error) {
+	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.email = $1`, email)
 
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return invite, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return invite, common.StringError(err)
 	}
 
 	// calculate status
-	status := GetInviteStatus(m)
-	m.Status = &status
+	status := GetInviteStatus(invite)
+	invite.Status = &status
 
-	return m, nil
+	return invite, nil
 }
 
 func getBaseQuery() string {

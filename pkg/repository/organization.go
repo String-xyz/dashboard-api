@@ -19,10 +19,10 @@ type OrganizationUpdates struct {
 
 type Organization interface {
 	database.Transactable
-	Create(ctx context.Context, model model.Organization) (model.Organization, error)
-	GetById(ctx context.Context, ID string) (model.Organization, error)
-	List(ctx context.Context, limit int, offset int) ([]model.Organization, error)
-	Update(ctx context.Context, ID string, updates any) error
+	Create(ctx context.Context, request model.Organization) (org model.Organization, err error)
+	GetById(ctx context.Context, id string) (org model.Organization, err error)
+	List(ctx context.Context, limit int, offset int) (orgs []model.Organization, err error)
+	Update(ctx context.Context, id string, updates any) error
 }
 
 type organization[T any] struct {
@@ -33,23 +33,22 @@ func NewOrganization(db database.Queryable) Organization {
 	return &organization[model.Organization]{strrepo.Base[model.Organization]{Store: db, Table: "organization"}}
 }
 
-func (o organization[T]) Create(ctx context.Context, m model.Organization) (model.Organization, error) {
-	newModel := model.Organization{}
+func (o organization[T]) Create(ctx context.Context, request model.Organization) (org model.Organization, err error) {
 	rows, err := o.Store.NamedQuery(`
 		INSERT INTO organization (name) 
-		VALUES(:name) RETURNING *`, m)
+		VALUES(:name) RETURNING *`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return org, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&org)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return org, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return org, nil
 }

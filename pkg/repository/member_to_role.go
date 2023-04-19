@@ -14,20 +14,20 @@ import (
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
 
-// May not be needed, unless platform ID changes
+// May not be needed, unless platform id changes
 type MemberToRoleUpdates struct {
-	MemberID *string `json:"memberId" db:"member_id"`
-	RoleID   *string `json:"roleId" db:"role_id"`
+	MemberId *string `json:"memberId" db:"member_id"`
+	RoleId   *string `json:"roleId" db:"role_id"`
 }
 
 type MemberToRole interface {
 	database.Transactable
-	Create(ctx context.Context, model model.MemberToRole) (newModel model.MemberToRole, err error)
-	GetById(ctx context.Context, ID string) (model.MemberToRole, error)
-	List(ctx context.Context, limit int, offset int) ([]model.MemberToRole, error)
-	Update(ctx context.Context, ID string, updates any) error
-	GetByMember(memberId string) (model.MemberToRole, error)
-	GetByPlatform(platformId string) (model.MemberToRole, error)
+	Create(ctx context.Context, request model.MemberToRole) (relation model.MemberToRole, err error)
+	GetById(ctx context.Context, id string) (relation model.MemberToRole, err error)
+	List(ctx context.Context, limit int, offset int) (relations []model.MemberToRole, err error)
+	Update(ctx context.Context, id string, updates any) error
+	GetByMember(memberId string) (relation model.MemberToRole, err error)
+	GetByPlatform(platformId string) (relation model.MemberToRole, err error)
 	UpdateRole(memberId string, updates any) error
 }
 
@@ -39,44 +39,44 @@ func NewMemberToRole(db database.Queryable) MemberToRole {
 	return &memberToRole[model.MemberToRole]{strrepo.Base[model.MemberToRole]{Store: db, Table: "member_to_role"}}
 }
 
-func (m memberToRole[T]) Create(ctx context.Context, model model.MemberToRole) (newModel model.MemberToRole, err error) {
+func (m memberToRole[T]) Create(ctx context.Context, request model.MemberToRole) (relation model.MemberToRole, err error) {
 	rows, err := m.Store.NamedQuery(`
 		INSERT INTO member_to_role (member_id, role_id) 
-		VALUES(:member_id, :role_id) RETURNING *`, model)
+		VALUES(:member_id, :role_id) RETURNING *`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return relation, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&relation)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return relation, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return relation, nil
 }
 
-func (m memberToRole[T]) GetByMember(memberId string) (model model.MemberToRole, err error) {
-	err = m.Store.Get(&model, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", m.Table), memberId)
+func (m memberToRole[T]) GetByMember(memberId string) (relation model.MemberToRole, err error) {
+	err = m.Store.Get(&relation, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", m.Table), memberId)
 	if err != nil && err == sql.ErrNoRows {
-		return model, common.StringError(serror.NOT_FOUND)
+		return relation, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return model, common.StringError(err)
+		return relation, common.StringError(err)
 	}
-	return model, nil
+	return relation, nil
 }
 
-func (m memberToRole[T]) GetByPlatform(platformId string) (model model.MemberToRole, err error) {
-	err = m.Store.Get(&model, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", m.Table), platformId)
+func (m memberToRole[T]) GetByPlatform(platformId string) (relation model.MemberToRole, err error) {
+	err = m.Store.Get(&relation, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", m.Table), platformId)
 	if err != nil && err == sql.ErrNoRows {
-		return model, common.StringError(serror.NOT_FOUND)
+		return relation, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return model, common.StringError(err)
+		return relation, common.StringError(err)
 	}
-	return model, nil
+	return relation, nil
 }
 
 func (m memberToRole[T]) UpdateRole(memberId string, updates any) error {

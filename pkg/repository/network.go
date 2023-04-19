@@ -28,7 +28,7 @@ type NetworkFull struct {
 
 type Network interface {
 	database.Transactable
-	List(ctx context.Context, limit int, offset int) ([]model.NetworkData, error)
+	List(ctx context.Context, limit int, offset int) (networks []model.NetworkData, err error)
 }
 
 type network[T any] struct {
@@ -39,13 +39,12 @@ func NewNetwork(db database.Queryable) Network {
 	return &network[model.NetworkData]{strrepo.Base[model.NetworkData]{Store: db, Table: "network"}}
 }
 
-func (n network[T]) List(ctx context.Context, limit int, offset int) ([]model.NetworkData, error) {
-	m := []NetworkFull{}
+func (n network[T]) List(ctx context.Context, limit int, offset int) (networks []model.NetworkData, err error) {
 	if limit == 0 {
 		limit = 20
 	}
 
-	err := n.Store.SelectContext(ctx, &m, `SELECT * FROM network LIMIT $1 OFFSET $2;`, limit, offset)
+	err = n.Store.SelectContext(ctx, &networks, `SELECT * FROM network LIMIT $1 OFFSET $2;`, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return nil, common.StringError(serror.NOT_FOUND)
@@ -53,9 +52,9 @@ func (n network[T]) List(ctx context.Context, limit int, offset int) ([]model.Ne
 		return nil, common.StringError(err)
 	}
 
-	result := []model.NetworkData{}
-	for i := range m {
-		result = append(result, model.NetworkData{Id: m[i].Id, Name: m[i].Name})
-	}
-	return result, nil
+	// result := []model.NetworkData{}
+	// for i := range networks {
+	// 	result = append(result, model.NetworkData{Id: networks[i].Id, Name: networks[i].Name})
+	// }
+	return networks, nil
 }

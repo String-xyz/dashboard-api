@@ -26,14 +26,14 @@ type OrganizationMemberWithRole struct {
 
 type OrganizationMember interface {
 	database.Transactable
-	Create(ctx context.Context, model model.OrganizationMember) (model.OrganizationMember, error)
-	GetById(ctx context.Context, ID string) (OrganizationMemberWithRole, error)
-	GetByIdIncludingDeactivated(ctx context.Context, ID string) (OrganizationMemberWithRole, error)
-	List(ctx context.Context, organizationId string, limit int, offset int) ([]OrganizationMemberWithRole, error)
-	Update(ctx context.Context, ID string, updates any) error
-	GetByEmail(ctx context.Context, email string) (OrganizationMemberWithRole, error)
-	Deactivate(ctx context.Context, ID string) error
-	Activate(ctx context.Context, ID string) error
+	Create(ctx context.Context, request model.OrganizationMember) (member model.OrganizationMember, err error)
+	GetById(ctx context.Context, id string) (member OrganizationMemberWithRole, err error)
+	GetByIdIncludingDeactivated(ctx context.Context, id string) (member OrganizationMemberWithRole, err error)
+	List(ctx context.Context, organizationId string, limit int, offset int) (members []OrganizationMemberWithRole, err error)
+	Update(ctx context.Context, id string, updates any) error
+	GetByEmail(ctx context.Context, email string) (member OrganizationMemberWithRole, err error)
+	Deactivate(ctx context.Context, id string) error
+	Activate(ctx context.Context, id string) error
 }
 
 type organizationMember[T any] struct {
@@ -44,30 +44,28 @@ func NewOrganizationMember(db database.Queryable) OrganizationMember {
 	return &organizationMember[model.OrganizationMember]{strrepo.Base[model.OrganizationMember]{Store: db, Table: "organization_member"}}
 }
 
-func (o organizationMember[T]) Create(ctx context.Context, m model.OrganizationMember) (model.OrganizationMember, error) {
-	newModel := model.OrganizationMember{}
-	rows, err := o.Store.NamedQuery(`
+func (m organizationMember[T]) Create(ctx context.Context, request model.OrganizationMember) (member model.OrganizationMember, err error) {
+	rows, err := m.Store.NamedQuery(`
 		INSERT INTO organization_member (email, name, password) 
-		VALUES(:email, :name, :password) RETURNING *`, m)
+		VALUES(:email, :name, :password) RETURNING *`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return member, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&member)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return member, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return member, nil
 }
 
-func (o organizationMember[T]) GetByEmail(ctx context.Context, email string) (OrganizationMemberWithRole, error) {
-	m := OrganizationMemberWithRole{}
-	err := o.Store.GetContext(ctx, &m, `
+func (m organizationMember[T]) GetByEmail(ctx context.Context, email string) (member OrganizationMemberWithRole, err error) {
+	err = m.Store.GetContext(ctx, &member, `
 		SELECT organization_member.*, member_role.name AS member_role
 		FROM organization_member
 		LEFT JOIN member_to_role
@@ -76,57 +74,54 @@ func (o organizationMember[T]) GetByEmail(ctx context.Context, email string) (Or
 		ON member_role.id = member_to_role.role_id 
 		WHERE organization_member.email = $1`, email)
 	if err != nil && err == sql.ErrNoRows {
-		return m, serror.NOT_FOUND
+		return member, serror.NOT_FOUND
 	} else if err != nil {
-		return m, common.StringError(err)
+		return member, common.StringError(err)
 	}
-	return m, nil
+	return member, nil
 }
 
-func (o organizationMember[T]) GetById(ctx context.Context, ID string) (OrganizationMemberWithRole, error) {
-	m := OrganizationMemberWithRole{}
-	err := o.Store.GetContext(ctx, &m, `
+func (m organizationMember[T]) GetById(ctx context.Context, id string) (member OrganizationMemberWithRole, err error) {
+	err = m.Store.GetContext(ctx, &member, `
 		SELECT organization_member.*, member_role.name AS member_role
 		FROM organization_member
 		LEFT JOIN member_to_role
 		ON organization_member.id = member_to_role.member_id
 		LEFT JOIN member_role 
 		ON member_role.id = member_to_role.role_id 
-		WHERE organization_member.id = $1`, ID)
+		WHERE organization_member.id = $1`, id)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return member, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return member, common.StringError(err)
 	}
-	return m, nil
+	return member, nil
 }
 
-func (o organizationMember[T]) GetByIdIncludingDeactivated(ctx context.Context, ID string) (OrganizationMemberWithRole, error) {
-	m := OrganizationMemberWithRole{}
-	err := o.Store.GetContext(ctx, &m, `
+func (m organizationMember[T]) GetByIdIncludingDeactivated(ctx context.Context, id string) (member OrganizationMemberWithRole, err error) {
+	err = m.Store.GetContext(ctx, &member, `
 	SELECT organization_member.*, member_role.name AS member_role
 	FROM organization_member
 	LEFT JOIN member_to_role
 	ON organization_member.id = member_to_role.member_id
 	LEFT JOIN member_role 
 	ON member_role.id = member_to_role.role_id 
-	WHERE organization_member.id = $1`, ID)
+	WHERE organization_member.id = $1`, id)
 
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return member, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return member, common.StringError(err)
 	}
-	return m, nil
+	return member, nil
 }
 
-func (o organizationMember[T]) List(ctx context.Context, organizationId string, limit int, offset int) ([]OrganizationMemberWithRole, error) {
-	m := []OrganizationMemberWithRole{}
+func (m organizationMember[T]) List(ctx context.Context, organizationId string, limit int, offset int) (members []OrganizationMemberWithRole, err error) {
 	if limit == 0 {
 		limit = 20
 	}
 
-	err := o.Store.SelectContext(ctx, &m, `
+	err = m.Store.SelectContext(ctx, &members, `
 		SELECT organization_member.*, member_role.name AS member_role
 		FROM organization_member
 		LEFT JOIN member_to_role
@@ -142,10 +137,10 @@ func (o organizationMember[T]) List(ctx context.Context, organizationId string, 
 		OFFSET $3;`, organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return members, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return members, common.StringError(err)
 	}
 
-	return m, nil
+	return members, nil
 }

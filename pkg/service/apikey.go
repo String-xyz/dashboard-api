@@ -27,18 +27,18 @@ func NewApikey(repos repository.Repositories) Apikey {
 	return &apikey{repos}
 }
 
-func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType string) (model.Apikey, error) {
+func (a *apikey) Create(ctx context.Context, callerId, platformId, keyType string) (model.Apikey, error) {
 	// Create the base key object
 	var keyValue string
 	key := model.Apikey{
 		Type:       keyType,
 		PlatformId: platformId,
-		CreatedBy:  callerID,
+		CreatedBy:  callerId,
 	}
 
 	// Only admins can create secret keys
 	if keyType == "secret" {
-		err := RequireAuthority(a.repos, callerID, "Owner", "Admin")
+		err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 		if err != nil {
 			return model.Apikey{}, err
 		}

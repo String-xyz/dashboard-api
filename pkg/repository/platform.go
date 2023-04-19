@@ -22,10 +22,10 @@ type PlaformUpdates struct {
 
 type Platform interface {
 	database.Transactable
-	Create(ctx context.Context, model model.Platform) (model.Platform, error)
-	GetById(ctx context.Context, ID string) (model.Platform, error)
-	List(ctx context.Context, limit int, offset int) ([]model.Platform, error)
-	Update(ctx context.Context, ID string, updates any) error
+	Create(ctx context.Context, request model.Platform) (platform model.Platform, err error)
+	GetById(ctx context.Context, id string) (platform model.Platform, err error)
+	List(ctx context.Context, limit int, offset int) (platforms []model.Platform, err error)
+	Update(ctx context.Context, id string, updates any) error
 }
 
 type platform[T any] struct {
@@ -36,23 +36,22 @@ func NewPlatform(db database.Queryable) Platform {
 	return &platform[model.Platform]{strrepo.Base[model.Platform]{Store: db, Table: "platform"}}
 }
 
-func (p platform[T]) Create(ctx context.Context, m model.Platform) (model.Platform, error) {
-	newModel := model.Platform{}
+func (p platform[T]) Create(ctx context.Context, request model.Platform) (platform model.Platform, err error) {
 	rows, err := p.Store.NamedQuery(`
 		INSERT INTO platform (name) 
-		VALUES(:name) RETURNING *`, m)
+		VALUES(:name) RETURNING *`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&platform)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return platform, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return platform, nil
 }
