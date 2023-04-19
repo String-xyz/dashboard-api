@@ -22,7 +22,7 @@ type MemberToRoleUpdates struct {
 
 type MemberToRole interface {
 	database.Transactable
-	Create(ctx context.Context, model model.MemberToRole) (model.MemberToRole, error)
+	Create(ctx context.Context, model model.MemberToRole) (newModel model.MemberToRole, err error)
 	GetById(ctx context.Context, ID string) (model.MemberToRole, error)
 	List(ctx context.Context, limit int, offset int) ([]model.MemberToRole, error)
 	Update(ctx context.Context, ID string, updates any) error
@@ -39,11 +39,10 @@ func NewMemberToRole(db database.Queryable) MemberToRole {
 	return &memberToRole[model.MemberToRole]{strrepo.Base[model.MemberToRole]{Store: db, Table: "member_to_role"}}
 }
 
-func (p memberToRole[T]) Create(ctx context.Context, m model.MemberToRole) (model.MemberToRole, error) {
-	newModel := model.MemberToRole{}
-	rows, err := p.Store.NamedQuery(`
+func (m memberToRole[T]) Create(ctx context.Context, model model.MemberToRole) (newModel model.MemberToRole, err error) {
+	rows, err := m.Store.NamedQuery(`
 		INSERT INTO member_to_role (member_id, role_id) 
-		VALUES(:member_id, :role_id) RETURNING *`, m)
+		VALUES(:member_id, :role_id) RETURNING *`, model)
 
 	if err != nil {
 		return newModel, common.StringError(err)
@@ -60,35 +59,33 @@ func (p memberToRole[T]) Create(ctx context.Context, m model.MemberToRole) (mode
 	return newModel, nil
 }
 
-func (p memberToRole[T]) GetByMember(memberId string) (model.MemberToRole, error) {
-	m := model.MemberToRole{}
-	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", p.Table), memberId)
+func (m memberToRole[T]) GetByMember(memberId string) (model model.MemberToRole, err error) {
+	err = m.Store.Get(&model, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", m.Table), memberId)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return model, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return model, common.StringError(err)
 	}
-	return m, nil
+	return model, nil
 }
 
-func (p memberToRole[T]) GetByPlatform(platformId string) (model.MemberToRole, error) {
-	m := model.MemberToRole{}
-	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", p.Table), platformId)
+func (m memberToRole[T]) GetByPlatform(platformId string) (model model.MemberToRole, err error) {
+	err = m.Store.Get(&model, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", m.Table), platformId)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return model, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return model, common.StringError(err)
 	}
-	return m, nil
+	return model, nil
 }
 
-func (p memberToRole[T]) UpdateRole(memberId string, updates any) error {
+func (m memberToRole[T]) UpdateRole(memberId string, updates any) error {
 	names, keyToUpdate := common.KeysAndValues(updates)
 	if len(names) == 0 {
 		return common.StringError(errors.New("no fields to update"))
 	}
-	query := fmt.Sprintf("UPDATE %s SET %s WHERE member_id = '%s'", p.Table, strings.Join(names, ", "), memberId)
-	_, err := p.Store.NamedExec(query, keyToUpdate)
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE member_id = '%s'", m.Table, strings.Join(names, ", "), memberId)
+	_, err := m.Store.NamedExec(query, keyToUpdate)
 	if err != nil {
 		return common.StringError(err)
 	}

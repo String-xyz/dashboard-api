@@ -20,11 +20,11 @@ type MemberRoleUpdates struct {
 
 type MemberRole interface {
 	database.Transactable
-	Create(ctx context.Context, model model.MemberRole) (model.MemberRole, error)
-	GetById(ctx context.Context, ID string) (model.MemberRole, error)
-	List(ctx context.Context, limit int, offset int) ([]model.MemberRole, error)
-	Update(ctx context.Context, ID string, updates any) error
-	GetByName(ctx context.Context, m model.MemberRole) (model.MemberRole, error)
+	Create(ctx context.Context, request model.MemberRole) (result model.MemberRole, err error)
+	GetById(ctx context.Context, id string) (result model.MemberRole, err error)
+	List(ctx context.Context, limit int, offset int) (results []model.MemberRole, err error)
+	Update(ctx context.Context, id string, updates any) error
+	GetByName(ctx context.Context, name string) (result model.MemberRole, err error)
 }
 
 type memberRole[T any] struct {
@@ -35,30 +35,28 @@ func NewMemberRole(db database.Queryable) MemberRole {
 	return &memberRole[model.MemberRole]{strrepo.Base[model.MemberRole]{Store: db, Table: "member_role"}}
 }
 
-func (p memberRole[T]) Create(ctx context.Context, m model.MemberRole) (model.MemberRole, error) {
-	newModel := model.MemberRole{}
-	rows, err := p.Store.NamedQuery(`
+func (m memberRole[T]) Create(ctx context.Context, request model.MemberRole) (result model.MemberRole, err error) {
+	rows, err := m.Store.NamedQuery(`
 		INSERT INTO member_role (id, name) 
-		VALUES(:id, :name) RETURNING *`, m)
+		VALUES(:id, :name) RETURNING *`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return result, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&result)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return result, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return result, nil
 }
 
-func (p memberRole[T]) GetByName(ctx context.Context, m model.MemberRole) (model.MemberRole, error) {
-	result := model.MemberRole{}
-	err := p.Store.Get(&result, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1", p.Table), m.Name)
+func (m memberRole[T]) GetByName(ctx context.Context, name string) (result model.MemberRole, err error) {
+	err = m.Store.Get(&result, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1", m.Table), name)
 	if err != nil && err == sql.ErrNoRows {
 		return result, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {

@@ -26,9 +26,9 @@ func NewOrganization(repos repository.Repositories, redis database.RedisStore) O
 }
 
 // TODO: Ensure valid email is provided
-func (a organization) Create(ctx context.Context, request model.RequestOrganizationCreate) (model.Organization, error) {
+func (o organization) Create(ctx context.Context, request model.RequestOrganizationCreate) (model.Organization, error) {
 	// Ensure there are no duplicate emails
-	preexisting, err := a.repos.OrganizationMember.GetByEmail(ctx, request.Email)
+	preexisting, err := o.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return model.Organization{}, err
@@ -36,7 +36,7 @@ func (a organization) Create(ctx context.Context, request model.RequestOrganizat
 		return model.Organization{}, common.StringError(serror.ALREADY_IN_USE)
 	}
 
-	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
+	pendingInvite, err := o.repos.MemberInvite.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return model.Organization{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email {
@@ -45,7 +45,7 @@ func (a organization) Create(ctx context.Context, request model.RequestOrganizat
 
 	// Generate new Organization with a Name
 	organization := model.Organization{Name: request.OrganizationName}
-	organization, err = a.repos.Organization.Create(ctx, organization)
+	organization, err = o.repos.Organization.Create(ctx, organization)
 	if err != nil {
 		return organization, common.StringError(err)
 	}
@@ -54,7 +54,7 @@ func (a organization) Create(ctx context.Context, request model.RequestOrganizat
 
 	// Get String Organization Id
 	// Generate Owner invitation
-	Invite := NewInvite(a.repos, a.redis)
+	Invite := NewInvite(o.repos, o.redis)
 	_, err = Invite.Send(ctx, inviteReq, nil, organization.Id)
 	if err != nil {
 		return organization, common.StringError(err)
@@ -63,8 +63,8 @@ func (a organization) Create(ctx context.Context, request model.RequestOrganizat
 	return organization, nil
 }
 
-func (a organization) Get(ctx context.Context, organizationId string) (model.Organization, error) {
-	result, err := a.repos.Organization.GetById(ctx, organizationId)
+func (o organization) Get(ctx context.Context, organizationId string) (model.Organization, error) {
+	result, err := o.repos.Organization.GetById(ctx, organizationId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -72,17 +72,17 @@ func (a organization) Get(ctx context.Context, organizationId string) (model.Org
 }
 
 // TODO: Ensure multiple organizations do not share the same *domain*
-func (a organization) Update(ctx context.Context, request model.RequestOrganizationUpdate, organizationId string, callerId string) (model.Organization, error) {
+func (o organization) Update(ctx context.Context, request model.RequestOrganizationUpdate, organizationId string, callerId string) (model.Organization, error) {
 	result := model.Organization{}
-	err := RequireAuthority(a.repos, callerId, "Owner")
+	err := RequireAuthority(o.repos, callerId, "Owner")
 	if err != nil {
 		return result, common.StringError(err)
 	}
-	err = a.repos.Organization.Update(ctx, organizationId, request)
+	err = o.repos.Organization.Update(ctx, organizationId, request)
 	if err != nil {
 		return result, common.StringError(err)
 	}
-	result, err = a.repos.Organization.GetById(ctx, organizationId)
+	result, err = o.repos.Organization.GetById(ctx, organizationId)
 	if err != nil {
 		return result, common.StringError(err)
 	}

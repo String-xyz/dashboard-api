@@ -39,13 +39,13 @@ func NewNetwork(db database.Queryable) Network {
 	return &network[model.NetworkData]{strrepo.Base[model.NetworkData]{Store: db, Table: "network"}}
 }
 
-func (p network[T]) List(ctx context.Context, limit int, offset int) ([]model.NetworkData, error) {
+func (n network[T]) List(ctx context.Context, limit int, offset int) ([]model.NetworkData, error) {
 	m := []NetworkFull{}
 	if limit == 0 {
 		limit = 20
 	}
 
-	err := p.Store.SelectContext(ctx, &m, `SELECT * FROM network LIMIT $1 OFFSET $2;`, limit, offset)
+	err := n.Store.SelectContext(ctx, &m, `SELECT * FROM network LIMIT $1 OFFSET $2;`, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return nil, common.StringError(serror.NOT_FOUND)

@@ -26,9 +26,9 @@ func NewPlatform(repos repository.Repositories, redis database.RedisStore) Platf
 }
 
 // TODO: Ensure valid email is provided
-func (a platform) Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error) {
+func (p platform) Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error) {
 	// Ensure there are no duplicate emails
-	preexisting, err := a.repos.OrganizationMember.GetByEmail(ctx, request.Email)
+	preexisting, err := p.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return model.Platform{}, err
@@ -36,7 +36,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 		return model.Platform{}, common.StringError(serror.ALREADY_IN_USE)
 	}
 
-	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
+	pendingInvite, err := p.repos.MemberInvite.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return model.Platform{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email {
@@ -45,7 +45,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 
 	// Generate new Platform with a Name
 	platform := model.Platform{Name: request.PlatformName}
-	platform, err = a.repos.Platform.Create(ctx, platform)
+	platform, err = p.repos.Platform.Create(ctx, platform)
 	if err != nil {
 		return platform, common.StringError(err)
 	}
@@ -54,7 +54,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 
 	// Get String Platform Id
 	// Generate Owner invitation
-	Invite := NewInvite(a.repos, a.redis)
+	Invite := NewInvite(p.repos, p.redis)
 	_, err = Invite.Send(ctx, inviteReq, nil, platform.Id)
 	if err != nil {
 		return platform, common.StringError(err)
@@ -63,8 +63,8 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 	return platform, nil
 }
 
-func (a platform) Get(ctx context.Context, platformId string) (model.Platform, error) {
-	result, err := a.repos.Platform.GetById(ctx, platformId)
+func (p platform) Get(ctx context.Context, platformId string) (model.Platform, error) {
+	result, err := p.repos.Platform.GetById(ctx, platformId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -72,17 +72,17 @@ func (a platform) Get(ctx context.Context, platformId string) (model.Platform, e
 }
 
 // TODO: Ensure multiple platforms do not share the same *domain*
-func (a platform) Update(ctx context.Context, request model.RequestPlatformUpdate, platformId string, callerId string) (model.Platform, error) {
+func (p platform) Update(ctx context.Context, request model.RequestPlatformUpdate, platformId string, callerId string) (model.Platform, error) {
 	result := model.Platform{}
-	err := RequireAuthority(a.repos, callerId, "Owner")
+	err := RequireAuthority(p.repos, callerId, "Owner")
 	if err != nil {
 		return result, common.StringError(err)
 	}
-	err = a.repos.Platform.Update(ctx, platformId, request)
+	err = p.repos.Platform.Update(ctx, platformId, request)
 	if err != nil {
 		return result, common.StringError(err)
 	}
-	result, err = a.repos.Platform.GetById(ctx, platformId)
+	result, err = p.repos.Platform.GetById(ctx, platformId)
 	if err != nil {
 		return result, common.StringError(err)
 	}

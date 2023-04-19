@@ -20,12 +20,12 @@ type MemberToOrganizationUpdates struct {
 
 type MemberToOrganization interface {
 	database.Transactable
-	Create(ctx context.Context, model model.MemberToOrganization) (model.MemberToOrganization, error)
-	GetById(ctx context.Context, ID string) (model.MemberToOrganization, error)
-	List(ctx context.Context, limit int, offset int) ([]model.MemberToOrganization, error)
-	Update(ctx context.Context, ID string, updates any) error
-	GetByMember(memberId string) (model.MemberToOrganization, error)
-	GetByOrganization(organizationId string) ([]model.MemberToOrganization, error)
+	Create(ctx context.Context, model model.MemberToOrganization) (newModel model.MemberToOrganization, err error)
+	GetById(ctx context.Context, id string) (model model.MemberToOrganization, err error)
+	List(ctx context.Context, limit int, offset int) (models []model.MemberToOrganization, err error)
+	Update(ctx context.Context, id string, updates any) error
+	GetByMember(memberId string) (model model.MemberToOrganization, err error)
+	GetByOrganization(organizationId string) (models []model.MemberToOrganization, err error)
 }
 
 type memberToOrganization[T any] struct {
@@ -36,11 +36,10 @@ func NewMemberToOrganization(db database.Queryable) MemberToOrganization {
 	return &memberToOrganization[model.MemberToOrganization]{strrepo.Base[model.MemberToOrganization]{Store: db, Table: "member_to_organization"}}
 }
 
-func (p memberToOrganization[T]) Create(ctx context.Context, m model.MemberToOrganization) (model.MemberToOrganization, error) {
-	newModel := model.MemberToOrganization{}
-	rows, err := p.Store.NamedQuery(`
+func (m memberToOrganization[T]) Create(ctx context.Context, model model.MemberToOrganization) (newModel model.MemberToOrganization, err error) {
+	rows, err := m.Store.NamedQuery(`
 		INSERT INTO member_to_organization (organization_id, member_id) 
-		VALUES(:organization_id, :member_id) RETURNING *`, m)
+		VALUES(:organization_id, :member_id) RETURNING *`, model)
 
 	if err != nil {
 		return newModel, common.StringError(err)
@@ -57,24 +56,22 @@ func (p memberToOrganization[T]) Create(ctx context.Context, m model.MemberToOrg
 	return newModel, nil
 }
 
-func (p memberToOrganization[T]) GetByMember(memberId string) (model.MemberToOrganization, error) {
-	m := model.MemberToOrganization{}
-	err := p.Store.Get(&m, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", p.Table), memberId)
+func (m memberToOrganization[T]) GetByMember(memberId string) (model model.MemberToOrganization, err error) {
+	err = m.Store.Get(&model, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", m.Table), memberId)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return model, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return model, common.StringError(err)
 	}
-	return m, nil
+	return model, nil
 }
 
-func (p memberToOrganization[T]) GetByOrganization(organizationId string) ([]model.MemberToOrganization, error) {
-	m := []model.MemberToOrganization{}
-	err := p.Store.Select(&m, fmt.Sprintf("SELECT * FROM %s WHERE organization_id = $1", p.Table), organizationId)
+func (m memberToOrganization[T]) GetByOrganization(organizationId string) (results []model.MemberToOrganization, err error) {
+	err = m.Store.Select(&results, fmt.Sprintf("SELECT * FROM %s WHERE organization_id = $1", m.Table), organizationId)
 	if err != nil && err == sql.ErrNoRows {
-		return m, common.StringError(serror.NOT_FOUND)
+		return results, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return m, common.StringError(err)
+		return results, common.StringError(err)
 	}
-	return m, nil
+	return results, nil
 }

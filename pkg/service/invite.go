@@ -38,9 +38,9 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 	return &invite{repos, redis}
 }
 
-func (a invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, organizationId string) (repository.MemberInviteInfo, error) {
+func (i invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, organizationId string) (repository.MemberInviteInfo, error) {
 	// Ensure there are no duplicate emails
-	preexisting, err := a.repos.OrganizationMember.GetByEmail(ctx, request.Email)
+	preexisting, err := i.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if preexisting.Email == request.Email {
@@ -48,22 +48,22 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	}
 
 	// If there is a pending invite, update the role
-	pendingInvite, err := a.repos.MemberInvite.GetByEmail(ctx, request.Email)
+	pendingInvite, err := i.repos.MemberInvite.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
 	} else if pendingInvite.Email == request.Email && callerId != nil && pendingInvite.DeactivatedAt == nil {
 		// Update invite and resend it
 		newRequest := model.RequestInviteUpdate{Role: request.Role, Name: request.Name}
-		newInvite, err := a.Update(ctx, newRequest, pendingInvite.Id, *callerId)
+		newInvite, err := i.Update(ctx, newRequest, pendingInvite.Id, *callerId)
 		if err != nil {
 			return repository.MemberInviteInfo{}, common.StringError(err)
 		}
-		return a.Resend(ctx, newInvite.Id, *callerId)
+		return i.Resend(ctx, newInvite.Id, *callerId)
 	}
 
 	roleId := GetRoleId(request.Role)
 	// TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
-	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, OrganizationId: organizationId, Name: request.Name, RoleId: roleId})
+	invite, err := i.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, OrganizationId: organizationId, Name: request.Name, RoleId: roleId})
 	if err != nil {
 		return invite, common.StringError(err)
 	}
@@ -75,7 +75,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 		return invite, common.StringError(err)
 	}
 
-	body := a.createEmailBody(invite.Id, request.Name, token)
+	body := i.createEmailBody(invite.Id, request.Name, token)
 
 	err = SendEmail("String API", "New String API User", request.Email, "String API Invitation", body)
 	if err != nil {
@@ -85,12 +85,12 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	return invite, nil
 }
 
-func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.RequestInviteAcceptance) (model.OrganizationMember, JWT, error) {
+func (i invite) Accept(ctx context.Context, inviteId string, requestBody model.RequestInviteAcceptance) (model.OrganizationMember, JWT, error) {
 	member := model.OrganizationMember{}
 	jwt := JWT{}
 
 	// Ensure that an invite exists
-	invite, err := a.repos.MemberInvite.GetById(ctx, inviteId)
+	invite, err := i.repos.MemberInvite.GetById(ctx, inviteId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -126,20 +126,20 @@ func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 
 	// Create new member
 	member = model.OrganizationMember{Email: invite.Email, Name: invite.Name, Password: string(hash)}
-	member, err = a.repos.OrganizationMember.Create(ctx, member)
+	member, err = i.repos.OrganizationMember.Create(ctx, member)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
 	// Create Member-To-Organization relationship
 	memberToOrganization := model.MemberToOrganization{MemberId: member.Id, OrganizationId: invite.OrganizationId}
-	memberToOrganization, err = a.repos.MemberToOrganization.Create(ctx, memberToOrganization)
+	memberToOrganization, err = i.repos.MemberToOrganization.Create(ctx, memberToOrganization)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
 	// Create Member-To-Role relationship
-	_, err = a.repos.MemberToRole.Create(ctx, model.MemberToRole{MemberId: member.Id, RoleId: invite.RoleId})
+	_, err = i.repos.MemberToRole.Create(ctx, model.MemberToRole{MemberId: member.Id, RoleId: invite.RoleId})
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -147,13 +147,13 @@ func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	// Update the invitation
 	now := time.Now()
 	update := repository.MemberInviteUpdates{AcceptedAt: &now}
-	err = a.repos.MemberInvite.Update(ctx, invite.Id, update)
+	err = i.repos.MemberInvite.Update(ctx, invite.Id, update)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
 	// Create a JWT
-	auth := NewAuth(a.repos, a.redis)
+	auth := NewAuth(i.repos, i.redis)
 	jwt, err = auth.GenerateJWT(member.Id, invite.OrganizationId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
@@ -162,8 +162,8 @@ func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	return member, jwt, nil
 }
 
-func (a invite) List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error) {
-	result, err := a.repos.MemberInvite.GetByOrganization(ctx, organizationId)
+func (i invite) List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error) {
+	result, err := i.repos.MemberInvite.GetByOrganization(ctx, organizationId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -209,9 +209,9 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 	return result, nil
 }
 
-func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+func (i invite) Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
 	result := repository.MemberInviteInfo{}
-	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
+	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -225,7 +225,7 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 		Name   *string `json:"name" db:"name"`
 	}
 
-	result, err = a.repos.MemberInvite.GetById(ctx, inviteId)
+	result, err = i.repos.MemberInvite.GetById(ctx, inviteId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -235,20 +235,20 @@ func (a invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	}
 
 	update := RoleUpdate{RoleId: GetRoleId(request.Role), Name: &request.Name}
-	err = a.repos.MemberInvite.Update(ctx, inviteId, update)
+	err = i.repos.MemberInvite.Update(ctx, inviteId, update)
 	if err != nil {
 		return result, common.StringError(err)
 	}
-	result, err = a.repos.MemberInvite.GetById(ctx, inviteId)
+	result, err = i.repos.MemberInvite.GetById(ctx, inviteId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 	return result, nil
 }
 
-func (a invite) Deactivate(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+func (i invite) Deactivate(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
 	result := repository.MemberInviteInfo{}
-	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
+	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -259,19 +259,19 @@ func (a invite) Deactivate(ctx context.Context, inviteId string, callerId string
 
 	now := time.Now()
 	update := DeactivateUpdate{DeactivatedAt: &now}
-	err = a.repos.MemberInvite.Update(ctx, inviteId, update)
+	err = i.repos.MemberInvite.Update(ctx, inviteId, update)
 	if err != nil {
 		return result, common.StringError(err)
 	}
-	result, err = a.repos.MemberInvite.GetById(ctx, inviteId)
+	result, err = i.repos.MemberInvite.GetById(ctx, inviteId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 	return result, nil
 }
 
-func (a invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo, error) {
-	result, err := a.repos.MemberInvite.GetById(ctx, id)
+func (i invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo, error) {
+	result, err := i.repos.MemberInvite.GetById(ctx, id)
 	if err != nil {
 		return result, common.StringError(err)
 	}

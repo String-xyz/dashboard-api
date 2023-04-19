@@ -28,7 +28,7 @@ func NewOrganization(service service.Organization) Organization {
 	return &organization{service: service}
 }
 
-func (p organization) Create(c echo.Context) error {
+func (o organization) Create(c echo.Context) error {
 	body := model.RequestOrganizationCreate{}
 	err := c.Bind(&body)
 	if err != nil {
@@ -42,7 +42,7 @@ func (p organization) Create(c echo.Context) error {
 		return httperror.InvalidPayloadError(c, err)
 	}
 
-	m, err := p.service.Create(c.Request().Context(), body)
+	m, err := o.service.Create(c.Request().Context(), body)
 	if err != nil {
 		common.LogStringError(c, err, "organization: create")
 
@@ -55,13 +55,13 @@ func (p organization) Create(c echo.Context) error {
 	return c.JSON(http.StatusCreated, m)
 }
 
-func (p organization) Get(c echo.Context) error {
+func (o organization) Get(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
 		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
-	m, err := p.service.Get(c.Request().Context(), organizationId)
+	m, err := o.service.Get(c.Request().Context(), organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "organization: get")
 	}
@@ -69,7 +69,7 @@ func (p organization) Get(c echo.Context) error {
 	return c.JSON(http.StatusAccepted, m)
 }
 
-func (p organization) Update(c echo.Context) error {
+func (o organization) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
 		return httperror.InternalError(c, "missing or invalid memberId")
@@ -97,19 +97,19 @@ func (p organization) Update(c echo.Context) error {
 		return httperror.InvalidPayloadError(c, err)
 	}
 
-	m, err := p.service.Update(c.Request().Context(), body, organizationId, callerId)
+	m, err := o.service.Update(c.Request().Context(), body, organizationId, callerId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "organization: update")
 	}
 	return c.JSON(http.StatusOK, m)
 }
 
-func (p organization) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
+func (o organization) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	if g == nil {
 		panic("no group attached to the organization handler")
 	}
-	p.Group = g
-	g.POST("", p.Create)
-	g.GET("", p.Get, ms...)
-	g.PATCH("", p.Update, ms...)
+	o.Group = g
+	g.POST("", o.Create)
+	g.GET("", o.Get, ms...)
+	g.PATCH("", o.Update, ms...)
 }
