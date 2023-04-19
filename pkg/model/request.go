@@ -2,6 +2,17 @@ package model
 
 import "github.com/lib/pq"
 
+type RequestOrganizationCreate struct {
+	OrganizationName string `json:"organizationName" validate:"required"`
+	Email            string `json:"email" validate:"required,email"`
+	Name             string `json:"name" validate:"required"`
+}
+
+type RequestOrganizationUpdate struct {
+	Name        *string `json:"organizationName" db:"name"`
+	Description *string `json:"description" db:"description"`
+}
+
 type RequestPlatformCreate struct {
 	PlatformName string `json:"platformName" validate:"required"`
 	Email        string `json:"email" validate:"required,email"`

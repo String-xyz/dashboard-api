@@ -11,7 +11,7 @@ import (
 )
 
 type Login interface {
-	Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error)
+	Login(ctx context.Context, request model.RequestLogin) (repository.OrganizationMemberWithRole, JWT, error)
 }
 
 type login struct {
@@ -23,9 +23,9 @@ func NewLogin(repos repository.Repositories, auth Auth) Login {
 	return &login{repos, auth}
 }
 
-func (l login) Login(ctx context.Context, request model.RequestLogin) (repository.PlatformMemberWithRole, JWT, error) {
+func (l login) Login(ctx context.Context, request model.RequestLogin) (repository.OrganizationMemberWithRole, JWT, error) {
 	jwt := JWT{}
-	member, err := l.repos.PlatformMember.GetByEmail(ctx, request.Email)
+	member, err := l.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -39,13 +39,13 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 		return member, jwt, common.StringError(serror.INVALID_PASSWORD)
 	}
 
-	platform, err := l.repos.MemberToPlatform.GetByMember(member.ID)
+	organization, err := l.repos.MemberToOrganization.GetByMember(member.Id)
 
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
-	jwt, err = l.auth.GenerateJWT(member.ID, platform.PlatformId)
+	jwt, err = l.auth.GenerateJWT(member.Id, organization.OrganizationId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}

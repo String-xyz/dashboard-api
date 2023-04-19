@@ -9,16 +9,17 @@ import (
 
 func newRepos(config APIConfig) repository.Repositories {
 	return repository.Repositories{
-		Platform:         repository.NewPlatform(config.DB),
-		PlatformMember:   repository.NewPlatformMember(config.DB),
-		MemberToRole:     repository.NewMemberToRole(config.DB),
-		MemberToPlatform: repository.NewMemberToPlatform(config.DB),
-		MemberRole:       repository.NewMemberRole(config.DB),
-		MemberInvite:     repository.NewMemberInvite(config.DB),
-		Apikey:           repository.NewApikey(config.DB),
-		DenyList:         repository.NewDenyList(config.Redis),
-		Contract:         repository.NewContract(config.DB),
-		Network:          repository.NewNetwork(config.DB),
+		Organization:         repository.NewOrganization(config.DB),
+		Platform:             repository.NewPlatform(config.DB),
+		OrganizationMember:   repository.NewOrganizationMember(config.DB),
+		MemberToRole:         repository.NewMemberToRole(config.DB),
+		MemberToOrganization: repository.NewMemberToOrganization(config.DB),
+		MemberRole:           repository.NewMemberRole(config.DB),
+		MemberInvite:         repository.NewMemberInvite(config.DB),
+		Apikey:               repository.NewApikey(config.DB),
+		DenyList:             repository.NewDenyList(config.Redis),
+		Contract:             repository.NewContract(config.DB),
+		Network:              repository.NewNetwork(config.DB),
 	}
 }
 
@@ -27,7 +28,8 @@ func newRedis() database.RedisStore {
 }
 
 func newServices(config APIConfig, repos repository.Repositories, redis database.RedisStore) service.Services {
-	plat := service.NewPlatform(repos, redis) // redis here is passed into Invite
+	organization := service.NewOrganization(repos, redis)
+	platform := service.NewPlatform(repos, redis) // redis here is passed into Invite
 	member := service.NewMember(repos)
 	auth := service.NewAuth(repos, redis)
 	login := service.NewLogin(repos, auth)
@@ -36,5 +38,5 @@ func newServices(config APIConfig, repos repository.Repositories, redis database
 	contract := service.NewContract(repos)
 	network := service.NewNetwork(repos)
 
-	return service.Services{Platform: plat, Member: member, Auth: auth, Login: login, Invite: invite, Apikey: apikey, Contract: contract, Network: network}
+	return service.Services{Organization: organization, Platform: platform, Member: member, Auth: auth, Login: login, Invite: invite, Apikey: apikey, Contract: contract, Network: network}
 }

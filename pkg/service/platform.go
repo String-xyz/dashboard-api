@@ -28,7 +28,7 @@ func NewPlatform(repos repository.Repositories, redis database.RedisStore) Platf
 // TODO: Ensure valid email is provided
 func (a platform) Create(ctx context.Context, request model.RequestPlatformCreate) (model.Platform, error) {
 	// Ensure there are no duplicate emails
-	preexisting, err := a.repos.PlatformMember.GetByEmail(ctx, request.Email)
+	preexisting, err := a.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return model.Platform{}, err
@@ -55,7 +55,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 	// Get String Platform Id
 	// Generate Owner invitation
 	Invite := NewInvite(a.repos, a.redis)
-	_, err = Invite.Send(ctx, inviteReq, nil, platform.ID)
+	_, err = Invite.Send(ctx, inviteReq, nil, platform.Id)
 	if err != nil {
 		return platform, common.StringError(err)
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
 
-// In: Handle to repos, PlatformMember ID of caller, allowable roles (["Member", "Admin", "Owner"])
+// In: Handle to repos, PlatformMember Id of caller, allowable roles (["Member", "Admin", "Owner"])
 // TODO: Refactor to use enums instead of strings
 func RequireAuthority(repos repository.Repositories, callerId string, rolesAllowed ...string) error {
 	ownerId := os.Getenv("MEMBER_ROLE_OWNER_ID")
@@ -35,7 +35,7 @@ func RequireAuthority(repos repository.Repositories, callerId string, rolesAllow
 
 	// Is the callers role allowed?
 	for _, allowed := range roleIdsAllowed {
-		if callerRole.RoleID == allowed {
+		if callerRole.RoleId == allowed {
 			return nil
 		}
 	}
@@ -55,11 +55,11 @@ func GetRole(repos repository.Repositories, memberId string) (string, error) {
 	}
 
 	// Ordered by statistical distribution
-	if memberToRole.RoleID == memberRoleId {
+	if memberToRole.RoleId == memberRoleId {
 		role = "Member"
-	} else if memberToRole.RoleID == adminRoleId {
+	} else if memberToRole.RoleId == adminRoleId {
 		role = "Admin"
-	} else if memberToRole.RoleID == ownerRoleId {
+	} else if memberToRole.RoleId == ownerRoleId {
 		role = "Owner"
 	}
 
