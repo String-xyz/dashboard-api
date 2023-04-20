@@ -1,7 +1,0 @@
-tmp/
-.DS_Store
-.env
-.env.deploy
-.vscode/
-.terraform/
-bin/

@@ -42,6 +42,7 @@ func Start(config APIConfig) {
 	redis := newRedis()
 	service := newServices(config, repos, redis)
 
+	organizationRoute(service, e)
 	platformRoute(service, e)
 	memberRoute(service, e)
 	loginRoute(service, e)
