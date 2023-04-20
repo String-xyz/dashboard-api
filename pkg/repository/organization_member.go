@@ -7,7 +7,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	strrepo "github.com/String-xyz/go-lib/repository"
+	librepository "github.com/String-xyz/go-lib/repository"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
@@ -37,11 +37,11 @@ type OrganizationMember interface {
 }
 
 type organizationMember[T any] struct {
-	strrepo.Base[T]
+	librepository.Base[T]
 }
 
 func NewOrganizationMember(db database.Queryable) OrganizationMember {
-	return &organizationMember[model.OrganizationMember]{strrepo.Base[model.OrganizationMember]{Store: db, Table: "organization_member"}}
+	return &organizationMember[model.OrganizationMember]{librepository.Base[model.OrganizationMember]{Store: db, Table: "organization_member"}}
 }
 
 func (m organizationMember[T]) Create(ctx context.Context, request model.OrganizationMember) (member model.OrganizationMember, err error) {

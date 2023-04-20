@@ -14,9 +14,8 @@ type RequestOrganizationUpdate struct {
 }
 
 type RequestPlatformCreate struct {
-	PlatformName string `json:"platformName" validate:"required"`
-	Email        string `json:"email" validate:"required,email"`
-	Name         string `json:"name" validate:"required"`
+	PlatformName        string `json:"platformName" validate:"required"`
+	PlatformDescription string `json:"platformDescription"`
 }
 
 type RequestPlatformUpdate struct {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	strrepo "github.com/String-xyz/go-lib/repository"
+	librepository "github.com/String-xyz/go-lib/repository"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
@@ -32,11 +32,11 @@ type MemberToRole interface {
 }
 
 type memberToRole[T any] struct {
-	strrepo.Base[T]
+	librepository.Base[T]
 }
 
 func NewMemberToRole(db database.Queryable) MemberToRole {
-	return &memberToRole[model.MemberToRole]{strrepo.Base[model.MemberToRole]{Store: db, Table: "member_to_role"}}
+	return &memberToRole[model.MemberToRole]{librepository.Base[model.MemberToRole]{Store: db, Table: "member_to_role"}}
 }
 
 func (m memberToRole[T]) Create(ctx context.Context, request model.MemberToRole) (relation model.MemberToRole, err error) {

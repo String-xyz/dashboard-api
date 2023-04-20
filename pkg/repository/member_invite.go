@@ -7,7 +7,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	strrepo "github.com/String-xyz/go-lib/repository"
+	librepository "github.com/String-xyz/go-lib/repository"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
@@ -53,11 +53,11 @@ type MemberInvite interface {
 }
 
 type memberInvite[T any] struct {
-	strrepo.Base[T]
+	librepository.Base[T]
 }
 
 func NewMemberInvite(db database.Queryable) MemberInvite {
-	return &memberInvite[model.MemberInvite]{strrepo.Base[model.MemberInvite]{Store: db, Table: "member_invite"}}
+	return &memberInvite[model.MemberInvite]{librepository.Base[model.MemberInvite]{Store: db, Table: "member_invite"}}
 }
 
 func (i memberInvite[T]) Create(ctx context.Context, request model.MemberInvite) (invite MemberInviteInfo, err error) {

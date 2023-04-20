@@ -85,7 +85,6 @@ func (a apikey) Get(c echo.Context) error {
 	}
 
 	keyId := c.Param("id")
-
 	if keyId == "" {
 		return httperror.BadRequestError(c)
 	}

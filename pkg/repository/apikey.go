@@ -8,7 +8,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	strrepo "github.com/String-xyz/go-lib/repository"
+	librepository "github.com/String-xyz/go-lib/repository"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
@@ -31,11 +31,11 @@ type Apikey interface {
 }
 
 type apikey[T any] struct {
-	strrepo.Base[T]
+	librepository.Base[T]
 }
 
 func NewApikey(db database.Queryable) Apikey {
-	return &apikey[model.Apikey]{strrepo.Base[model.Apikey]{Store: db, Table: "apikey"}}
+	return &apikey[model.Apikey]{librepository.Base[model.Apikey]{Store: db, Table: "apikey"}}
 }
 
 func (k apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error) {

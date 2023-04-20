@@ -7,7 +7,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	strrepo "github.com/String-xyz/go-lib/repository"
+	librepository "github.com/String-xyz/go-lib/repository"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
@@ -32,11 +32,11 @@ type Network interface {
 }
 
 type network[T any] struct {
-	strrepo.Base[T]
+	librepository.Base[T]
 }
 
 func NewNetwork(db database.Queryable) Network {
-	return &network[model.NetworkData]{strrepo.Base[model.NetworkData]{Store: db, Table: "network"}}
+	return &network[model.NetworkData]{librepository.Base[model.NetworkData]{Store: db, Table: "network"}}
 }
 
 func (n network[T]) List(ctx context.Context, limit int, offset int) (networks []model.NetworkData, err error) {
