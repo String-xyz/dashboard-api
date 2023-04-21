@@ -2,8 +2,6 @@ package main
 
 import (
 	"os"
-
-	"github.com/String-xyz/platform-admin-api/scripts"
 )
 
 func main() {
@@ -12,17 +10,7 @@ func main() {
 		script = os.Args[1]
 	}
 
-	if script == "data_seeding" {
-		dataSeedingArgs := "local"
-		if len(os.Args) > 2 {
-			dataSeedingArgs = os.Args[2]
-		}
-		if dataSeedingArgs == "local" {
-			scripts.MockSeeding()
-		} else {
-			scripts.DataSeeding()
-		}
-	} // else if script == "something_else" {
-	// scripts.SomethingElse()
+	// if script == "something" {
+	// scripts.Something()
 	// }
 }
