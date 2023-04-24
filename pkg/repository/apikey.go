@@ -14,19 +14,21 @@ import (
 )
 
 type ApikeyUpdates struct {
-	DeactivatedAt *time.Time `json:"deactivatedAt" db:"deactivated_at"`
-	Type          *string    `json:"type" db:"type"`
-	Data          *string    `json:"data" db:"data"`
-	Description   *string    `json:"description" db:"description"`
-	CreatedBy     *string    `json:"createdBy" db:"created_by"`
-	PlatformId    *string    `json:"platformId" db:"platform_id"`
+	DeactivatedAt  *time.Time `json:"deactivatedAt" db:"deactivated_at"`
+	Type           *string    `json:"type" db:"type"`
+	Data           *string    `json:"data" db:"data"`
+	Description    *string    `json:"description" db:"description"`
+	CreatedBy      *string    `json:"createdBy" db:"created_by"`
+	PlatformId     *string    `json:"platformId" db:"platform_id"`
+	OrganizationId *string    `json:"organizationId" db:"organization_id"`
 }
 
 type Apikey interface {
 	database.Transactable
 	Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error)
 	GetById(ctx context.Context, id string) (key model.Apikey, err error)
-	List(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error)
+	ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error)
+	ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (keys []model.Apikey, err error)
 	Update(ctx context.Context, id string, updates any) error
 }
 
@@ -40,8 +42,8 @@ func NewApikey(db database.Queryable) Apikey {
 
 func (k apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error) {
 	rows, err := k.Store.NamedQuery(`
-		INSERT INTO apikey (type, data, hint, description, created_by, platform_id) 
-		VALUES(:type, :data, :hint, :description, :created_by, :platform_id) RETURNING *`, request)
+		INSERT INTO apikey (type, data, hint, description, created_by, organization_id) 
+		VALUES(:type, :data, :hint, :description, :created_by, :organization_id) RETURNING *`, request)
 
 	if err != nil {
 		return key, common.StringError(err)
@@ -68,12 +70,28 @@ func (k apikey[T]) GetById(ctx context.Context, id string) (key model.Apikey, er
 	return key, nil
 }
 
-func (k apikey[T]) List(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error) {
+func (k apikey[T]) ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error) {
 	if limit == 0 {
 		limit = 20
 	}
 
 	err = k.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.platform_id = $1 LIMIT $2 OFFSET $3;`, platformId, limit, offset)
+
+	if err == sql.ErrNoRows {
+		return keys, common.StringError(serror.NOT_FOUND)
+	} else if err != nil {
+		return keys, common.StringError(err)
+	}
+
+	return keys, nil
+}
+
+func (k apikey[T]) ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (keys []model.Apikey, err error) {
+	if limit == 0 {
+		limit = 20
+	}
+
+	err = k.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.organization_id = $1 LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return keys, common.StringError(serror.NOT_FOUND)

@@ -35,18 +35,22 @@ func (a apikey) Create(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	keyType := c.QueryParam("type")
-
 	if keyType == "" {
 		keyType = "public"
 	}
 
-	m, err := a.service.Create(c.Request().Context(), callerId, platformId, keyType)
+	platformId := c.QueryParam("platform_id")
+	if keyType == "public" && platformId == "" {
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := a.service.Create(c.Request().Context(), callerId, platformId, organizationId, keyType)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: create")
 	}
@@ -60,12 +64,14 @@ func (a apikey) GetAll(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
-	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
+	platformId := c.QueryParam("platform_id")
+
+	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: get all")
 	}
@@ -79,9 +85,9 @@ func (a apikey) Get(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	keyId := c.Param("id")
@@ -89,7 +95,7 @@ func (a apikey) Get(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Get(c.Request().Context(), callerId, platformId, keyId)
+	m, err := a.service.Get(c.Request().Context(), callerId, organizationId, keyId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: get")
 	}
@@ -103,18 +109,18 @@ func (a apikey) Deactivate(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid callerId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	keyId := c.Param("id")
 
-	if !validator.IsUUID(keyId, platformId, callerId) {
+	if !validator.IsUUID(keyId, organizationId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, keyId)
+	m, err := a.service.Deactivate(c.Request().Context(), callerId, organizationId, keyId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: deactivate")
 	}
@@ -125,17 +131,17 @@ func (a apikey) Deactivate(c echo.Context) error {
 func (a apikey) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	keyId := c.Param("id")
 
-	if platformId == "" || callerId == "" {
+	if organizationId == "" || callerId == "" {
 		return httperror.BadRequestError(c)
 	}
 
@@ -150,7 +156,7 @@ func (a apikey) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, keyId)
+	m, err := a.service.Update(c.Request().Context(), keyId, body, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: update")
 	}

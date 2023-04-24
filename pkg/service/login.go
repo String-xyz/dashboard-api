@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/String-xyz/go-lib/common"
 	serror "github.com/String-xyz/go-lib/stringerror"
@@ -33,6 +34,8 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 	if member.DeactivatedAt != nil {
 		return member, jwt, common.StringError(serror.DEACTIVATED)
 	}
+
+	fmt.Printf("\n\n >>>>>>>>> request.Password: %s\n member.Password: %s\n request.Email: %s\n", request.Password, member.Password, request.Email)
 
 	err = bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(request.Password))
 	if err != nil {
