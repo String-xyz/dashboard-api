@@ -54,16 +54,16 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	} else if pendingInvite.Email == request.Email && callerId != nil && pendingInvite.DeactivatedAt == nil {
 		// Update invite and resend it
 		newRequest := model.RequestInviteUpdate{Role: request.Role, Name: request.Name}
-		newInvite, err := a.Update(ctx, newRequest, pendingInvite.ID, *callerId)
+		newInvite, err := a.Update(ctx, newRequest, pendingInvite.Id, *callerId)
 		if err != nil {
 			return repository.MemberInviteInfo{}, common.StringError(err)
 		}
-		return a.Resend(ctx, newInvite.ID, *callerId)
+		return a.Resend(ctx, newInvite.Id, *callerId)
 	}
 
 	roleId := GetRoleId(request.Role)
 	// TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
-	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformId: platformId, Name: request.Name, RoleID: roleId})
+	invite, err := a.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, PlatformId: platformId, Name: request.Name, RoleId: roleId})
 	if err != nil {
 		return invite, common.StringError(err)
 	}
@@ -75,7 +75,7 @@ func (a invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 		return invite, common.StringError(err)
 	}
 
-	body := a.createEmailBody(invite.ID, request.Name, token)
+	body := a.createEmailBody(invite.Id, request.Name, token)
 
 	err = SendEmail("String API", "New String API User", request.Email, "String API Invitation", body)
 	if err != nil {
@@ -132,14 +132,14 @@ func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	}
 
 	// Create Member-To-Platform relationship
-	memberToPlatform := model.MemberToPlatform{MemberID: member.ID, PlatformId: invite.PlatformId}
+	memberToPlatform := model.MemberToPlatform{MemberId: member.Id, PlatformId: invite.PlatformId}
 	memberToPlatform, err = a.repos.MemberToPlatform.Create(ctx, memberToPlatform)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
 	// Create Member-To-Role relationship
-	_, err = a.repos.MemberToRole.Create(ctx, model.MemberToRole{MemberID: member.ID, RoleID: invite.RoleID})
+	_, err = a.repos.MemberToRole.Create(ctx, model.MemberToRole{MemberId: member.Id, RoleId: invite.RoleId})
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -147,14 +147,14 @@ func (a invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	// Update the invitation
 	now := time.Now()
 	update := repository.MemberInviteUpdates{AcceptedAt: &now}
-	err = a.repos.MemberInvite.Update(ctx, invite.ID, update)
+	err = a.repos.MemberInvite.Update(ctx, invite.Id, update)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
 	// Create a JWT
 	auth := NewAuth(a.repos, a.redis)
-	jwt, err = auth.GenerateJWT(member.ID, invite.PlatformId)
+	jwt, err = auth.GenerateJWT(member.Id, invite.PlatformId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
@@ -199,7 +199,7 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 		return result, common.StringError(err)
 	}
 
-	body := i.createEmailBody(result.ID, result.Name, token)
+	body := i.createEmailBody(result.Id, result.Name, token)
 
 	err = SendEmail("String API", "New String API User", result.Email, "String API Invitation", body)
 	if err != nil {

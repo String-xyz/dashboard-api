@@ -75,12 +75,12 @@ type RequestContractCreate struct {
 	Name      string         `json:"name" db:"name"`
 	Address   string         `json:"address" db:"address"`
 	Functions pq.StringArray `json:"functions" db:"functions"`
-	NetworkID string         `json:"networkId" db:"network_id"`
+	NetworkId string         `json:"networkId" db:"network_id"`
 }
 
 type RequestContractUpdate struct {
 	Name      *string         `json:"name" db:"name"`
 	Address   *string         `json:"address" db:"address"`
 	Functions *pq.StringArray `json:"functions" db:"functions"`
-	NetworkID *string         `json:"networkId" db:"network_id"`
+	NetworkId *string         `json:"networkId" db:"network_id"`
 }

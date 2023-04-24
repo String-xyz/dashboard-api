@@ -34,14 +34,14 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 	}
 
 	// Check if contract already exists
-	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkID, platformId)
+	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkId, platformId)
 	if err != nil && err != serror.NOT_FOUND {
 		return model.Contract{}, common.StringError(err)
 	} else if exists.Id != "" {
 		return model.Contract{}, common.StringError(serror.ALREADY_IN_USE)
 	}
 
-	row := model.Contract{Name: create.Name, PlatformId: platformId, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkID}
+	row := model.Contract{Name: create.Name, PlatformId: platformId, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkId}
 	row, err = c.repos.Contract.Create(row)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)

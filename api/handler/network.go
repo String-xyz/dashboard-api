@@ -29,6 +29,14 @@ func (a network) GetAll(c echo.Context) error {
 		common.LogStringError(c, err, "network: get all")
 		return DefaultErrorHandler(c, err, "network: get all")
 	}
+
+	for i := range m {
+		err = common.SanitizeIdOutput(&m[i])
+		if err != nil {
+			common.LogStringError(c, err, "network: get all")
+			return DefaultErrorHandler(c, err, "network: get all")
+		}
+	}
 	return c.JSON(http.StatusOK, m)
 }
 

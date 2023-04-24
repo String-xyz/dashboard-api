@@ -40,6 +40,11 @@ func (a apikey) Create(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	keyType := c.QueryParam("type")
 
 	if keyType == "" {
@@ -51,6 +56,10 @@ func (a apikey) Create(c echo.Context) error {
 		return DefaultErrorHandler(c, err, "apikey: create")
 	}
 
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize output ids")
+	}
 	return c.JSON(http.StatusCreated, m)
 }
 
@@ -65,11 +74,22 @@ func (a apikey) GetAll(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: get all")
 	}
 
+	for i := range m {
+		err = common.SanitizeIdOutput(&m[i])
+		if err != nil {
+			return httperror.InternalError(c, "failed to sanitize output ids")
+		}
+	}
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -90,11 +110,20 @@ func (a apikey) Get(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId, ApiKeyId string }{callerId, platformId, keyId}, &callerId, &platformId, &keyId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := a.service.Get(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: get")
 	}
 
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize output ids")
+	}
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -111,6 +140,11 @@ func (a apikey) Deactivate(c echo.Context) error {
 
 	keyId := c.Param("id")
 
+	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId, ApiKeyId string }{callerId, platformId, keyId}, &callerId, &platformId, &keyId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	if !validator.IsUUID(keyId, platformId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
@@ -120,6 +154,10 @@ func (a apikey) Deactivate(c echo.Context) error {
 		return DefaultErrorHandler(c, err, "apikey: deactivate")
 	}
 
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize output ids")
+	}
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -140,12 +178,17 @@ func (a apikey) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId, ApiKeyId string }{callerId, platformId, keyId}, &callerId, &platformId, &keyId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	if !validator.IsUUID(keyId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestApikeyUpdate{}
-	err := c.Bind(&body)
+	err = c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: update bind")
 		return httperror.BadRequestError(c)
@@ -156,6 +199,10 @@ func (a apikey) Update(c echo.Context) error {
 		return DefaultErrorHandler(c, err, "apikey: update")
 	}
 
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize output ids")
+	}
 	return c.JSON(http.StatusOK, m)
 }
 

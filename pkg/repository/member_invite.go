@@ -19,7 +19,7 @@ func GetInviteStatus(invite MemberInviteInfo) string {
 		return "expired"
 	} else if invite.DeactivatedAt != nil {
 		return "revoked"
-	} else if invite.ID != "" {
+	} else if invite.Id != "" {
 		return "pending"
 	}
 

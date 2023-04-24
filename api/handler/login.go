@@ -59,6 +59,12 @@ func (l login) Login(c echo.Context) error {
 		return DefaultErrorHandler(c, err, "login: login")
 	}
 
+	err = common.SanitizeIdOutput(&member)
+	if err != nil {
+		common.LogStringError(c, err, "login: sanitize id output")
+		return httperror.InternalError(c)
+	}
+
 	err = SetAuthCookies(c, jwt)
 	if err != nil {
 		common.LogStringError(c, err, "login: set auth cookies")
@@ -82,7 +88,7 @@ func (l login) RefreshToken(c echo.Context) error {
 	}
 
 	// If member is denied, do not refresh token
-	denied, err := l.auth.IsDenied(resp.Member.ID)
+	denied, err := l.auth.IsDenied(resp.Member.Id)
 	if err != nil {
 		common.LogStringError(c, err, "login: fail denylist check")
 		return httperror.InternalError(c)
@@ -96,6 +102,12 @@ func (l login) RefreshToken(c echo.Context) error {
 	err = SetAuthCookies(c, resp.JWT)
 	if err != nil {
 		common.LogStringError(c, err, "RefreshToken: unable to set auth cookies")
+		return httperror.InternalError(c)
+	}
+
+	err = common.SanitizeIdOutput(&resp.Member)
+	if err != nil {
+		common.LogStringError(c, err, "RefreshToken: sanitize id output")
 		return httperror.InternalError(c)
 	}
 

@@ -63,7 +63,7 @@ func (a member) Get(ctx context.Context, callerId string, platformId string, mem
 		return result, common.StringError(serror.FORBIDDEN)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, memberToPlatform.MemberID)
+	result, err = a.repos.PlatformMember.GetById(ctx, memberToPlatform.MemberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -135,7 +135,7 @@ func (a member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 
 	// generate reset token by hashing member id
 	secret := os.Getenv("STRING_ENCRYPTION_KEY")
-	resetToken, err := common.EncryptString(member.ID, secret)
+	resetToken, err := common.EncryptString(member.Id, secret)
 
 	// url encode token
 	resetToken = url.QueryEscape(resetToken)
@@ -221,7 +221,7 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 		return result, common.StringError(err)
 	}
 
-	role.RoleID = GetRoleId(request.Role)
+	role.RoleId = GetRoleId(request.Role)
 	err = a.repos.MemberToRole.UpdateRole(memberId, role)
 	if err != nil {
 		return result, common.StringError(err)
@@ -273,7 +273,7 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 	defer a.repos.MemberToRole.Reset()
 
 	// Promote member to Owner
-	roleObjMember := model.MemberToRole{MemberID: memberId, RoleID: GetRoleId("Owner")}
+	roleObjMember := model.MemberToRole{MemberId: memberId, RoleId: GetRoleId("Owner")}
 
 	err = a.repos.MemberToRole.UpdateRole(memberId, roleObjMember)
 	if err != nil {
@@ -282,7 +282,7 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 	}
 
 	// Demote caller to Admin
-	roleObjCaller := model.MemberToRole{MemberID: callerId, RoleID: GetRoleId("Admin")}
+	roleObjCaller := model.MemberToRole{MemberId: callerId, RoleId: GetRoleId("Admin")}
 
 	err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
 	if err != nil {

@@ -43,12 +43,21 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	body := model.RequestContractCreate{}
 	if err := c.Bind(&body); err != nil {
 		return httperror.BadRequestError(c)
 	}
 
 	SanitizeChecksums(&body.Address)
+	err = common.SanitizeIdInput(&body)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
 
 	m, err := a.service.Create(c.Request().Context(), body, callerId, platformId)
 	if err != nil {
@@ -59,6 +68,10 @@ func (a contract) Create(c echo.Context) error {
 		}
 		return httperror.InternalError(c)
 	}
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
+	}
 	return c.JSON(http.StatusCreated, m)
 }
 
@@ -68,9 +81,21 @@ func (a contract) GetAll(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId string }{platformId}, &platformId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: get all")
+	}
+
+	for i := range m {
+		err = common.SanitizeIdOutput(&m[i])
+		if err != nil {
+			return httperror.InternalError(c, "failed to sanitize id output")
+		}
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -86,9 +111,18 @@ func (a contract) Get(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId, ContractId string }{platformId, contractId}, &platformId, &contractId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := a.service.Get(c.Request().Context(), platformId, contractId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: get")
+	}
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -109,9 +143,19 @@ func (a contract) Deactivate(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId, ContractId string }{platformId, callerId, contractId}, &platformId, &callerId, &contractId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, contractId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: deactivate")
+	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -132,9 +176,19 @@ func (a contract) Reactivate(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId, ContractId string }{platformId, callerId, contractId}, &platformId, &callerId, &contractId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := a.service.Reactivate(c.Request().Context(), callerId, platformId, contractId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: reactivate")
+	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -155,12 +209,17 @@ func (a contract) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId, ContractId string }{platformId, callerId, contractId}, &platformId, &callerId, &contractId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	if !validator.IsUUID(contractId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestContractUpdate{}
-	err := c.Bind(&body)
+	err = c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "contract: update bind")
 		return httperror.BadRequestError(c)
@@ -168,9 +227,19 @@ func (a contract) Update(c echo.Context) error {
 
 	SanitizeChecksums(body.Address)
 
+	err = common.SanitizeIdInput(&body)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, contractId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: update")
+	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
 	}
 
 	return c.JSON(http.StatusOK, m)

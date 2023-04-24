@@ -35,7 +35,7 @@ func RequireAuthority(repos repository.Repositories, callerId string, rolesAllow
 
 	// Is the callers role allowed?
 	for _, allowed := range roleIdsAllowed {
-		if callerRole.RoleID == allowed {
+		if callerRole.RoleId == allowed {
 			return nil
 		}
 	}
@@ -55,11 +55,11 @@ func GetRole(repos repository.Repositories, memberId string) (string, error) {
 	}
 
 	// Ordered by statistical distribution
-	if memberToRole.RoleID == memberRoleId {
+	if memberToRole.RoleId == memberRoleId {
 		role = "Member"
-	} else if memberToRole.RoleID == adminRoleId {
+	} else if memberToRole.RoleId == adminRoleId {
 		role = "Admin"
-	} else if memberToRole.RoleID == ownerRoleId {
+	} else if memberToRole.RoleId == ownerRoleId {
 		role = "Owner"
 	}
 

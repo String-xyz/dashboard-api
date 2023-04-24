@@ -55,7 +55,7 @@ func (a platform) Create(ctx context.Context, request model.RequestPlatformCreat
 	// Get String Platform Id
 	// Generate Owner invitation
 	Invite := NewInvite(a.repos, a.redis)
-	_, err = Invite.Send(ctx, inviteReq, nil, platform.ID)
+	_, err = Invite.Send(ctx, inviteReq, nil, platform.Id)
 	if err != nil {
 		return platform, common.StringError(err)
 	}

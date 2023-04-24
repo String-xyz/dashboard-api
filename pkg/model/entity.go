@@ -7,7 +7,7 @@ import (
 )
 
 type Platform struct {
-	ID            string         `json:"id,omitempty" db:"id"`
+	Id            string         `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time      `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time      `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
@@ -19,7 +19,7 @@ type Platform struct {
 }
 
 type PlatformMember struct {
-	ID            string     `json:"id,omitempty" db:"id"`
+	Id            string     `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
@@ -30,11 +30,11 @@ type PlatformMember struct {
 
 type MemberToPlatform struct {
 	PlatformId string `json:"platformId" db:"platform_id"`
-	MemberID   string `json:"memberId" db:"member_id"`
+	MemberId   string `json:"memberId" db:"member_id"`
 }
 
 type MemberRole struct {
-	ID            string     `json:"id,omitempty" db:"id"`
+	Id            string     `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
@@ -42,12 +42,12 @@ type MemberRole struct {
 }
 
 type MemberToRole struct {
-	MemberID string `json:"memberId" db:"member_id"`
-	RoleID   string `json:"roleId" db:"role_id"`
+	MemberId string `json:"memberId" db:"member_id"`
+	RoleId   string `json:"roleId" db:"role_id"`
 }
 
 type MemberInvite struct {
-	ID            string     `json:"id,omitempty" db:"id"`
+	Id            string     `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
@@ -56,7 +56,7 @@ type MemberInvite struct {
 	Email         string     `json:"email" db:"email"`
 	InvitedBy     *string    `json:"invitedBy,omitempty" db:"invited_by"`
 	PlatformId    string     `json:"platformId" db:"platform_id"`
-	RoleID        string     `json:"roleId" db:"role_id"`
+	RoleId        string     `json:"roleId" db:"role_id"`
 	Name          string     `json:"name" db:"name"`
 }
 

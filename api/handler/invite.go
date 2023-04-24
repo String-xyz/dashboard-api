@@ -45,8 +45,13 @@ func (i invite) Send(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	body := model.RequestInviteSend{}
-	err := c.Bind(&body)
+	err = c.Bind(&body)
 	if err != nil {
 		return httperror.BadRequestError(c, "invalid payload")
 	}
@@ -61,6 +66,11 @@ func (i invite) Send(c echo.Context) error {
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "invite: send")
+	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id")
 	}
 
 	return c.JSON(http.StatusCreated, m)
@@ -100,6 +110,11 @@ func (i invite) Accept(c echo.Context) error {
 		return httperror.InternalError(c)
 	}
 
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id")
+	}
+
 	err = SetAuthCookies(c, jwt)
 	if err != nil {
 		common.LogStringError(c, err, "invite: set auth cookies")
@@ -115,6 +130,11 @@ func (i invite) List(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId string }{platformId}, &platformId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	status := c.QueryParam("status") // optional
 	// if status == "" {
 	// 	return httperror.BadRequestError(c)
@@ -123,6 +143,14 @@ func (i invite) List(c echo.Context) error {
 	if err != nil {
 		return DefaultErrorHandler(c, err, "invite: list")
 	}
+
+	for i := range m {
+		err = common.SanitizeIdOutput(&m[i])
+		if err != nil {
+			return httperror.InternalError(c, "failed to sanitize id")
+		}
+	}
+
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -130,6 +158,11 @@ func (i invite) Resend(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
 		return httperror.InternalError(c, "missing or invalid callerId")
+	}
+
+	err := common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId)
+	if err != nil {
+		return httperror.BadRequestError(c)
 	}
 
 	id := c.Param("id")
@@ -147,6 +180,11 @@ func (i invite) Resend(c echo.Context) error {
 
 		return httperror.InternalError(c)
 	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id")
+	}
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -156,13 +194,18 @@ func (i invite) Update(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestInviteUpdate{}
-	err := c.Bind(&body)
+	err = c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: update bind")
 		return httperror.BadRequestError(c)
@@ -187,6 +230,10 @@ func (i invite) Update(c echo.Context) error {
 
 		return httperror.InternalError(c)
 	}
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id")
+	}
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -194,6 +241,11 @@ func (i invite) Deactivate(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
 		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	err := common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId)
+	if err != nil {
+		return httperror.BadRequestError(c)
 	}
 
 	id := c.Param("id")
@@ -215,6 +267,11 @@ func (i invite) Deactivate(c echo.Context) error {
 
 		return httperror.InternalError(c)
 	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id")
+	}
 	return c.JSON(http.StatusOK, m)
 }
 
@@ -227,6 +284,10 @@ func (i invite) Get(c echo.Context) error {
 	m, err := i.service.Get(c.Request().Context(), id)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "invite: get")
+	}
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id")
 	}
 	return c.JSON(http.StatusOK, m)
 }

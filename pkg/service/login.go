@@ -39,13 +39,13 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 		return member, jwt, common.StringError(serror.INVALID_PASSWORD)
 	}
 
-	platform, err := l.repos.MemberToPlatform.GetByMember(member.ID)
+	platform, err := l.repos.MemberToPlatform.GetByMember(member.Id)
 
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}
 
-	jwt, err = l.auth.GenerateJWT(member.ID, platform.PlatformId)
+	jwt, err = l.auth.GenerateJWT(member.Id, platform.PlatformId)
 	if err != nil {
 		return member, jwt, common.StringError(err)
 	}

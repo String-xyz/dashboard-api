@@ -52,6 +52,10 @@ func (p platform) Create(c echo.Context) error {
 
 		return httperror.InternalError(c)
 	}
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
+	}
 	return c.JSON(http.StatusCreated, m)
 }
 
@@ -61,9 +65,19 @@ func (p platform) Get(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId string }{platformId}, &platformId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	m, err := p.service.Get(c.Request().Context(), platformId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "platform: get")
+	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
 	}
 
 	return c.JSON(http.StatusAccepted, m)
@@ -80,9 +94,14 @@ func (p platform) Update(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
+	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId string }{platformId, callerId}, &platformId, &callerId)
+	if err != nil {
+		return httperror.BadRequestError(c)
+	}
+
 	body := model.RequestPlatformUpdate{}
 
-	err := c.Bind(&body)
+	err = c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update bind")
 		return httperror.BadRequestError(c)
@@ -100,6 +119,11 @@ func (p platform) Update(c echo.Context) error {
 	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "platform: update")
+	}
+
+	err = common.SanitizeIdOutput(&m)
+	if err != nil {
+		return httperror.InternalError(c, "failed to sanitize id output")
 	}
 	return c.JSON(http.StatusOK, m)
 }
