@@ -3,11 +3,11 @@ package service
 import (
 	"context"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/platform-admin-api/env"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -134,12 +134,20 @@ func (a member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 	}
 
 	// generate reset token by hashing member id
-	secret := os.Getenv("STRING_ENCRYPTION_KEY")
+	secret, err := env.Get("STRING_ENCRYPTION_KEY")
+	if err != nil {
+		return common.StringError(err)
+	}
 	resetToken, err := common.EncryptString(member.ID, secret)
 
 	// url encode token
 	resetToken = url.QueryEscape(resetToken)
 
+	if err != nil {
+		return common.StringError(err)
+	}
+
+	baseUrl, err := env.Get("BASE_DASHBOARD_URL")
 	if err != nil {
 		return common.StringError(err)
 	}
@@ -150,7 +158,7 @@ func (a member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 		"<header>You have requested a password reset for the String API</header>" +
 		"<br>Dear " + member.Name + "," +
 		"<br>If you have forgotten your password, click the link below to reset it:" +
-		"<br><a href='" + os.Getenv("BASE_DASHBOARD_URL") + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
+		"<br><a href='" + baseUrl + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
 
 	err = SendEmail("String API", member.Name, email, "String API Password Reset", body)
 	if err != nil {
@@ -162,7 +170,10 @@ func (a member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 
 func (a member) PasswordReset(ctx context.Context, request model.RequestPasswordReset) error {
 	// Get the member ID from the password reset token
-	secret := os.Getenv("STRING_ENCRYPTION_KEY")
+	secret, err := env.Get("STRING_ENCRYPTION_KEY")
+	if err != nil {
+		return common.StringError(err)
+	}
 	memberId, err := common.DecryptString(request.ResetToken, secret)
 	if err != nil {
 		if strings.Contains(err.Error(), "illegal base64") {

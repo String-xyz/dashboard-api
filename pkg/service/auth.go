@@ -6,13 +6,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
 
+	"github.com/String-xyz/platform-admin-api/env"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -91,7 +91,11 @@ func (a auth) GenerateJWT(memberId string, platformId string) (JWT, error) {
 	claims.IssuedAt = t.IssuedAt.Unix()
 	// replace this signing method with RSA or something similar
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signed, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
+	key, err := env.Get("JWT_SECRET_KEY")
+	if err != nil {
+		return *t, common.StringError(err)
+	}
+	signed, err := token.SignedString([]byte(key))
 	if err != nil {
 		return *t, err
 	}
@@ -127,8 +131,12 @@ func (a auth) CreateJWTRefresh(key string, memberId string) (JWTStrategy, error)
 
 func (a auth) ValidateJWT(token string) (bool, error) {
 	var claims = &JWTClaims{}
+	key, err := env.Get("JWT_SECRET_KEY")
+	if err != nil {
+		return false, common.StringError(err)
+	}
 	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+		return []byte(key), nil
 	})
 	return t.Valid, err
 }

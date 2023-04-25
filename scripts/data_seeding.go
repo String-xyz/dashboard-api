@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/String-xyz/platform-admin-api/api"
+	"github.com/String-xyz/platform-admin-api/env"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/String-xyz/platform-admin-api/pkg/store"
-	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 )
 
@@ -26,19 +26,19 @@ func newRepos(config api.APIConfig) repository.Repositories {
 }
 
 func getEnv(key string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		panic(key + " MISSING FROM ENV")
+	value, err := env.Get(key)
+	if err != nil {
+		panic(err)
 	}
 	return value
 }
 
 func DataSeeding() {
 	// Initialize repos
-	godotenv.Load(".env") // removed the err since in cloud this wont be loaded
-	port := os.Getenv("PORT")
-	if port == "" {
-		panic("no port!")
+	env.LoadEnv() // removed the err since in cloud this wont be loaded
+	port, err := env.Get("PORT")
+	if err != nil {
+		panic(err)
 	}
 
 	lg := zerolog.New(os.Stdout)
@@ -74,10 +74,10 @@ func DataSeeding() {
 
 func MockSeeding() {
 	// Initialize repos
-	godotenv.Load(".env") // removed the err since in cloud this wont be loaded
-	port := os.Getenv("PORT")
-	if port == "" {
-		panic("no port!")
+	env.LoadEnv() // removed the err since in cloud this wont be loaded
+	port, err := env.Get("PORT")
+	if err != nil {
+		panic(err)
 	}
 
 	lg := zerolog.New(os.Stdout)
@@ -93,7 +93,7 @@ func MockSeeding() {
 	nullCtx := context.Background()
 
 	memberId := getEnv("MEMBER_ROLE_MEMBER_ID")
-	_, err := repos.MemberRole.Create(nullCtx, model.MemberRole{ID: memberId, Name: "Member"})
+	_, err = repos.MemberRole.Create(nullCtx, model.MemberRole{ID: memberId, Name: "Member"})
 	if err != nil {
 		panic(err)
 	}

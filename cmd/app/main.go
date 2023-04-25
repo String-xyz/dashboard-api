@@ -5,8 +5,8 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/api"
+	"github.com/String-xyz/platform-admin-api/env"
 	"github.com/String-xyz/platform-admin-api/pkg/store"
-	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -14,16 +14,16 @@ import (
 
 func main() {
 	// load .env file
-	godotenv.Load(".env") // removed the err since in cloud this wont be loaded
+	env.LoadEnv() // removed the err since in cloud this wont be loaded
 	lg := zerolog.New(os.Stdout)
 	if !common.IsLocalEnv() {
 		tracer.Start()
 		defer tracer.Stop()
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		panic("no port!")
+	port, err := env.Get("PORT")
+	if err != nil {
+		panic(err)
 	}
 
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
