@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	strrepo "github.com/String-xyz/go-lib/repository"
+	librepository "github.com/String-xyz/go-lib/repository"
+	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/lib/pq"
 )
@@ -22,37 +24,52 @@ type PlaformUpdates struct {
 
 type Platform interface {
 	database.Transactable
-	Create(ctx context.Context, model model.Platform) (model.Platform, error)
-	GetById(ctx context.Context, ID string) (model.Platform, error)
-	List(ctx context.Context, limit int, offset int) ([]model.Platform, error)
-	Update(ctx context.Context, ID string, updates any) error
+	Create(ctx context.Context, request model.Platform) (platform model.Platform, err error)
+	GetById(ctx context.Context, id string) (platform model.Platform, err error)
+	List(ctx context.Context, organizationId string, limit int, offset int) (platforms []model.Platform, err error)
+	Update(ctx context.Context, id string, updates any) error
 }
 
 type platform[T any] struct {
-	strrepo.Base[T]
+	librepository.Base[T]
 }
 
 func NewPlatform(db database.Queryable) Platform {
-	return &platform[model.Platform]{strrepo.Base[model.Platform]{Store: db, Table: "platform"}}
+	return &platform[model.Platform]{librepository.Base[model.Platform]{Store: db, Table: "platform"}}
 }
 
-func (p platform[T]) Create(ctx context.Context, m model.Platform) (model.Platform, error) {
-	newModel := model.Platform{}
+func (p platform[T]) Create(ctx context.Context, request model.Platform) (platform model.Platform, err error) {
 	rows, err := p.Store.NamedQuery(`
-		INSERT INTO platform (name) 
-		VALUES(:name) RETURNING *`, m)
+		INSERT INTO platform (name, description, organization_id) 
+		VALUES(:name, :description, :organization_id) RETURNING *`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return platform, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&platform)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return platform, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return platform, nil
+}
+
+func (p platform[T]) List(ctx context.Context, organizationId string, limit int, offset int) (platforms []model.Platform, err error) {
+	if limit == 0 {
+		limit = 20
+	}
+
+	err = p.Store.SelectContext(ctx, &platforms, `SELECT * FROM platform WHERE platform.organization_id = $1 LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
+
+	if err == sql.ErrNoRows {
+		return platforms, common.StringError(serror.NOT_FOUND)
+	} else if err != nil {
+		return platforms, common.StringError(err)
+	}
+
+	return platforms, nil
 }

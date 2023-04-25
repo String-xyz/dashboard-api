@@ -33,12 +33,12 @@ func NewMember(services service.Services) Member {
 }
 
 func (a member) GetAll(c echo.Context) error {
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
-	m, err := a.service.GetAll(c.Request().Context(), platformId)
+	m, err := a.service.GetAll(c.Request().Context(), organizationId)
 	if err != nil {
 		common.LogStringError(c, err, "member: get all")
 		return httperror.InternalError(c)
@@ -52,9 +52,9 @@ func (a member) Get(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	memberId := c.Param("id")
@@ -63,7 +63,7 @@ func (a member) Get(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Get(c.Request().Context(), callerId, platformId, memberId)
+	m, err := a.service.Get(c.Request().Context(), callerId, organizationId, memberId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "member: get")
 	}

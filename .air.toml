@@ -35,3 +35,6 @@ tmp_dir = "tmp"
 
 [screen]
   clear_on_rebuild = false
+
+[delay]
+  restart = 1000 # milliseconds

@@ -40,9 +40,9 @@ func (i invite) Send(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid callerId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	body := model.RequestInviteSend{}
@@ -58,7 +58,7 @@ func (i invite) Send(c echo.Context) error {
 		return httperror.InvalidPayloadError(c, err)
 	}
 
-	m, err := i.service.Send(c.Request().Context(), body, &callerId, platformId)
+	m, err := i.service.Send(c.Request().Context(), body, &callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "invite: send")
 	}
@@ -110,16 +110,16 @@ func (i invite) Accept(c echo.Context) error {
 }
 
 func (i invite) List(c echo.Context) error {
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	status := c.QueryParam("status") // optional
 	// if status == "" {
 	// 	return httperror.BadRequestError(c)
 	// }
-	m, err := i.service.List(c.Request().Context(), status, platformId)
+	m, err := i.service.List(c.Request().Context(), status, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "invite: list")
 	}

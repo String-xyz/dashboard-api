@@ -14,20 +14,20 @@ import (
 )
 
 type MemberCreateResponse struct {
-	JWT    JWT                               `json:"authToken"`
-	Member repository.PlatformMemberWithRole `json:"member"`
+	JWT    JWT                                   `json:"authToken"`
+	Member repository.OrganizationMemberWithRole `json:"member"`
 }
 
 type Member interface {
-	GetAll(ctx context.Context, platformId string) ([]repository.PlatformMemberWithRole, error)
-	Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error)
-	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
-	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error)
-	TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
+	GetAll(ctx context.Context, organizationId string) ([]repository.OrganizationMemberWithRole, error)
+	Get(ctx context.Context, callerId string, organizationId string, memberId string) (repository.OrganizationMemberWithRole, error)
+	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.OrganizationMemberWithRole, error)
+	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.OrganizationMemberWithRole, error)
+	TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.OrganizationMemberWithRole, error)
 	SendPasswordResetEmail(ctx context.Context, request model.RequestPasswordResetEmail) error
 	PasswordReset(ctx context.Context, request model.RequestPasswordReset) error
-	Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
-	Reactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error)
+	Deactivate(ctx context.Context, callerId string, memberId string) (repository.OrganizationMemberWithRole, error)
+	Reactivate(ctx context.Context, callerId string, memberId string) (repository.OrganizationMemberWithRole, error)
 }
 
 type member struct {
@@ -38,8 +38,8 @@ func NewMember(repos repository.Repositories) Member {
 	return &member{repos}
 }
 
-func (a member) GetAll(ctx context.Context, platformId string) ([]repository.PlatformMemberWithRole, error) {
-	result, err := a.repos.PlatformMember.List(ctx, platformId, 0, 0)
+func (m member) GetAll(ctx context.Context, organizationId string) ([]repository.OrganizationMemberWithRole, error) {
+	result, err := m.repos.OrganizationMember.List(ctx, organizationId, 0, 0)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -47,23 +47,23 @@ func (a member) GetAll(ctx context.Context, platformId string) ([]repository.Pla
 	return result, nil
 }
 
-func (a member) Get(ctx context.Context, callerId string, platformId string, memberId string) (repository.PlatformMemberWithRole, error) {
-	result := repository.PlatformMemberWithRole{}
-	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
+func (m member) Get(ctx context.Context, callerId string, organizationId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	result := repository.OrganizationMemberWithRole{}
+	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	memberToPlatform, err := a.repos.MemberToPlatform.GetByMember(memberId)
+	memberToOrganization, err := m.repos.MemberToOrganization.GetByMember(memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	if memberToPlatform.PlatformId != platformId {
+	if memberToOrganization.OrganizationId != organizationId {
 		return result, common.StringError(serror.FORBIDDEN)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, memberToPlatform.MemberID)
+	result, err = m.repos.OrganizationMember.GetById(ctx, memberToOrganization.MemberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -71,8 +71,8 @@ func (a member) Get(ctx context.Context, callerId string, platformId string, mem
 	return result, nil
 }
 
-func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.PlatformMemberWithRole, error) {
-	result := repository.PlatformMemberWithRole{}
+func (m member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.OrganizationMemberWithRole, error) {
+	result := repository.OrganizationMemberWithRole{}
 
 	// Actual DB request
 	type UpdateRequest struct {
@@ -86,7 +86,7 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		if len(*request.NewPassword) < 8 {
 			return result, common.StringError(serror.INVALID_PASSWORD)
 		}
-		m, err := a.repos.PlatformMember.GetById(ctx, callerId)
+		m, err := m.repos.OrganizationMember.GetById(ctx, callerId)
 		if err != nil {
 			return result, common.StringError(err)
 		}
@@ -100,7 +100,7 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		updateRequest.Password = string(hash)
 	}
 
-	member, err := a.repos.PlatformMember.GetById(ctx, callerId)
+	member, err := m.repos.OrganizationMember.GetById(ctx, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -111,12 +111,12 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 	}
 	updateRequest.Name = *request.Name
 
-	err = a.repos.PlatformMember.Update(ctx, callerId, updateRequest)
+	err = m.repos.OrganizationMember.Update(ctx, callerId, updateRequest)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, callerId)
+	result, err = m.repos.OrganizationMember.GetById(ctx, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -124,18 +124,18 @@ func (a member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 	return result, nil
 }
 
-func (a member) SendPasswordResetEmail(ctx context.Context, request model.RequestPasswordResetEmail) error {
+func (m member) SendPasswordResetEmail(ctx context.Context, request model.RequestPasswordResetEmail) error {
 	email := request.Email
 
 	// Anyone can request this, so ensure member is associated with 'email'
-	member, err := a.repos.PlatformMember.GetByEmail(ctx, email)
+	member, err := m.repos.OrganizationMember.GetByEmail(ctx, email)
 	if err != nil {
 		return common.StringError(err)
 	}
 
 	// generate reset token by hashing member id
 	secret := os.Getenv("STRING_ENCRYPTION_KEY")
-	resetToken, err := common.EncryptString(member.ID, secret)
+	resetToken, err := common.EncryptString(member.Id, secret)
 
 	// url encode token
 	resetToken = url.QueryEscape(resetToken)
@@ -160,8 +160,8 @@ func (a member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 	return nil
 }
 
-func (a member) PasswordReset(ctx context.Context, request model.RequestPasswordReset) error {
-	// Get the member ID from the password reset token
+func (m member) PasswordReset(ctx context.Context, request model.RequestPasswordReset) error {
+	// Get the member Id from the password reset token
 	secret := os.Getenv("STRING_ENCRYPTION_KEY")
 	memberId, err := common.DecryptString(request.ResetToken, secret)
 	if err != nil {
@@ -181,7 +181,7 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	}
 	updatePW := UpdatePW{Password: string(encrypted)}
 
-	err = a.repos.PlatformMember.Update(ctx, memberId, updatePW)
+	err = m.repos.OrganizationMember.Update(ctx, memberId, updatePW)
 	if err != nil {
 		return common.StringError(err)
 	}
@@ -189,21 +189,21 @@ func (a member) PasswordReset(ctx context.Context, request model.RequestPassword
 	return nil
 }
 
-func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
-	result := repository.PlatformMemberWithRole{}
+func (m member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	result := repository.OrganizationMemberWithRole{}
 
-	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
+	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
 	// Admin's can't edit Owners or Admins
-	callerRole, err := GetRole(a.repos, callerId)
+	callerRole, err := GetRole(m.repos, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	memberRole, err := GetRole(a.repos, memberId)
+	memberRole, err := GetRole(m.repos, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -216,18 +216,18 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 		return result, common.StringError(serror.FORBIDDEN)
 	}
 
-	role, err := a.repos.MemberToRole.GetByMember(memberId)
+	role, err := m.repos.MemberToRole.GetByMember(memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	role.RoleID = GetRoleId(request.Role)
-	err = a.repos.MemberToRole.UpdateRole(memberId, role)
+	role.RoleId = GetRoleId(request.Role)
+	err = m.repos.MemberToRole.UpdateRole(memberId, role)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	result, err = m.repos.OrganizationMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -235,10 +235,10 @@ func (a member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 	return result, nil
 }
 
-func (a member) TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
-	result := repository.PlatformMemberWithRole{}
+func (m member) TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	result := repository.OrganizationMemberWithRole{}
 
-	caller, err := a.repos.PlatformMember.GetById(ctx, callerId)
+	caller, err := m.repos.OrganizationMember.GetById(ctx, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -253,7 +253,7 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 	}
 
 	// Check member exists
-	_, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	_, err = m.repos.OrganizationMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -268,33 +268,33 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 	}
 
 	// Execute role updates in single db transaction
-	a.repos.MemberToRole.MustBegin()
+	m.repos.MemberToRole.MustBegin()
 
-	defer a.repos.MemberToRole.Reset()
+	defer m.repos.MemberToRole.Reset()
 
 	// Promote member to Owner
-	roleObjMember := model.MemberToRole{MemberID: memberId, RoleID: GetRoleId("Owner")}
+	roleObjMember := model.MemberToRole{MemberId: memberId, RoleId: GetRoleId("Owner")}
 
-	err = a.repos.MemberToRole.UpdateRole(memberId, roleObjMember)
+	err = m.repos.MemberToRole.UpdateRole(memberId, roleObjMember)
 	if err != nil {
-		a.repos.MemberToRole.Rollback()
+		m.repos.MemberToRole.Rollback()
 		return result, common.StringError(serror.NOT_FOUND)
 	}
 
 	// Demote caller to Admin
-	roleObjCaller := model.MemberToRole{MemberID: callerId, RoleID: GetRoleId("Admin")}
+	roleObjCaller := model.MemberToRole{MemberId: callerId, RoleId: GetRoleId("Admin")}
 
-	err = a.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
+	err = m.repos.MemberToRole.UpdateRole(callerId, roleObjCaller)
 	if err != nil {
-		a.repos.MemberToRole.Rollback()
+		m.repos.MemberToRole.Rollback()
 		return result, common.StringError(err)
 	}
 
-	if err := a.repos.MemberToRole.Commit(); err != nil {
+	if err := m.repos.MemberToRole.Commit(); err != nil {
 		return result, common.StringError(err)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	result, err = m.repos.OrganizationMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -302,10 +302,10 @@ func (a member) TransferOwnership(ctx context.Context, request model.RequestTran
 	return result, nil
 }
 
-func (a member) Deactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
-	result := repository.PlatformMemberWithRole{}
+func (m member) Deactivate(ctx context.Context, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	result := repository.OrganizationMemberWithRole{}
 
-	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
+	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -313,12 +313,12 @@ func (a member) Deactivate(ctx context.Context, callerId string, memberId string
 	// Admin's can't edit Owners or Admins
 
 	/***** TODO: This code is repeated multiple times, refactor into a function *****/
-	callerRole, err := GetRole(a.repos, callerId)
+	callerRole, err := GetRole(m.repos, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	memberRole, err := GetRole(a.repos, memberId)
+	memberRole, err := GetRole(m.repos, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -329,43 +329,43 @@ func (a member) Deactivate(ctx context.Context, callerId string, memberId string
 	/**********************************************************************************/
 
 	// Ensure not already deactivated || never existed
-	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	result, err = m.repos.OrganizationMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	a.repos.PlatformMember.Deactivate(ctx, memberId)
+	m.repos.OrganizationMember.Deactivate(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
 	// Once a member has been deactivated,
-	result, err = a.repos.PlatformMember.GetByIdIncludingDeactivated(ctx, memberId)
+	result, err = m.repos.OrganizationMember.GetByIdIncludingDeactivated(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
 	// add member to denylist
-	go a.repos.DenyList.AddMember(memberId)
+	go m.repos.DenyList.AddMember(memberId)
 
 	return result, nil
 }
 
-func (a member) Reactivate(ctx context.Context, callerId string, memberId string) (repository.PlatformMemberWithRole, error) {
-	result := repository.PlatformMemberWithRole{}
+func (m member) Reactivate(ctx context.Context, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	result := repository.OrganizationMemberWithRole{}
 
-	err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
+	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
 	// Refactor this into it's own function, since it's called in several places ---
-	callerRole, err := GetRole(a.repos, callerId)
+	callerRole, err := GetRole(m.repos, callerId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	memberRole, err := GetRole(a.repos, memberId)
+	memberRole, err := GetRole(m.repos, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -375,17 +375,17 @@ func (a member) Reactivate(ctx context.Context, callerId string, memberId string
 	}
 	// -----------------------------------------------------------------------------
 
-	a.repos.PlatformMember.Activate(ctx, memberId)
+	m.repos.OrganizationMember.Activate(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	err = a.repos.DenyList.RemoveMember(memberId)
+	err = m.repos.DenyList.RemoveMember(memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}
 
-	result, err = a.repos.PlatformMember.GetById(ctx, memberId)
+	result, err = m.repos.OrganizationMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}

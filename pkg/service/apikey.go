@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -12,11 +11,11 @@ import (
 )
 
 type Apikey interface {
-	Create(ctx context.Context, callerId string, platformId string, keyType string) (model.Apikey, error)
-	GetAll(ctx context.Context, callerId string, platformId string) ([]model.Apikey, error)
-	Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error)
-	Deactivate(ctx context.Context, callerId string, platformId string, keyId string) (model.Apikey, error)
-	Update(ctx context.Context, request model.RequestApikeyUpdate, callerId string, platformId string, keyId string) (model.Apikey, error)
+	Create(ctx context.Context, keyType string, callerId string, platformId string, organizationId string) (model.Apikey, error)
+	GetAll(ctx context.Context, callerId string, platformId string, organizationId string, limit int, offset int) ([]model.Apikey, error)
+	Get(ctx context.Context, id string, callerId string, organizationId string) (model.Apikey, error)
+	Deactivate(ctx context.Context, keyId string, callerId string, organizationId string) (model.Apikey, error)
+	Update(ctx context.Context, keyId string, request model.RequestApikeyUpdate, callerId string, organizationId string) (model.Apikey, error)
 }
 
 type apikey struct {
@@ -27,18 +26,19 @@ func NewApikey(repos repository.Repositories) Apikey {
 	return &apikey{repos}
 }
 
-func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType string) (model.Apikey, error) {
+func (a *apikey) Create(ctx context.Context, keyType string, callerId string, platformId string, organizationId string) (model.Apikey, error) {
 	// Create the base key object
 	var keyValue string
 	key := model.Apikey{
-		Type:       keyType,
-		PlatformId: platformId,
-		CreatedBy:  callerID,
+		Type:           keyType,
+		PlatformId:     &platformId,
+		OrganizationId: organizationId,
+		CreatedBy:      callerId,
 	}
 
 	// Only admins can create secret keys
 	if keyType == "secret" {
-		err := RequireAuthority(a.repos, callerID, "Owner", "Admin")
+		err := RequireAuthority(a.repos, callerId, "Owner", "Admin")
 		if err != nil {
 			return model.Apikey{}, err
 		}
@@ -68,20 +68,34 @@ func (a *apikey) Create(ctx context.Context, callerID, platformId, keyType strin
 	return createdKey, nil
 }
 
-func (a apikey) GetAll(ctx context.Context, callerId string, platformId string) (keys []model.Apikey, err error) {
-	keys, err = a.repos.Apikey.List(ctx, platformId, 0, 0)
-	if err != nil {
-		return keys, common.StringError(err)
+func (a apikey) GetAll(ctx context.Context, callerId string, platformId string, organizationId string, limit int, offset int) (keys []model.Apikey, err error) {
+	if platformId != "" {
+		keys, err = a.repos.Apikey.ListByPlatform(ctx, platformId, limit, offset)
+		if err != nil {
+			return keys, common.StringError(err)
+		}
+	} else {
+		keys, err = a.repos.Apikey.ListByOrganization(ctx, organizationId, limit, offset)
+		if err != nil {
+			return keys, common.StringError(err)
+		}
 	}
 
 	return keys, nil
 }
 
-func (a apikey) Get(ctx context.Context, callerId string, platformId string, id string) (model.Apikey, error) {
-	return a.repos.Apikey.GetById(ctx, id)
+func (a apikey) Get(ctx context.Context, id string, callerId string, organizationId string) (model.Apikey, error) {
+	key, err := a.repos.Apikey.GetById(ctx, id)
+	if err != nil {
+		return model.Apikey{}, common.StringError(err)
+	}
+	if key.OrganizationId != organizationId {
+		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing organization %s", organizationId))
+	}
+	return key, nil
 }
 
-func (a apikey) Deactivate(ctx context.Context, callerId string, platformId string, keyId string) (key model.Apikey, err error) {
+func (a apikey) Deactivate(ctx context.Context, keyId string, callerId string, organizationId string) (key model.Apikey, err error) {
 	err = RequireAuthority(a.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return key, common.StringError(err)
@@ -91,8 +105,8 @@ func (a apikey) Deactivate(ctx context.Context, callerId string, platformId stri
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
 	}
-	if key.PlatformId != platformId {
-		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing platform %s", platformId))
+	if key.OrganizationId != organizationId {
+		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing organization %s", organizationId))
 	}
 
 	type DeactivateUpdate struct {
@@ -115,14 +129,13 @@ func (a apikey) Deactivate(ctx context.Context, callerId string, platformId stri
 	return key, nil
 }
 
-func (a apikey) Update(ctx context.Context, request model.RequestApikeyUpdate, callerId string, platformId string, keyId string) (key model.Apikey, err error) {
-	log.Printf("\n\nhit the update service! with keyId: %+v\n", keyId)
+func (a apikey) Update(ctx context.Context, keyId string, request model.RequestApikeyUpdate, callerId string, organizationId string) (key model.Apikey, err error) {
 	key, err = a.repos.Apikey.GetById(ctx, keyId)
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
 	}
-	if key.PlatformId != platformId {
-		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing platform %s", platformId))
+	if key.OrganizationId != organizationId {
+		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing organization %s", organizationId))
 	}
 	type KeyUpdate struct {
 		Description string `json:"description" db:"description"`

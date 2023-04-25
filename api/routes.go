@@ -7,6 +7,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func organizationRoute(services service.Services, e *echo.Echo) {
+	handler := handler.NewOrganization(services.Organization)
+	handler.RegisterRoutes(e.Group("/organizations"), middleware.JWT(services.Auth))
+}
+
 func platformRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewPlatform(services.Platform)
 	handler.RegisterRoutes(e.Group("/platforms"), middleware.JWT(services.Auth))
@@ -39,5 +44,5 @@ func contractRoute(services service.Services, e *echo.Echo) {
 
 func networkRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewNetwork(services.Network)
-	handler.RegisterRoutes(e.Group("/networks"))
+	handler.RegisterRoutes(e.Group("/networks"), middleware.JWT(services.Auth))
 }

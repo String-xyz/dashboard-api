@@ -30,13 +30,13 @@ func (j JWT) MarshalBinary() ([]byte, error) {
 }
 
 type JWTClaims struct {
-	MemberId   string
-	PlatformId string
+	MemberId       string
+	OrganizationId string
 	jwt.StandardClaims
 }
 
 type JWTStrategy struct {
-	ID            string     `json:"id,omitempty" db:"id"`
+	Id            string     `json:"id,omitempty" db:"id"`
 	Type          string     `json:"authType" db:"type"`
 	EntityType    string     `json:"entityType,omitempty"`
 	Data          string     `json:"data" data:"data"`
@@ -56,7 +56,7 @@ type RefreshTokenResponse struct {
 }
 
 type Auth interface {
-	GenerateJWT(memberId string, platformId string) (JWT, error)
+	GenerateJWT(memberId string, organizationId string) (JWT, error)
 	RefreshToken(refreshToken string) (MemberCreateResponse, error)
 	CreateJWTRefresh(key string, memberId string) (JWTStrategy, error)
 	ValidateJWT(token string) (bool, error)
@@ -77,7 +77,7 @@ func NewAuth(r repository.Repositories, d database.RedisStore) Auth {
 }
 
 // GenerateJWT generates a jwt token and a refresh token which is saved on redis
-func (a auth) GenerateJWT(memberId string, platformId string) (JWT, error) {
+func (a auth) GenerateJWT(memberId string, organizationId string) (JWT, error) {
 	claims := JWTClaims{}
 	refreshToken := uuidWithoutHyphens()
 	t := &JWT{
@@ -86,7 +86,7 @@ func (a auth) GenerateJWT(memberId string, platformId string) (JWT, error) {
 	}
 
 	claims.MemberId = memberId
-	claims.PlatformId = platformId
+	claims.OrganizationId = organizationId
 	claims.ExpiresAt = t.ExpAt.Unix()
 	claims.IssuedAt = t.IssuedAt.Unix()
 	// replace this signing method with RSA or something similar
@@ -114,7 +114,7 @@ func (a auth) GenerateJWT(memberId string, platformId string) (JWT, error) {
 func (a auth) CreateJWTRefresh(key string, memberId string) (JWTStrategy, error) {
 	expireAt := time.Hour * 24 * 7 // 7 days expiration
 	m := JWTStrategy{
-		ID:         key,
+		Id:         key,
 		CreatedAt:  time.Now(),
 		Type:       "JWT",
 		EntityType: "Member",
@@ -146,14 +146,14 @@ func (a auth) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
 		return resp, common.StringError(err)
 	}
 
-	// get platform associated with user
-	platform, err := a.repos.MemberToPlatform.GetByMember(memberId)
+	// get organization associated with user
+	organization, err := a.repos.MemberToOrganization.GetByMember(memberId)
 	if err != nil {
 		return resp, common.StringError(err)
 	}
 
 	// create new jwt
-	jwt, err := a.GenerateJWT(memberId, platform.PlatformId)
+	jwt, err := a.GenerateJWT(memberId, organization.OrganizationId)
 	if err != nil {
 		return resp, common.StringError(err)
 	}
@@ -166,7 +166,7 @@ func (a auth) RefreshToken(refreshToken string) (MemberCreateResponse, error) {
 	}
 
 	ctx := context.Background() // TODO: allow context into this function
-	member, err := a.repos.PlatformMember.GetById(ctx, memberId)
+	member, err := a.repos.OrganizationMember.GetById(ctx, memberId)
 	if err != nil {
 		return resp, common.StringError(err)
 	}

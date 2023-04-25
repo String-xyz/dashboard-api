@@ -24,12 +24,11 @@ func JWT(auth service.Auth) echo.MiddlewareFunc {
 			})
 
 			// validate claims
-			if !validator.IsUUID(claims.MemberId, claims.PlatformId) {
+			if !validator.IsUUID(claims.MemberId, claims.OrganizationId) {
 				return nil, errors.New("missing or malformed jwt")
 			}
-
+			c.Set("organizationId", claims.OrganizationId)
 			c.Set("memberId", claims.MemberId)
-			c.Set("platformId", claims.PlatformId)
 
 			return t, err
 		},

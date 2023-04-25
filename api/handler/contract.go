@@ -38,9 +38,9 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	body := model.RequestContractCreate{}
@@ -48,9 +48,14 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	ok = validator.IsUUID(body.PlatformId)
+	if !ok {
+		return httperror.BadRequestError(c, "missing or invalid platformId")
+	}
+
 	SanitizeChecksums(&body.Address)
 
-	m, err := a.service.Create(c.Request().Context(), body, callerId, platformId)
+	m, err := a.service.Create(c.Request().Context(), body, callerId, organizationId)
 	if err != nil {
 		common.LogStringError(c, err, "contract: create")
 
@@ -63,12 +68,14 @@ func (a contract) Create(c echo.Context) error {
 }
 
 func (a contract) GetAll(c echo.Context) error {
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
-	m, err := a.service.GetAll(c.Request().Context(), platformId)
+	platformId := c.QueryParam("platformId")
+
+	m, err := a.service.GetAll(c.Request().Context(), platformId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: get all")
 	}
@@ -76,9 +83,9 @@ func (a contract) GetAll(c echo.Context) error {
 }
 
 func (a contract) Get(c echo.Context) error {
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	contractId := c.Param("id")
@@ -86,7 +93,7 @@ func (a contract) Get(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Get(c.Request().Context(), platformId, contractId)
+	m, err := a.service.Get(c.Request().Context(), contractId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: get")
 	}
@@ -99,17 +106,17 @@ func (a contract) Deactivate(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid callerId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	contractId := c.Param("id")
-	if !validator.IsUUID(contractId, platformId, callerId) {
+	if !validator.IsUUID(contractId, organizationId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, contractId)
+	m, err := a.service.Deactivate(c.Request().Context(), contractId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: deactivate")
 	}
@@ -122,17 +129,17 @@ func (a contract) Reactivate(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid callerId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	contractId := c.Param("id")
-	if !validator.IsUUID(contractId, platformId, callerId) {
+	if !validator.IsUUID(contractId, organizationId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := a.service.Reactivate(c.Request().Context(), callerId, platformId, contractId)
+	m, err := a.service.Reactivate(c.Request().Context(), contractId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: reactivate")
 	}
@@ -145,13 +152,13 @@ func (a contract) Update(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid callerId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
 	contractId := c.Param("id")
-	if platformId == "" || callerId == "" {
+	if validator.IsUUID(organizationId, callerId) {
 		return httperror.BadRequestError(c)
 	}
 
@@ -165,10 +172,11 @@ func (a contract) Update(c echo.Context) error {
 		common.LogStringError(c, err, "contract: update bind")
 		return httperror.BadRequestError(c)
 	}
+	if body.Address != nil {
+		SanitizeChecksums(body.Address)
+	}
 
-	SanitizeChecksums(body.Address)
-
-	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, contractId)
+	m, err := a.service.Update(c.Request().Context(), body, contractId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: update")
 	}
