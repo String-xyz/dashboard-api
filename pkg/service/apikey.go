@@ -13,7 +13,7 @@ import (
 
 type Apikey interface {
 	Create(ctx context.Context, keyType string, callerId string, platformId string, organizationId string) (model.Apikey, error)
-	GetAll(ctx context.Context, callerId string, platformId string, organizationId string) ([]model.Apikey, error)
+	GetAll(ctx context.Context, callerId string, platformId string, organizationId string, limit int, offset int) ([]model.Apikey, error)
 	Get(ctx context.Context, id string, callerId string, organizationId string) (model.Apikey, error)
 	Deactivate(ctx context.Context, keyId string, callerId string, organizationId string) (model.Apikey, error)
 	Update(ctx context.Context, keyId string, request model.RequestApikeyUpdate, callerId string, organizationId string) (model.Apikey, error)
@@ -69,14 +69,14 @@ func (a *apikey) Create(ctx context.Context, keyType string, callerId string, pl
 	return createdKey, nil
 }
 
-func (a apikey) GetAll(ctx context.Context, callerId string, platformId string, organizationId string) (keys []model.Apikey, err error) {
+func (a apikey) GetAll(ctx context.Context, callerId string, platformId string, organizationId string, limit int, offset int) (keys []model.Apikey, err error) {
 	if platformId != "" {
-		keys, err = a.repos.Apikey.ListByPlatform(ctx, platformId, 0, 0)
+		keys, err = a.repos.Apikey.ListByPlatform(ctx, platformId, limit, offset)
 		if err != nil {
 			return keys, common.StringError(err)
 		}
 	} else {
-		keys, err = a.repos.Apikey.ListByOrganization(ctx, organizationId, 0, 0)
+		keys, err = a.repos.Apikey.ListByOrganization(ctx, organizationId, limit, offset)
 		if err != nil {
 			return keys, common.StringError(err)
 		}

@@ -41,16 +41,16 @@ func NewApikey(db database.Queryable) Apikey {
 	return &apikey[model.Apikey]{librepository.Base[model.Apikey]{Store: db, Table: "apikey"}}
 }
 
-func (k apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error) {
+func (a apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error) {
 	var query string
 	var args []interface{}
 
-	if *&request.Type == "secret" {
-		query, args, err = k.Named(`
+	if request.Type == "secret" {
+		query, args, err = a.Named(`
 			INSERT INTO apikey (type, data, hint, description, created_by, organization_id) 
 			VALUES(:type, :data, :hint, :description, :created_by, :organization_id) RETURNING *`, request)
 	} else {
-		query, args, err = k.Named(`
+		query, args, err = a.Named(`
 			INSERT INTO apikey (type, data, hint, description, created_by, platform_id, organization_id) 
 			VALUES(:type, :data, :hint, :description, :created_by, :platform_id, :organization_id) RETURNING *`, request)
 	}
@@ -59,7 +59,7 @@ func (k apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.
 	}
 
 	// Use QueryRowxContext to execute the query with the provided context
-	err = k.Store.QueryRowxContext(ctx, query, args...).StructScan(&key)
+	err = a.Store.QueryRowxContext(ctx, query, args...).StructScan(&key)
 	if err != nil {
 		return key, libcommon.StringError(err)
 	}
@@ -67,8 +67,8 @@ func (k apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.
 	return key, nil
 }
 
-func (k apikey[T]) GetById(ctx context.Context, id string) (key model.Apikey, err error) {
-	err = k.Store.GetContext(ctx, &key, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", k.Table), id)
+func (a apikey[T]) GetById(ctx context.Context, id string) (key model.Apikey, err error) {
+	err = a.Store.GetContext(ctx, &key, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", a.Table), id)
 	if err == sql.ErrNoRows {
 		return key, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
@@ -77,12 +77,12 @@ func (k apikey[T]) GetById(ctx context.Context, id string) (key model.Apikey, er
 	return key, nil
 }
 
-func (k apikey[T]) ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error) {
+func (a apikey[T]) ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error) {
 	if limit == 0 {
 		limit = 20
 	}
 
-	err = k.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.platform_id = $1 LIMIT $2 OFFSET $3;`, platformId, limit, offset)
+	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.platform_id = $1 LIMIT $2 OFFSET $3;`, platformId, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return keys, common.StringError(serror.NOT_FOUND)
@@ -93,12 +93,12 @@ func (k apikey[T]) ListByPlatform(ctx context.Context, platformId string, limit 
 	return keys, nil
 }
 
-func (k apikey[T]) ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (keys []model.Apikey, err error) {
+func (a apikey[T]) ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (keys []model.Apikey, err error) {
 	if limit == 0 {
 		limit = 20
 	}
 
-	err = k.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.organization_id = $1 LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
+	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.organization_id = $1 LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return keys, common.StringError(serror.NOT_FOUND)

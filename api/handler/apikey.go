@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/String-xyz/go-lib/common"
@@ -78,7 +79,26 @@ func (a apikey) GetAll(c echo.Context) error {
 
 	platformId := c.QueryParam("platformId")
 
-	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId, organizationId)
+	var err error
+	var limit int
+	var offset int
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			return httperror.BadRequestError(c, "invalid limit")
+		}
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			return httperror.BadRequestError(c, "invalid offset")
+		}
+	}
+
+	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId, organizationId, limit, offset)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: get all")
 	}
