@@ -66,7 +66,7 @@ type MemberInvite struct {
 	Email          string     `json:"email" db:"email"`
 	InvitedBy      *string    `json:"invitedBy,omitempty" db:"invited_by"`
 	OrganizationId string     `json:"organizationId" db:"organization_id"`
-	RoleId         string     `json:"roleId" db:"role_id"`
+	RoleId         string     `json:"-" db:"role_id"`
 	Name           string     `json:"name" db:"name"`
 }
 

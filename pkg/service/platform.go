@@ -63,7 +63,6 @@ func (p platform) Update(ctx context.Context, request model.RequestPlatformUpdat
 	if err != nil {
 		return platform, common.StringError(err)
 	}
-	fmt.Printf("\n\n>>>>> platformId: %s, callerId: %+v, organizationId: %+v\n\n", platformId, callerId, organizationId)
 	err = p.repos.Platform.Update(ctx, platformId, request)
 	if err != nil {
 		return platform, common.StringError(err)

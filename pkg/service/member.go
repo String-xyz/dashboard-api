@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -91,7 +90,6 @@ func (m member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 		if err != nil {
 			return result, common.StringError(err)
 		}
-		fmt.Printf("\n\n >>>>>> password: %s, old password: %s", *request.NewPassword, *request.OldPassword)
 		if bcrypt.CompareHashAndPassword([]byte(m.Password), []byte(*request.OldPassword)) != nil {
 			return result, common.StringError(serror.INVALID_PASSWORD)
 		}

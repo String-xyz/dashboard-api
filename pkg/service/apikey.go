@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
@@ -131,7 +130,6 @@ func (a apikey) Deactivate(ctx context.Context, keyId string, callerId string, o
 }
 
 func (a apikey) Update(ctx context.Context, keyId string, request model.RequestApikeyUpdate, callerId string, organizationId string) (key model.Apikey, err error) {
-	log.Printf("\n\nhit the update service! with keyId: %+v\n", keyId)
 	key, err = a.repos.Apikey.GetById(ctx, keyId)
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
