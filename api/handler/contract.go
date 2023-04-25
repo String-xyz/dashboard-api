@@ -48,6 +48,11 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
+	ok = validator.IsUUID(body.PlatformId)
+	if !ok {
+		return httperror.BadRequestError(c, "missing or invalid platformId")
+	}
+
 	SanitizeChecksums(&body.Address)
 
 	m, err := a.service.Create(c.Request().Context(), body, callerId, organizationId)
