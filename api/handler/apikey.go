@@ -17,7 +17,7 @@ type Apikey interface {
 	Create(e echo.Context) error
 	GetAll(e echo.Context) error
 	Get(e echo.Context) error
-	Deactivate(e echo.Context) error
+	Delete(e echo.Context) error
 	Update(e echo.Context) error
 	RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc)
 }
@@ -130,7 +130,7 @@ func (a apikey) Get(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
-func (a apikey) Deactivate(c echo.Context) error {
+func (a apikey) Delete(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
 		return httperror.InternalError(c, "missing or invalid callerId")
@@ -147,7 +147,7 @@ func (a apikey) Deactivate(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := a.service.Deactivate(c.Request().Context(), keyId, callerId, organizationId)
+	m, err := a.service.Delete(c.Request().Context(), keyId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: deactivate")
 	}
@@ -201,6 +201,6 @@ func (a apikey) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.POST("", a.Create, ms...)
 	g.GET("", a.GetAll, ms...)
 	g.GET("/:id", a.Get, ms...)
-	g.PATCH("/:id/deactivate", a.Deactivate, ms...)
 	g.PATCH("/:id", a.Update, ms...)
+	g.DELETE("/:id", a.Delete, ms...)
 }

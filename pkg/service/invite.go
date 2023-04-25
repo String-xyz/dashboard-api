@@ -20,7 +20,7 @@ type Invite interface {
 	List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error)
 	Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error)
-	Deactivate(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
+	Revoke(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
 	Get(ctx context.Context, id string) (repository.MemberInviteInfo, error)
 }
 
@@ -54,7 +54,7 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	pendingInvite, err := i.repos.MemberInvite.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
 		return repository.MemberInviteInfo{}, common.StringError(err)
-	} else if pendingInvite.Email == request.Email && callerId != nil && pendingInvite.DeactivatedAt == nil {
+	} else if pendingInvite.Email == request.Email && callerId != nil && pendingInvite.DeletedAt == nil {
 		// Update invite and resend it
 		newRequest := model.RequestInviteUpdate{Role: request.Role, Name: request.Name}
 		newInvite, err := i.Update(ctx, newRequest, pendingInvite.Id, *callerId)
@@ -177,16 +177,6 @@ func (i invite) List(ctx context.Context, status string, organizationId string) 
 		return result, common.StringError(err)
 	}
 
-	// TODO: Filter by status
-	// // If a status filter is provided, remove Invites which do not have the filter
-	// if status != "" {
-	// 	for i, j := range result {
-	// 		if !strings.EqualFold(status, repository.GetInviteStatus(j)) { // case insensitive
-	// 			result = append(result[:i], result[i+1:]...) // remove from slice
-	// 		}
-	// 	}
-	// }
-
 	return result, nil
 }
 
@@ -260,7 +250,7 @@ func (i invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	return result, nil
 }
 
-func (i invite) Deactivate(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+func (i invite) Revoke(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
 	_, finish := Span(ctx, "service.invite.Deactive")
 	defer finish()
 
@@ -270,13 +260,7 @@ func (i invite) Deactivate(ctx context.Context, inviteId string, callerId string
 		return result, common.StringError(err)
 	}
 
-	type DeactivateUpdate struct {
-		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-	}
-
-	now := time.Now()
-	update := DeactivateUpdate{DeactivatedAt: &now}
-	err = i.repos.MemberInvite.Update(ctx, inviteId, update)
+	err = i.repos.MemberInvite.SoftDelete(ctx, inviteId)
 	if err != nil {
 		return result, common.StringError(err)
 	}

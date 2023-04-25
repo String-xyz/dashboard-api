@@ -201,7 +201,7 @@ func (i invite) Deactivate(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := i.service.Deactivate(c.Request().Context(), id, callerId)
+	m, err := i.service.Revoke(c.Request().Context(), id, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
@@ -242,7 +242,7 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", i.List, ms...)
 	g.POST("/:id/resend", i.Resend, ms...)
 	g.PATCH("/:id", i.Update, ms...)
-	g.PATCH("/:id/deactivate", i.Deactivate, ms...)
+	g.DELETE("/:id", i.Deactivate, ms...)
 	g.GET("/:id", i.Get) // No auth required. This is used for the invite link
 
 }

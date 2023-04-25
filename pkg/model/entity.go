@@ -20,7 +20,7 @@ type Platform struct {
 	Id             string         `json:"id,omitempty" db:"id"`
 	CreatedAt      time.Time      `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt      time.Time      `json:"updatedAt,omitempty" db:"updated_at"`
-	DeactivatedAt  *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	DeletedAt      *time.Time     `json:"deletedAt,omitempty" db:"deleted_at"`
 	Name           string         `json:"name" db:"name"`
 	Description    string         `json:"description" db:"description"`
 	Domains        pq.StringArray `json:"domains" db:"domains"`
@@ -33,6 +33,7 @@ type OrganizationMember struct {
 	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	DeletedAt     *time.Time `json:"deletedAt,omitempty" db:"deleted_at"`
 	Email         string     `json:"email" db:"email"`
 	Password      string     `json:"-" db:"password"`
 	Name          string     `json:"name" db:"name"`
@@ -44,11 +45,11 @@ type MemberToOrganization struct {
 }
 
 type MemberRole struct {
-	Id            string     `json:"id,omitempty" db:"id"`
-	CreatedAt     time.Time  `json:"createdAt,omitempty" db:"created_at"`
-	UpdatedAt     time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
-	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-	Name          string     `json:"name" db:"name"`
+	Id        string     `json:"id,omitempty" db:"id"`
+	CreatedAt time.Time  `json:"createdAt,omitempty" db:"created_at"`
+	UpdatedAt time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty" db:"deleted_at"`
+	Name      string     `json:"name" db:"name"`
 }
 
 type MemberToRole struct {
@@ -60,7 +61,7 @@ type MemberInvite struct {
 	Id             string     `json:"id,omitempty" db:"id"`
 	CreatedAt      time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt      time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
-	DeactivatedAt  *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	DeletedAt      *time.Time `json:"deletedAt,omitempty" db:"deleted_at"`
 	ExpiredAt      *time.Time `json:"expiredAt,omitempty" db:"expired_at"`
 	AcceptedAt     *time.Time `json:"acceptedAt,omitempty" db:"accepted_at"`
 	Email          string     `json:"email" db:"email"`
@@ -74,7 +75,7 @@ type Apikey struct {
 	Id             string     `json:"id,omitempty" db:"id"`
 	CreatedAt      time.Time  `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt      time.Time  `json:"updatedAt,omitempty" db:"updated_at"`
-	DeactivatedAt  *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	DeletedAt      *time.Time `json:"deletedAt,omitempty" db:"deleted_at"`
 	Type           string     `json:"type" db:"type"`
 	Data           string     `json:"data" db:"data"`
 	Hint           string     `json:"hint,omitempty" db:"hint"`
@@ -83,16 +84,32 @@ type Apikey struct {
 	PlatformId     *string    `json:"platformId" db:"platform_id"`
 	OrganizationId string     `json:"organizationId" db:"organization_id"`
 }
+
 type Contract struct {
 	Id            string         `json:"id,omitempty" db:"id"`
 	CreatedAt     time.Time      `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt     time.Time      `json:"updatedAt,omitempty" db:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	DeletedAt     *time.Time     `json:"deletedAt,omitempty" db:"deleted_at"`
 	Name          string         `json:"name" db:"name"`
 	Address       string         `json:"address" db:"address"`
 	Functions     pq.StringArray `json:"functions" db:"functions"`
 	NetworkId     string         `json:"networkId" db:"network_id"`
 	PlatformId    string         `json:"platformId" db:"platform_id"`
+}
+
+type NetworkFull struct {
+	Id          string     `json:"id" db:"id"`
+	CreatedAt   time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt   *time.Time `json:"deletedAt,omitempty" db:"deleted_at"`
+	Name        string     `json:"name" db:"name"`
+	NetworkId   uint64     `json:"networkId" db:"network_id"`
+	ChainId     uint64     `json:"chainId" db:"chain_id"`
+	GasTokenId  string     `json:"gasTokenId" db:"gas_token_id"`
+	GasOracle   string     `json:"gasOracle" db:"gas_oracle"`
+	RPCUrl      string     `json:"rpcUrl" db:"rpc_url"`
+	ExplorerUrl string     `json:"explorerUrl" db:"explorer_url"`
 }
 
 type NetworkData struct {
