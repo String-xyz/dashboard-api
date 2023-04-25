@@ -40,11 +40,6 @@ func (a apikey) Create(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
-	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	keyType := c.QueryParam("type")
 
 	if keyType == "" {
@@ -72,11 +67,6 @@ func (a apikey) GetAll(c echo.Context) error {
 	platformId, ok := c.Get("platformId").(string)
 	if !ok {
 		return httperror.InternalError(c, "missing or invalid platformId")
-	}
-
-	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
-	if err != nil {
-		return httperror.BadRequestError(c)
 	}
 
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId)
@@ -110,11 +100,6 @@ func (a apikey) Get(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId, ApiKeyId string }{callerId, platformId, keyId}, &callerId, &platformId, &keyId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	m, err := a.service.Get(c.Request().Context(), callerId, platformId, keyId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: get")
@@ -139,11 +124,6 @@ func (a apikey) Deactivate(c echo.Context) error {
 	}
 
 	keyId := c.Param("id")
-
-	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId, ApiKeyId string }{callerId, platformId, keyId}, &callerId, &platformId, &keyId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
 
 	if !validator.IsUUID(keyId, platformId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
@@ -178,17 +158,12 @@ func (a apikey) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId, ApiKeyId string }{callerId, platformId, keyId}, &callerId, &platformId, &keyId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	if !validator.IsUUID(keyId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestApikeyUpdate{}
-	err = c.Bind(&body)
+	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "apikey: update bind")
 		return httperror.BadRequestError(c)

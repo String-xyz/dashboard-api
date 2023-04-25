@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/String-xyz/go-lib/common"
 	serror "github.com/String-xyz/go-lib/stringerror"
@@ -35,6 +36,7 @@ func (l login) Login(ctx context.Context, request model.RequestLogin) (repositor
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(request.Password))
+	fmt.Printf("member.Password = %+v, request.Password = %+v", member.Password, request.Password)
 	if err != nil {
 		return member, jwt, common.StringError(serror.INVALID_PASSWORD)
 	}

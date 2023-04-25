@@ -65,11 +65,6 @@ func (p platform) Get(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
-	err := common.SanitizeIdInput(&struct{ PlatformId string }{platformId}, &platformId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	m, err := p.service.Get(c.Request().Context(), platformId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "platform: get")
@@ -94,14 +89,9 @@ func (p platform) Update(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
-	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId string }{platformId, callerId}, &platformId, &callerId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	body := model.RequestPlatformUpdate{}
 
-	err = c.Bind(&body)
+	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update bind")
 		return httperror.BadRequestError(c)

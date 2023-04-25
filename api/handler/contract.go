@@ -43,18 +43,13 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
-	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	body := model.RequestContractCreate{}
 	if err := c.Bind(&body); err != nil {
 		return httperror.BadRequestError(c)
 	}
 
 	SanitizeChecksums(&body.Address)
-	err = common.SanitizeIdInput(&body)
+	err := common.SanitizeIdInput(&body)
 	if err != nil {
 		return httperror.BadRequestError(c)
 	}
@@ -81,11 +76,6 @@ func (a contract) GetAll(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
-	err := common.SanitizeIdInput(&struct{ PlatformId string }{platformId}, &platformId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: get all")
@@ -108,11 +98,6 @@ func (a contract) Get(c echo.Context) error {
 
 	contractId := c.Param("id")
 	if contractId == "" {
-		return httperror.BadRequestError(c)
-	}
-
-	err := common.SanitizeIdInput(&struct{ PlatformId, ContractId string }{platformId, contractId}, &platformId, &contractId)
-	if err != nil {
 		return httperror.BadRequestError(c)
 	}
 
@@ -143,11 +128,6 @@ func (a contract) Deactivate(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId, ContractId string }{platformId, callerId, contractId}, &platformId, &callerId, &contractId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, contractId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: deactivate")
@@ -174,11 +154,6 @@ func (a contract) Reactivate(c echo.Context) error {
 	contractId := c.Param("id")
 	if !validator.IsUUID(contractId, platformId, callerId) {
 		return httperror.BadRequestError(c, "invalid id")
-	}
-
-	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId, ContractId string }{platformId, callerId, contractId}, &platformId, &callerId, &contractId)
-	if err != nil {
-		return httperror.BadRequestError(c)
 	}
 
 	m, err := a.service.Reactivate(c.Request().Context(), callerId, platformId, contractId)
@@ -209,17 +184,12 @@ func (a contract) Update(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	err := common.SanitizeIdInput(&struct{ PlatformId, MemberId, ContractId string }{platformId, callerId, contractId}, &platformId, &callerId, &contractId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	if !validator.IsUUID(contractId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestContractUpdate{}
-	err = c.Bind(&body)
+	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "contract: update bind")
 		return httperror.BadRequestError(c)

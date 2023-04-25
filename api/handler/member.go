@@ -38,20 +38,18 @@ func (a member) GetAll(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid platformId")
 	}
 
-	err := common.SanitizeIdInput(&struct{ PlatformId string }{platformId}, &platformId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	m, err := a.service.GetAll(c.Request().Context(), platformId)
 	if err != nil {
 		common.LogStringError(c, err, "member: get all")
 		return httperror.InternalError(c)
 	}
 
-	err = common.SanitizeIdOutput(&m)
-	if err != nil {
-		return httperror.InternalError(c)
+	for i := range m {
+		err = common.SanitizeIdOutput(&m[i])
+		if err != nil {
+			common.LogStringError(c, err, "member: get all")
+			return httperror.InternalError(c)
+		}
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -68,15 +66,6 @@ func (a member) Get(c echo.Context) error {
 	}
 
 	memberId := c.Param("id")
-
-	err := common.SanitizeIdInput(&struct{ MemberId, PlatformId string }{callerId, platformId}, &callerId, &platformId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-	err = common.SanitizeIdInput(&struct{ MemberId string }{memberId}, &memberId) // We have 2 member IDs
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
 
 	if memberId == "" {
 		return httperror.BadRequestError(c)
@@ -103,21 +92,12 @@ func (a member) Update(c echo.Context) error {
 
 	memberId := c.Param("id")
 
-	err := common.SanitizeIdInput(&struct{ MemberId string }{memberId}, &memberId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-	err = common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId) // We have two member IDs
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	if !validator.IsUUID(memberId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestMemberUpdateOther{}
-	err = c.Bind(&body)
+	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "member: update bind")
 		return httperror.BadRequestError(c)
@@ -142,13 +122,8 @@ func (a member) UpdateSelf(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
-	err := common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	body := model.RequestMemberUpdateSelf{}
-	err = c.Bind(&body)
+	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "member: update self bind")
 		return httperror.BadRequestError(c)
@@ -184,15 +159,6 @@ func (a member) TransferOwnership(c echo.Context) error {
 
 	memberId := c.Param("id")
 
-	err := common.SanitizeIdInput(&struct{ MemberId string }{memberId}, &memberId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-	err = common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId) // We have two member IDs
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	if !validator.IsUUID(memberId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
@@ -225,15 +191,6 @@ func (a member) Deactivate(c echo.Context) error {
 
 	memberId := c.Param("id")
 
-	err := common.SanitizeIdInput(&struct{ MemberId string }{memberId}, &memberId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-	err = common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId) // We have two member IDs
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-
 	if !validator.IsUUID(memberId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
@@ -263,15 +220,6 @@ func (a member) Reactivate(c echo.Context) error {
 
 	memberId := c.Param("id")
 	if memberId == "" || memberId == callerId {
-		return httperror.BadRequestError(c)
-	}
-
-	err := common.SanitizeIdInput(&struct{ MemberId string }{memberId}, &memberId)
-	if err != nil {
-		return httperror.BadRequestError(c)
-	}
-	err = common.SanitizeIdInput(&struct{ MemberId string }{callerId}, &callerId) // We have two member IDs
-	if err != nil {
 		return httperror.BadRequestError(c)
 	}
 
