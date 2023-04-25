@@ -45,12 +45,16 @@ func (a apikey) Create(c echo.Context) error {
 		keyType = "public"
 	}
 
-	platformId := c.QueryParam("platform_id")
-	if keyType == "public" && platformId == "" {
+	body := model.RequestAPIKeyCreate{}
+	err := c.Bind(&body)
+	if err != nil {
+		return httperror.BadRequestError(c, "invalid payload")
+	}
+	if keyType == "public" && body.PlatformId == "" {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Create(c.Request().Context(), callerId, platformId, organizationId, keyType)
+	m, err := a.service.Create(c.Request().Context(), keyType, callerId, body.PlatformId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: create")
 	}
@@ -69,7 +73,7 @@ func (a apikey) GetAll(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
-	platformId := c.QueryParam("platform_id")
+	platformId := c.QueryParam("platformId")
 
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId, organizationId)
 	if err != nil {
@@ -95,7 +99,7 @@ func (a apikey) Get(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Get(c.Request().Context(), callerId, organizationId, keyId)
+	m, err := a.service.Get(c.Request().Context(), keyId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: get")
 	}
@@ -120,7 +124,7 @@ func (a apikey) Deactivate(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := a.service.Deactivate(c.Request().Context(), callerId, organizationId, keyId)
+	m, err := a.service.Deactivate(c.Request().Context(), keyId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: deactivate")
 	}

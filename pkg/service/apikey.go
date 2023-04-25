@@ -86,7 +86,14 @@ func (a apikey) GetAll(ctx context.Context, callerId string, platformId string, 
 }
 
 func (a apikey) Get(ctx context.Context, id string, callerId string, organizationId string) (model.Apikey, error) {
-	return a.repos.Apikey.GetById(ctx, id)
+	key, err := a.repos.Apikey.GetById(ctx, id)
+	if err != nil {
+		return model.Apikey{}, common.StringError(err)
+	}
+	if key.OrganizationId != organizationId {
+		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing organization %s", organizationId))
+	}
+	return key, nil
 }
 
 func (a apikey) Deactivate(ctx context.Context, keyId string, callerId string, organizationId string) (key model.Apikey, err error) {

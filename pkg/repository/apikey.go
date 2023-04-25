@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/String-xyz/go-lib/common"
+	libcommon "github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
 	librepository "github.com/String-xyz/go-lib/repository"
 	serror "github.com/String-xyz/go-lib/stringerror"
@@ -41,20 +42,17 @@ func NewApikey(db database.Queryable) Apikey {
 }
 
 func (k apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error) {
-	rows, err := k.Store.NamedQuery(`
-		INSERT INTO apikey (type, data, hint, description, created_by, organization_id) 
-		VALUES(:type, :data, :hint, :description, :created_by, :organization_id) RETURNING *`, request)
-
+	query, args, err := k.Named(`
+		INSERT INTO apikey (type, data, hint, description, created_by, platform_id, organization_id) 
+		VALUES(:type, :data, :hint, :description, :created_by, :platform_id, :organization_id) RETURNING *`, request)
 	if err != nil {
-		return key, common.StringError(err)
+		return key, libcommon.StringError(err)
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		err := rows.StructScan(&key)
-		if err != nil {
-			return key, common.StringError(err)
-		}
+	// Use QueryRowxContext to execute the query with the provided context
+	err = k.Store.QueryRowxContext(ctx, query, args...).StructScan(&key)
+	if err != nil {
+		return key, libcommon.StringError(err)
 	}
 
 	return key, nil

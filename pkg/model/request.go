@@ -68,6 +68,10 @@ type RequestTransferOwnership struct {
 	Password string `json:"password" validate:"required,min=8,max=100"`
 }
 
+type RequestAPIKeyCreate struct {
+	PlatformId string `json:"platformId" validate:"required,uuid"`
+}
+
 type RequestApikeyUpdate struct {
 	Description string `json:"description"`
 }
