@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
@@ -43,6 +44,12 @@ func (a apikey) Create(c echo.Context) error {
 	keyType := c.QueryParam("type")
 	if keyType == "" {
 		keyType = "public"
+	}
+
+	keyType = strings.ToLower(keyType)
+
+	if keyType != "public" && keyType != "secret" {
+		return httperror.BadRequestError(c, "invalid key type")
 	}
 
 	platformId := c.QueryParam("platformId")
@@ -116,7 +123,7 @@ func (a apikey) Deactivate(c echo.Context) error {
 
 	keyId := c.Param("id")
 
-	if !validator.IsUUID(keyId, organizationId, callerId) {
+	if !validator.IsUUID(keyId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
@@ -141,18 +148,19 @@ func (a apikey) Update(c echo.Context) error {
 
 	keyId := c.Param("id")
 
-	if organizationId == "" || callerId == "" {
-		return httperror.BadRequestError(c)
-	}
-
 	if !validator.IsUUID(keyId) {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
 	body := model.RequestApikeyUpdate{}
-	err := c.Bind(&body)
-	if err != nil {
+
+	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "apikey: update bind")
+		return httperror.BadRequestError(c)
+	}
+
+	if err := c.Validate(&body); err != nil {
+		common.LogStringError(c, err, "apikey: update validate")
 		return httperror.BadRequestError(c)
 	}
 

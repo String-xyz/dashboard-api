@@ -73,7 +73,7 @@ type RequestAPIKeyCreate struct {
 }
 
 type RequestApikeyUpdate struct {
-	Description string `json:"description"`
+	Description string `json:"description" validate:"omitempty,max=144"`
 }
 
 type RequestPasswordResetEmail struct {
