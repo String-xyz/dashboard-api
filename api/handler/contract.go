@@ -153,7 +153,7 @@ func (a contract) Update(c echo.Context) error {
 	}
 
 	contractId := c.Param("id")
-	if organizationId == "" || callerId == "" {
+	if validator.IsUUID(organizationId, callerId) {
 		return httperror.BadRequestError(c)
 	}
 
