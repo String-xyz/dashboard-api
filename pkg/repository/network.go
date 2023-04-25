@@ -43,9 +43,9 @@ func (n network[T]) List(ctx context.Context, limit int, offset int) (networks [
 	if limit == 0 {
 		limit = 20
 	}
-	result := []NetworkFull{}
+	results := []NetworkFull{}
 
-	err = n.Store.SelectContext(ctx, &result, `SELECT * FROM network LIMIT $1 OFFSET $2;`, limit, offset)
+	err = n.Store.SelectContext(ctx, &results, `SELECT * FROM network LIMIT $1 OFFSET $2;`, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return nil, common.StringError(serror.NOT_FOUND)
@@ -53,8 +53,9 @@ func (n network[T]) List(ctx context.Context, limit int, offset int) (networks [
 		return nil, common.StringError(err)
 	}
 
-	for i := range networks {
-		networks = append(networks, model.NetworkData{Id: result[i].Id, Name: result[i].Name})
+	for i := range results {
+		networks = append(networks, model.NetworkData{Id: results[i].Id, Name: results[i].Name})
 	}
+
 	return networks, nil
 }

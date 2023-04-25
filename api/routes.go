@@ -44,5 +44,5 @@ func contractRoute(services service.Services, e *echo.Echo) {
 
 func networkRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewNetwork(services.Network)
-	handler.RegisterRoutes(e.Group("/networks"))
+	handler.RegisterRoutes(e.Group("/networks"), middleware.JWT(services.Auth))
 }

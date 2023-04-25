@@ -45,16 +45,12 @@ func (a apikey) Create(c echo.Context) error {
 		keyType = "public"
 	}
 
-	body := model.RequestAPIKeyCreate{}
-	err := c.Bind(&body)
-	if err != nil {
-		return httperror.BadRequestError(c, "invalid payload")
-	}
-	if keyType == "public" && body.PlatformId == "" {
+	platformId := c.QueryParam("platformId")
+	if keyType == "public" && platformId == "" {
 		return httperror.BadRequestError(c)
 	}
 
-	m, err := a.service.Create(c.Request().Context(), keyType, callerId, body.PlatformId, organizationId)
+	m, err := a.service.Create(c.Request().Context(), keyType, callerId, platformId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: create")
 	}

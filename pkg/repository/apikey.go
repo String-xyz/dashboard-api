@@ -42,9 +42,18 @@ func NewApikey(db database.Queryable) Apikey {
 }
 
 func (k apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error) {
-	query, args, err := k.Named(`
-		INSERT INTO apikey (type, data, hint, description, created_by, platform_id, organization_id) 
-		VALUES(:type, :data, :hint, :description, :created_by, :platform_id, :organization_id) RETURNING *`, request)
+	var query string
+	var args []interface{}
+
+	if *&request.Type == "secret" {
+		query, args, err = k.Named(`
+			INSERT INTO apikey (type, data, hint, description, created_by, organization_id) 
+			VALUES(:type, :data, :hint, :description, :created_by, :organization_id) RETURNING *`, request)
+	} else {
+		query, args, err = k.Named(`
+			INSERT INTO apikey (type, data, hint, description, created_by, platform_id, organization_id) 
+			VALUES(:type, :data, :hint, :description, :created_by, :platform_id, :organization_id) RETURNING *`, request)
+	}
 	if err != nil {
 		return key, libcommon.StringError(err)
 	}

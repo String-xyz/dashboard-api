@@ -17,7 +17,8 @@ type Contract interface {
 	database.Transactable
 	Create(request model.Contract) (contract model.Contract, err error)
 	GetById(ctx context.Context, id string) (contract model.Contract, err error)
-	ListByPlatformId(ctx context.Context, platformId string, limit int, offset int) (contracts []model.Contract, err error)
+	ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (contracts []model.Contract, err error)
+	ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (contracts []model.Contract, err error)
 	List(ctx context.Context, limit int, offset int) (contracts []model.Contract, err error)
 	Update(ctx context.Context, id string, updates any) error
 	GetByAddressAndNetworkAndPlatform(ctx context.Context, address string, networkId string, platformId string) (contract model.Contract, err error)
@@ -50,11 +51,32 @@ func (c contract[T]) Create(request model.Contract) (contract model.Contract, er
 	return contract, nil
 }
 
-func (c contract[T]) ListByPlatformId(ctx context.Context, platformId string, limit int, offset int) (contracts []model.Contract, err error) {
+func (c contract[T]) ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (contracts []model.Contract, err error) {
 	if limit == 0 {
 		limit = 100
 	}
 	err = c.Store.SelectContext(ctx, &contracts, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1 LIMIT $2 OFFSET $3", c.Table), platformId, limit, offset)
+	if err == sql.ErrNoRows {
+		return contracts, nil
+	}
+	if err != nil {
+		return contracts, err
+	}
+
+	return contracts, nil
+}
+
+func (c contract[T]) ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (contracts []model.Contract, err error) {
+	if limit == 0 {
+		limit = 100
+	}
+	err = c.Store.SelectContext(ctx, &contracts,
+		`SELECT contract.* FROM contract 
+			LEFT JOIN platform 
+			ON contract.platform_id = platform.id 
+			WHERE platform.organization_id = $1 
+			LIMIT $2 OFFSET $3`,
+		organizationId, limit, offset)
 	if err == sql.ErrNoRows {
 		return contracts, nil
 	}

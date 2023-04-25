@@ -86,10 +86,11 @@ type RequestPasswordReset struct {
 }
 
 type RequestContractCreate struct {
-	Name      string         `json:"name" db:"name"`
-	Address   string         `json:"address" db:"address"`
-	Functions pq.StringArray `json:"functions" db:"functions"`
-	NetworkId string         `json:"networkId" db:"network_id"`
+	Name       string         `json:"name" db:"name"`
+	Address    string         `json:"address" db:"address"`
+	Functions  pq.StringArray `json:"functions" db:"functions"`
+	NetworkId  string         `json:"networkId" db:"network_id"`
+	PlatformId string         `json:"platformId" db:"platform_id"`
 }
 
 type RequestContractUpdate struct {

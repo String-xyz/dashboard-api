@@ -11,12 +11,12 @@ import (
 )
 
 type Contract interface {
-	Create(ctx context.Context, create model.RequestContractCreate, callerId string, platformId string) (model.Contract, error)
-	GetAll(ctx context.Context, platformId string) ([]model.Contract, error)
-	Get(ctx context.Context, platformId string, contractId string) (model.Contract, error)
-	Deactivate(ctx context.Context, callerId string, platformId string, contractId string) (model.Contract, error)
-	Reactivate(ctx context.Context, callerId string, platformId string, contractId string) (model.Contract, error)
-	Update(ctx context.Context, request model.RequestContractUpdate, callerId string, platformId string, contractId string) (model.Contract, error)
+	Create(ctx context.Context, create model.RequestContractCreate, callerId string, organizationId string) (model.Contract, error)
+	GetAll(ctx context.Context, platformId string, organizationId string) ([]model.Contract, error)
+	Get(ctx context.Context, contractId string, organizationId string) (model.Contract, error)
+	Deactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error)
+	Reactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error)
+	Update(ctx context.Context, request model.RequestContractUpdate, contractId string, callerId string, organizationId string) (model.Contract, error)
 }
 
 type contract struct {
@@ -27,21 +27,21 @@ func NewContract(repos repository.Repositories) Contract {
 	return &contract{repos}
 }
 
-func (c contract) Create(ctx context.Context, create model.RequestContractCreate, callerId string, platformId string) (model.Contract, error) {
+func (c contract) Create(ctx context.Context, create model.RequestContractCreate, callerId string, organizationId string) (model.Contract, error) {
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
 
 	// Check if contract already exists
-	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkId, platformId)
+	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkId, create.PlatformId)
 	if err != nil && err != serror.NOT_FOUND {
 		return model.Contract{}, common.StringError(err)
 	} else if exists.Id != "" {
 		return model.Contract{}, common.StringError(serror.ALREADY_IN_USE)
 	}
 
-	row := model.Contract{Name: create.Name, PlatformId: platformId, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkId}
+	row := model.Contract{Name: create.Name, PlatformId: create.PlatformId, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkId}
 	row, err = c.repos.Contract.Create(row)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -49,27 +49,38 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 	return row, nil
 }
 
-func (c contract) GetAll(ctx context.Context, platformId string) ([]model.Contract, error) {
-	contracts, err := c.repos.Contract.ListByPlatformId(ctx, platformId, 0, 0)
-	if err != nil {
-		return nil, common.StringError(err)
+func (c contract) GetAll(ctx context.Context, platformId string, organizationId string) (contracts []model.Contract, err error) {
+	if platformId != "" {
+		contracts, err = c.repos.Contract.ListByPlatform(ctx, platformId, 0, 0)
+		if err != nil {
+			return contracts, common.StringError(err)
+		}
+	} else {
+		contracts, err = c.repos.Contract.ListByOrganization(ctx, organizationId, 0, 0)
+		if err != nil {
+			return contracts, common.StringError(err)
+		}
 	}
 
 	return contracts, nil
 }
 
-func (c contract) Get(ctx context.Context, platformId string, contractId string) (model.Contract, error) {
+func (c contract) Get(ctx context.Context, contractId string, organizationId string) (model.Contract, error) {
 	contract, err := c.repos.Contract.GetById(ctx, contractId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if contract.PlatformId != platformId {
+	platform, err := c.repos.Platform.GetById(ctx, contract.PlatformId)
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+	if platform.OrganizationId != organizationId {
 		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 	return contract, nil
 }
 
-func (c contract) Deactivate(ctx context.Context, callerId string, platformId string, contractId string) (model.Contract, error) {
+func (c contract) Deactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error) {
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -79,7 +90,11 @@ func (c contract) Deactivate(ctx context.Context, callerId string, platformId st
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if deactivate.PlatformId != platformId {
+	platform, err := c.repos.Platform.GetById(ctx, deactivate.PlatformId)
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+	if platform.OrganizationId != organizationId {
 		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 
@@ -103,7 +118,7 @@ func (c contract) Deactivate(ctx context.Context, callerId string, platformId st
 	return deactivate, nil
 }
 
-func (c contract) Reactivate(ctx context.Context, callerId string, platformId string, contractId string) (model.Contract, error) {
+func (c contract) Reactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error) {
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -113,7 +128,11 @@ func (c contract) Reactivate(ctx context.Context, callerId string, platformId st
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if reactivate.PlatformId != platformId {
+	platform, err := c.repos.Platform.GetById(ctx, reactivate.PlatformId)
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+	if platform.OrganizationId != organizationId {
 		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 
@@ -130,7 +149,7 @@ func (c contract) Reactivate(ctx context.Context, callerId string, platformId st
 	return reactivate, nil
 }
 
-func (c contract) Update(ctx context.Context, request model.RequestContractUpdate, callerId string, platformId string, contractId string) (model.Contract, error) {
+func (c contract) Update(ctx context.Context, request model.RequestContractUpdate, contractId string, callerId string, organizationId string) (model.Contract, error) {
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -140,7 +159,11 @@ func (c contract) Update(ctx context.Context, request model.RequestContractUpdat
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	if update.PlatformId != platformId {
+	platform, err := c.repos.Platform.GetById(ctx, update.PlatformId)
+	if err != nil {
+		return model.Contract{}, common.StringError(err)
+	}
+	if platform.OrganizationId != organizationId {
 		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 
