@@ -27,6 +27,9 @@ func NewApikey(repos repository.Repositories) Apikey {
 }
 
 func (a *apikey) Create(ctx context.Context, keyType string, callerId string, platformId string, organizationId string) (model.Apikey, error) {
+	_, finish := Span(ctx, "service.apikey.Create", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	// Create the base key object
 	var keyValue string
 	key := model.Apikey{
@@ -69,6 +72,9 @@ func (a *apikey) Create(ctx context.Context, keyType string, callerId string, pl
 }
 
 func (a apikey) GetAll(ctx context.Context, callerId string, platformId string, organizationId string, limit int, offset int) (keys []model.Apikey, err error) {
+	_, finish := Span(ctx, "service.apikey.GetAll", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	if platformId != "" {
 		keys, err = a.repos.Apikey.ListByPlatform(ctx, platformId, limit, offset)
 		if err != nil {
@@ -85,6 +91,9 @@ func (a apikey) GetAll(ctx context.Context, callerId string, platformId string, 
 }
 
 func (a apikey) Get(ctx context.Context, id string, callerId string, organizationId string) (model.Apikey, error) {
+	_, finish := Span(ctx, "service.apikey.Get", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	key, err := a.repos.Apikey.GetById(ctx, id)
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
@@ -96,6 +105,9 @@ func (a apikey) Get(ctx context.Context, id string, callerId string, organizatio
 }
 
 func (a apikey) Deactivate(ctx context.Context, keyId string, callerId string, organizationId string) (key model.Apikey, err error) {
+	_, finish := Span(ctx, "service.apikey.Deactivate", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	err = RequireAuthority(a.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return key, common.StringError(err)
@@ -130,6 +142,9 @@ func (a apikey) Deactivate(ctx context.Context, keyId string, callerId string, o
 }
 
 func (a apikey) Update(ctx context.Context, keyId string, request model.RequestApikeyUpdate, callerId string, organizationId string) (key model.Apikey, err error) {
+	_, finish := Span(ctx, "service.apikey.Update", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	key, err = a.repos.Apikey.GetById(ctx, keyId)
 	if err != nil {
 		return model.Apikey{}, common.StringError(err)
