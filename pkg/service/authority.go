@@ -1,19 +1,18 @@
 package service
 
 import (
-	"os"
-
 	"github.com/String-xyz/go-lib/common"
 	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
 
 // In: Handle to repos, PlatformMember Id of caller, allowable roles (["Member", "Admin", "Owner"])
 // TODO: Refactor to use enums instead of strings
 func RequireAuthority(repos repository.Repositories, callerId string, rolesAllowed ...string) error {
-	ownerId := os.Getenv("MEMBER_ROLE_OWNER_ID")
-	adminId := os.Getenv("MEMBER_ROLE_ADMIN_ID")
-	memberId := os.Getenv("MEMBER_ROLE_MEMBER_ID")
+	ownerId := config.Var.MEMBER_ROLE_OWNER_ID
+	adminId := config.Var.MEMBER_ROLE_ADMIN_ID
+	memberId := config.Var.MEMBER_ROLE_MEMBER_ID
 
 	// Convert rolesAllowed from Name to UUID
 	var roleIdsAllowed []string
@@ -45,9 +44,9 @@ func RequireAuthority(repos repository.Repositories, callerId string, rolesAllow
 
 func GetRole(repos repository.Repositories, memberId string) (string, error) {
 	role := "Not Found"
-	ownerRoleId := os.Getenv("MEMBER_ROLE_OWNER_ID")
-	adminRoleId := os.Getenv("MEMBER_ROLE_ADMIN_ID")
-	memberRoleId := os.Getenv("MEMBER_ROLE_MEMBER_ID")
+	ownerRoleId := config.Var.MEMBER_ROLE_OWNER_ID
+	adminRoleId := config.Var.MEMBER_ROLE_ADMIN_ID
+	memberRoleId := config.Var.MEMBER_ROLE_MEMBER_ID
 
 	memberToRole, err := repos.MemberToRole.GetByMember(memberId)
 	if err != nil {
@@ -68,9 +67,9 @@ func GetRole(repos repository.Repositories, memberId string) (string, error) {
 
 func GetRoleId(roleName string) string {
 	role := "Not Found"
-	ownerRoleId := os.Getenv("MEMBER_ROLE_OWNER_ID")
-	adminRoleId := os.Getenv("MEMBER_ROLE_ADMIN_ID")
-	memberRoleId := os.Getenv("MEMBER_ROLE_MEMBER_ID")
+	ownerRoleId := config.Var.MEMBER_ROLE_OWNER_ID
+	adminRoleId := config.Var.MEMBER_ROLE_ADMIN_ID
+	memberRoleId := config.Var.MEMBER_ROLE_MEMBER_ID
 
 	if roleName == "Member" || roleName == "member" {
 		role = memberRoleId
