@@ -60,7 +60,7 @@ func (m memberToRole[T]) Create(ctx context.Context, request model.MemberToRole)
 }
 
 func (m memberToRole[T]) GetByMember(memberId string) (relation model.MemberToRole, err error) {
-	err = m.Store.Get(&relation, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1 AND deleted_at IS NULL", m.Table), memberId)
+	err = m.Store.Get(&relation, fmt.Sprintf("SELECT * FROM %s WHERE member_id = $1", m.Table), memberId)
 	if err != nil && err == sql.ErrNoRows {
 		return relation, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
@@ -70,7 +70,7 @@ func (m memberToRole[T]) GetByMember(memberId string) (relation model.MemberToRo
 }
 
 func (m memberToRole[T]) GetByPlatform(platformId string) (relation model.MemberToRole, err error) {
-	err = m.Store.Get(&relation, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1 AND deleted_at IS NULL", m.Table), platformId)
+	err = m.Store.Get(&relation, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1", m.Table), platformId)
 	if err != nil && err == sql.ErrNoRows {
 		return relation, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
@@ -84,7 +84,7 @@ func (m memberToRole[T]) UpdateRole(memberId string, updates any) error {
 	if len(names) == 0 {
 		return common.StringError(errors.New("no fields to update"))
 	}
-	query := fmt.Sprintf("UPDATE %s SET %s WHERE member_id = '%s' AND deleted_at IS NULL", m.Table, strings.Join(names, ", "), memberId)
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE member_id = '%s'", m.Table, strings.Join(names, ", "), memberId)
 	_, err := m.Store.NamedExec(query, keyToUpdate)
 	if err != nil {
 		return common.StringError(err)
