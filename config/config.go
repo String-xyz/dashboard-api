@@ -1,4 +1,4 @@
-package env
+package config
 
 import (
 	"errors"
@@ -34,7 +34,7 @@ var Var vars
 
 func LoadEnv() error {
 	godotenv.Load(".env")
-	stype := reflect.ValueOf(Var).Elem()
+	stype := reflect.ValueOf(&Var).Elem()
 	for i := 0; i < stype.NumField(); i++ {
 		field := stype.Field(i)
 		key := stype.Type().Field(i).Name

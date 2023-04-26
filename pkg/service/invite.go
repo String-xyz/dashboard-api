@@ -8,7 +8,7 @@ import (
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
 	serror "github.com/String-xyz/go-lib/stringerror"
-	"github.com/String-xyz/platform-admin-api/env"
+	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -69,7 +69,7 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	}
 
 	// Create encrypted token so that only the email owner can accept the invite
-	key := env.Var.STRING_ENCRYPTION_KEY
+	key := config.Var.STRING_ENCRYPTION_KEY
 	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), Email: request.Email}, key)
 	if err != nil {
 		return invite, common.StringError(err)
@@ -101,7 +101,7 @@ func (i invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	}
 
 	// Ensure that the token is valid
-	key := env.Var.STRING_ENCRYPTION_KEY
+	key := config.Var.STRING_ENCRYPTION_KEY
 	token := requestBody.Token
 	payload, err := common.Decrypt[TokenPayload](token, key)
 	if err != nil {
@@ -193,7 +193,7 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 	}
 
 	// Create encrypted token so that only the email owner can accept the invite
-	key := env.Var.STRING_ENCRYPTION_KEY
+	key := config.Var.STRING_ENCRYPTION_KEY
 	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), Email: result.Email}, key)
 	if err != nil {
 		return result, common.StringError(err)
@@ -281,7 +281,7 @@ func (i invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo
 func (i invite) createEmailBody(inviteId, userName, token string) string {
 	token = url.QueryEscape(token) // make
 
-	href := env.Var.BASE_DASHBOARD_URL + "/invite/" + inviteId + "?token=" + token
+	href := config.Var.BASE_DASHBOARD_URL + "/invite/" + inviteId + "?token=" + token
 
 	body := "" +
 		"<a href='https://www.string.xyz'>" +

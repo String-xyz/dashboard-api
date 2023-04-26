@@ -5,7 +5,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/api"
-	"github.com/String-xyz/platform-admin-api/env"
+	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/store"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
@@ -13,15 +13,18 @@ import (
 )
 
 func main() {
-	// load .env file
-	env.LoadEnv() // removed the err since in cloud this wont be loaded
+	// load env vars
+	err := config.LoadEnv()
+	if err != nil {
+		panic(err)
+	}
 	lg := zerolog.New(os.Stdout)
 	if !common.IsLocalEnv() {
 		tracer.Start()
 		defer tracer.Stop()
 	}
 
-	port := env.Var.PORT
+	port := config.Var.PORT
 
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	db := store.MustNewPG()

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/String-xyz/platform-admin-api/api"
-	"github.com/String-xyz/platform-admin-api/env"
+	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/String-xyz/platform-admin-api/pkg/store"
@@ -28,34 +28,34 @@ func newRepos(config api.APIConfig) repository.Repositories {
 
 func DataSeeding() {
 	// Initialize repos
-	env.LoadEnv() // removed the err since in cloud this wont be loaded
-	port := env.Var.PORT
+	config.LoadEnv() // removed the err since in cloud this wont be loaded
+	port := config.Var.PORT
 
 	lg := zerolog.New(os.Stdout)
 
 	// Note: This will panic if the env is set to use docker and you run this script from the command line
-	config := api.APIConfig{
+	cfg := api.APIConfig{
 		DB:     store.MustNewPG(),
 		Port:   port,
 		Logger: &lg,
 	}
 
-	repos := newRepos(config)
+	repos := newRepos(cfg)
 	nullCtx := context.Background()
 
-	memberId := env.Var.MEMBER_ROLE_MEMBER_ID
+	memberId := config.Var.MEMBER_ROLE_MEMBER_ID
 	_, err := repos.MemberRole.Create(nullCtx, model.MemberRole{Id: memberId, Name: "Member"})
 	if err != nil {
 		panic(err)
 	}
 
-	adminId := env.Var.MEMBER_ROLE_ADMIN_ID
+	adminId := config.Var.MEMBER_ROLE_ADMIN_ID
 	_, err = repos.MemberRole.Create(nullCtx, model.MemberRole{Id: adminId, Name: "Admin"})
 	if err != nil {
 		panic(err)
 	}
 
-	ownerId := env.Var.MEMBER_ROLE_OWNER_ID
+	ownerId := config.Var.MEMBER_ROLE_OWNER_ID
 	_, err = repos.MemberRole.Create(nullCtx, model.MemberRole{Id: ownerId, Name: "Owner"})
 	if err != nil {
 		panic(err)
@@ -64,8 +64,8 @@ func DataSeeding() {
 
 func MockSeeding() {
 	// Initialize repos
-	env.LoadEnv() // removed the err since in cloud this wont be loaded
-	port := env.Var.PORT
+	config.LoadEnv() // removed the err since in cloud this wont be loaded
+	port := config.Var.PORT
 	if port == "" {
 		panic("no port!")
 	}
@@ -73,28 +73,28 @@ func MockSeeding() {
 	lg := zerolog.New(os.Stdout)
 
 	// Note: This will panic if the env is set to use docker and you run this script from the command line
-	config := api.APIConfig{
+	cfg := api.APIConfig{
 		DB:     store.MustNewPG(),
 		Port:   port,
 		Logger: &lg,
 	}
 
-	repos := newRepos(config)
+	repos := newRepos(cfg)
 	nullCtx := context.Background()
 
-	memberId := env.Var.MEMBER_ROLE_MEMBER_ID
+	memberId := config.Var.MEMBER_ROLE_MEMBER_ID
 	_, err := repos.MemberRole.Create(nullCtx, model.MemberRole{Id: memberId, Name: "Member"})
 	if err != nil {
 		panic(err)
 	}
 
-	adminId := env.Var.MEMBER_ROLE_ADMIN_ID
+	adminId := config.Var.MEMBER_ROLE_ADMIN_ID
 	_, err = repos.MemberRole.Create(nullCtx, model.MemberRole{Id: adminId, Name: "Admin"})
 	if err != nil {
 		panic(err)
 	}
 
-	ownerId := env.Var.MEMBER_ROLE_OWNER_ID
+	ownerId := config.Var.MEMBER_ROLE_OWNER_ID
 	_, err = repos.MemberRole.Create(nullCtx, model.MemberRole{Id: ownerId, Name: "Owner"})
 	if err != nil {
 		panic(err)

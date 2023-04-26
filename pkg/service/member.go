@@ -7,7 +7,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	serror "github.com/String-xyz/go-lib/stringerror"
-	"github.com/String-xyz/platform-admin-api/env"
+	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -134,7 +134,7 @@ func (m member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 	}
 
 	// generate reset token by hashing member id
-	secret := env.Var.STRING_ENCRYPTION_KEY
+	secret := config.Var.STRING_ENCRYPTION_KEY
 	resetToken, err := common.EncryptString(member.Id, secret)
 
 	// url encode token
@@ -150,7 +150,7 @@ func (m member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 		"<header>You have requested a password reset for the String API</header>" +
 		"<br>Dear " + member.Name + "," +
 		"<br>If you have forgotten your password, click the link below to reset it:" +
-		"<br><a href='" + env.Var.BASE_DASHBOARD_URL + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
+		"<br><a href='" + config.Var.BASE_DASHBOARD_URL + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
 
 	err = SendEmail("String API", member.Name, email, "String API Password Reset", body)
 	if err != nil {
@@ -162,7 +162,7 @@ func (m member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 
 func (m member) PasswordReset(ctx context.Context, request model.RequestPasswordReset) error {
 	// Get the member Id from the password reset token
-	secret := env.Var.STRING_ENCRYPTION_KEY
+	secret := config.Var.STRING_ENCRYPTION_KEY
 	memberId, err := common.DecryptString(request.ResetToken, secret)
 	if err != nil {
 		if strings.Contains(err.Error(), "illegal base64") {
