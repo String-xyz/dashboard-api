@@ -24,6 +24,9 @@ func NewLogin(repos repository.Repositories, auth Auth) Login {
 }
 
 func (l login) Login(ctx context.Context, request model.RequestLogin) (repository.OrganizationMemberWithRole, JWT, error) {
+	_, finish := Span(ctx, "service.auth.Login")
+	defer finish()
+
 	jwt := JWT{}
 	member, err := l.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 	if err != nil {

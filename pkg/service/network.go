@@ -21,6 +21,9 @@ func NewNetwork(repos repository.Repositories) Network {
 }
 
 func (n network) GetAll(ctx context.Context) ([]model.NetworkData, error) {
+	_, finish := Span(ctx, "service.network.GetAll")
+	defer finish()
+
 	networks, err := n.repos.Network.List(ctx, 0, 0)
 	if err != nil {
 		return nil, common.StringError(err)

@@ -39,6 +39,9 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 }
 
 func (i invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, organizationId string) (repository.MemberInviteInfo, error) {
+	_, finish := Span(ctx, "service.invite.Send", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	// Ensure there are no duplicate emails
 	preexisting, err := i.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
@@ -86,6 +89,9 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 }
 
 func (i invite) Accept(ctx context.Context, inviteId string, requestBody model.RequestInviteAcceptance) (model.OrganizationMember, JWT, error) {
+	_, finish := Span(ctx, "service.invite.Accept")
+	defer finish()
+
 	member := model.OrganizationMember{}
 	jwt := JWT{}
 
@@ -163,6 +169,9 @@ func (i invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 }
 
 func (i invite) List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error) {
+	_, finish := Span(ctx, "service.invite.List", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	result, err := i.repos.MemberInvite.GetByOrganization(ctx, organizationId)
 	if err != nil {
 		return result, common.StringError(err)
@@ -182,6 +191,8 @@ func (i invite) List(ctx context.Context, status string, organizationId string) 
 }
 
 func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+	_, finish := Span(ctx, "service.invite.Resend")
+	defer finish()
 	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
@@ -210,6 +221,9 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 }
 
 func (i invite) Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+	_, finish := Span(ctx, "service.invite.Update")
+	defer finish()
+
 	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
@@ -247,6 +261,9 @@ func (i invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 }
 
 func (i invite) Deactivate(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+	_, finish := Span(ctx, "service.invite.Deactive")
+	defer finish()
+
 	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
@@ -271,6 +288,9 @@ func (i invite) Deactivate(ctx context.Context, inviteId string, callerId string
 }
 
 func (i invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo, error) {
+	_, finish := Span(ctx, "service.invite.Get")
+	defer finish()
+
 	result, err := i.repos.MemberInvite.GetById(ctx, id)
 	if err != nil {
 		return result, common.StringError(err)

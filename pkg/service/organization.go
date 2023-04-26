@@ -27,6 +27,9 @@ func NewOrganization(repos repository.Repositories, redis database.RedisStore) O
 
 // TODO: Ensure valid email is provided
 func (o organization) Create(ctx context.Context, request model.RequestOrganizationCreate) (model.Organization, error) {
+	_, finish := Span(ctx, "service.organization.Create")
+	defer finish()
+
 	// Ensure there are no duplicate emails
 	preexisting, err := o.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 
@@ -64,6 +67,9 @@ func (o organization) Create(ctx context.Context, request model.RequestOrganizat
 }
 
 func (o organization) Get(ctx context.Context, organizationId string) (model.Organization, error) {
+	_, finish := Span(ctx, "service.organization.Get", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	result, err := o.repos.Organization.GetById(ctx, organizationId)
 	if err != nil {
 		return result, common.StringError(err)
@@ -73,6 +79,9 @@ func (o organization) Get(ctx context.Context, organizationId string) (model.Org
 
 // TODO: Ensure multiple organizations do not share the same *domain*
 func (o organization) Update(ctx context.Context, request model.RequestOrganizationUpdate, organizationId string, callerId string) (model.Organization, error) {
+	_, finish := Span(ctx, "service.organization.Update", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	result := model.Organization{}
 	err := RequireAuthority(o.repos, callerId, "Owner")
 	if err != nil {

@@ -28,6 +28,9 @@ func NewContract(repos repository.Repositories) Contract {
 }
 
 func (c contract) Create(ctx context.Context, create model.RequestContractCreate, callerId string, organizationId string) (model.Contract, error) {
+	_, finish := Span(ctx, "service.contract.Create", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -50,6 +53,9 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 }
 
 func (c contract) GetAll(ctx context.Context, platformId string, organizationId string) (contracts []model.Contract, err error) {
+	_, finish := Span(ctx, "service.contract.GetAll", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	if platformId != "" {
 		contracts, err = c.repos.Contract.ListByPlatform(ctx, platformId, 0, 0)
 		if err != nil {
@@ -66,6 +72,9 @@ func (c contract) GetAll(ctx context.Context, platformId string, organizationId 
 }
 
 func (c contract) Get(ctx context.Context, contractId string, organizationId string) (model.Contract, error) {
+	_, finish := Span(ctx, "service.contract.Get", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	contract, err := c.repos.Contract.GetById(ctx, contractId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -81,6 +90,9 @@ func (c contract) Get(ctx context.Context, contractId string, organizationId str
 }
 
 func (c contract) Deactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error) {
+	_, finish := Span(ctx, "service.contract.Deactivate", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -119,6 +131,9 @@ func (c contract) Deactivate(ctx context.Context, contractId string, callerId st
 }
 
 func (c contract) Reactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error) {
+	_, finish := Span(ctx, "service.contract.Reactivate", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -150,6 +165,9 @@ func (c contract) Reactivate(ctx context.Context, contractId string, callerId st
 }
 
 func (c contract) Update(ctx context.Context, request model.RequestContractUpdate, contractId string, callerId string, organizationId string) (model.Contract, error) {
+	_, finish := Span(ctx, "service.contract.Update", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
