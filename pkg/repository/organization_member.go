@@ -28,7 +28,6 @@ type OrganizationMember interface {
 	database.Transactable
 	Create(ctx context.Context, request model.OrganizationMember) (member model.OrganizationMember, err error)
 	GetById(ctx context.Context, id string) (member OrganizationMemberWithRole, err error)
-	GetByIdIncludingDeactivated(ctx context.Context, id string) (member OrganizationMemberWithRole, err error)
 	List(ctx context.Context, organizationId string, limit int, offset int) (members []OrganizationMemberWithRole, err error)
 	Update(ctx context.Context, id string, updates any) error
 	GetByEmail(ctx context.Context, email string) (member OrganizationMemberWithRole, err error)
@@ -72,7 +71,7 @@ func (m organizationMember[T]) GetByEmail(ctx context.Context, email string) (me
 		ON organization_member.id = member_to_role.member_id
 		LEFT JOIN member_role 
 		ON member_role.id = member_to_role.role_id 
-		WHERE organization_member.email = $1`, email)
+		WHERE organization_member.email = $1 AND deleted_at IS NULL`, email)
 	if err != nil && err == sql.ErrNoRows {
 		return member, serror.NOT_FOUND
 	} else if err != nil {
@@ -89,25 +88,7 @@ func (m organizationMember[T]) GetById(ctx context.Context, id string) (member O
 		ON organization_member.id = member_to_role.member_id
 		LEFT JOIN member_role 
 		ON member_role.id = member_to_role.role_id 
-		WHERE organization_member.id = $1`, id)
-	if err != nil && err == sql.ErrNoRows {
-		return member, common.StringError(serror.NOT_FOUND)
-	} else if err != nil {
-		return member, common.StringError(err)
-	}
-	return member, nil
-}
-
-func (m organizationMember[T]) GetByIdIncludingDeactivated(ctx context.Context, id string) (member OrganizationMemberWithRole, err error) {
-	err = m.Store.GetContext(ctx, &member, `
-	SELECT organization_member.*, member_role.name AS member_role
-	FROM organization_member
-	LEFT JOIN member_to_role
-	ON organization_member.id = member_to_role.member_id
-	LEFT JOIN member_role 
-	ON member_role.id = member_to_role.role_id 
-	WHERE organization_member.id = $1`, id)
-
+		WHERE organization_member.id = $1 AND deleted_at IS NULL`, id)
 	if err != nil && err == sql.ErrNoRows {
 		return member, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
@@ -132,7 +113,7 @@ func (m organizationMember[T]) List(ctx context.Context, organizationId string, 
 		ON organization_member.id = member_to_organization.member_id 
 		LEFT JOIN organization
 		ON organization.id = member_to_organization.organization_id
-		WHERE organization.id = $1
+		WHERE organization.id = $1 AND deleted_at IS NULL
 		LIMIT $2
 		OFFSET $3;`, organizationId, limit, offset)
 

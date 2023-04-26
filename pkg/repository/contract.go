@@ -55,7 +55,7 @@ func (c contract[T]) ListByPlatform(ctx context.Context, platformId string, limi
 	if limit == 0 {
 		limit = 100
 	}
-	err = c.Store.SelectContext(ctx, &contracts, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1 LIMIT $2 OFFSET $3", c.Table), platformId, limit, offset)
+	err = c.Store.SelectContext(ctx, &contracts, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1 AND deleted_at IS NULL LIMIT $2 OFFSET $3", c.Table), platformId, limit, offset)
 	if err == sql.ErrNoRows {
 		return contracts, nil
 	}
@@ -74,9 +74,10 @@ func (c contract[T]) ListByOrganization(ctx context.Context, organizationId stri
 		`SELECT contract.* FROM contract 
 			LEFT JOIN platform 
 			ON contract.platform_id = platform.id 
-			WHERE platform.organization_id = $1 
+			WHERE platform.organization_id = $1 AND deleted_at IS NULL
 			LIMIT $2 OFFSET $3`,
 		organizationId, limit, offset)
+
 	if err == sql.ErrNoRows {
 		return contracts, nil
 	}
@@ -88,7 +89,7 @@ func (c contract[T]) ListByOrganization(ctx context.Context, organizationId stri
 }
 
 func (c contract[T]) GetByAddressAndNetworkAndPlatform(ctx context.Context, address string, networkId string, platformId string) (contract model.Contract, err error) {
-	err = c.Store.GetContext(ctx, &contract, fmt.Sprintf("SELECT * FROM %s WHERE address = $1 AND network_id = $2 AND platform_id = $3 LIMIT 1", c.Table), address, networkId, platformId)
+	err = c.Store.GetContext(ctx, &contract, fmt.Sprintf("SELECT * FROM %s WHERE address = $1 AND network_id = $2 AND platform_id = $3 AND deleted_at IS NULL LIMIT 1", c.Table), address, networkId, platformId)
 	if err != nil && err == sql.ErrNoRows {
 		return contract, serror.NOT_FOUND
 	}
@@ -96,7 +97,7 @@ func (c contract[T]) GetByAddressAndNetworkAndPlatform(ctx context.Context, addr
 }
 
 func (c contract[T]) GetById(ctx context.Context, id string) (contract model.Contract, err error) {
-	err = c.Store.GetContext(ctx, &contract, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", c.Table), id)
+	err = c.Store.GetContext(ctx, &contract, fmt.Sprintf("SELECT * FROM %s WHERE id = $1 AND deleted_at IS NULL", c.Table), id)
 	if err == sql.ErrNoRows {
 		return contract, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {

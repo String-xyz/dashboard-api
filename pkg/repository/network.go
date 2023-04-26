@@ -30,7 +30,7 @@ func (n network[T]) List(ctx context.Context, limit int, offset int) (networks [
 	}
 	results := []model.NetworkData{}
 
-	err = n.Store.SelectContext(ctx, &results, `SELECT * FROM network LIMIT $1 OFFSET $2;`, limit, offset)
+	err = n.Store.SelectContext(ctx, &results, `SELECT * FROM network LIMIT $1 OFFSET $2 AND deleted_at IS NULL;`, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return nil, common.StringError(serror.NOT_FOUND)

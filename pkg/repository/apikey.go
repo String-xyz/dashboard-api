@@ -69,7 +69,7 @@ func (a apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.
 }
 
 func (a apikey[T]) GetById(ctx context.Context, id string) (key model.Apikey, err error) {
-	err = a.Store.GetContext(ctx, &key, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", a.Table), id)
+	err = a.Store.GetContext(ctx, &key, fmt.Sprintf("SELECT * FROM %s WHERE id = $1 AND deleted_at IS NULL", a.Table), id)
 	if err == sql.ErrNoRows {
 		return key, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {

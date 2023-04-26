@@ -107,7 +107,7 @@ func (i memberInvite[T]) GetByOrganization(ctx context.Context, organizationId s
 }
 
 func (i memberInvite[T]) GetById(ctx context.Context, id string) (invite MemberInviteInfo, err error) {
-	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.id = $1`, id)
+	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.id = $1 AND member_invite.deleted_at IS NULL`, id)
 
 	if err == sql.ErrNoRows {
 		return invite, common.StringError(serror.NOT_FOUND)
@@ -123,7 +123,7 @@ func (i memberInvite[T]) GetById(ctx context.Context, id string) (invite MemberI
 }
 
 func (i memberInvite[T]) GetByEmail(ctx context.Context, email string) (invite MemberInviteInfo, err error) {
-	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.email = $1`, email)
+	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.email = $1 AND member_invite.deleted_at IS NULL`, email)
 
 	if err != nil && err == sql.ErrNoRows {
 		return invite, common.StringError(serror.NOT_FOUND)
