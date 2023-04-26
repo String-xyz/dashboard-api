@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
 	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/platform-admin-api/env"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/sha3"
@@ -85,7 +85,7 @@ func DeleteAuthCookies(c echo.Context) error {
 }
 
 func IsLocalEnv() bool {
-	return os.Getenv("ENV") == "local"
+	return env.Var.ENV == "local"
 }
 
 func getCookieSameSiteMode() http.SameSite {
