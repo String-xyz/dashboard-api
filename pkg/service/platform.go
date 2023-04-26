@@ -27,6 +27,9 @@ func NewPlatform(repos repository.Repositories, redis database.RedisStore) Platf
 }
 
 func (p platform) Create(ctx context.Context, request model.RequestPlatformCreate, organizationId string) (platform model.Platform, err error) {
+	_, finish := Span(ctx, "service.platform.Create", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	// Generate new Platform with a Name and Description
 	platform = model.Platform{Name: request.PlatformName, Description: request.PlatformDescription, OrganizationId: organizationId}
 	platform, err = p.repos.Platform.Create(ctx, platform)
@@ -38,6 +41,9 @@ func (p platform) Create(ctx context.Context, request model.RequestPlatformCreat
 }
 
 func (p platform) Get(ctx context.Context, platformId string, organizationId string) (platform model.Platform, err error) {
+	_, finish := Span(ctx, "service.platform.Get", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	platform, err = p.repos.Platform.GetById(ctx, platformId)
 	if err != nil {
 		return platform, common.StringError(err)
@@ -49,6 +55,9 @@ func (p platform) Get(ctx context.Context, platformId string, organizationId str
 }
 
 func (p platform) GetAll(ctx context.Context, callerId string, organizationId string) (platforms []model.Platform, err error) {
+	_, finish := Span(ctx, "service.platform.GetAll", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	platforms, err = p.repos.Platform.List(ctx, organizationId, 0, 0)
 	if err != nil {
 		return platforms, common.StringError(err)
@@ -59,6 +68,9 @@ func (p platform) GetAll(ctx context.Context, callerId string, organizationId st
 
 // TODO: Ensure multiple platforms do not share the same *domain*
 func (p platform) Update(ctx context.Context, request model.RequestPlatformUpdate, platformId string, callerId string, organizationId string) (platform model.Platform, err error) {
+	_, finish := Span(ctx, "service.platform.Update", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	err = RequireAuthority(p.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return platform, common.StringError(err)

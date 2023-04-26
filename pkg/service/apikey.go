@@ -29,6 +29,7 @@ func NewApikey(repos repository.Repositories) Apikey {
 func (a *apikey) Create(ctx context.Context, keyType string, callerId string, platformId string, organizationId string) (model.Apikey, error) {
 	_, finish := Span(ctx, "service.apikey.Create", SpanTag{"organizationId": organizationId})
 	defer finish()
+
 	// Create the base key object
 	var keyValue string
 	key := model.Apikey{
@@ -73,6 +74,7 @@ func (a *apikey) Create(ctx context.Context, keyType string, callerId string, pl
 func (a apikey) GetAll(ctx context.Context, callerId string, platformId string, organizationId string, limit int, offset int) (keys []model.Apikey, err error) {
 	_, finish := Span(ctx, "service.apikey.GetAll", SpanTag{"organizationId": organizationId})
 	defer finish()
+
 	if platformId != "" {
 		keys, err = a.repos.Apikey.ListByPlatform(ctx, platformId, limit, offset)
 		if err != nil {

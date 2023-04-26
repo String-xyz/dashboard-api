@@ -39,6 +39,9 @@ func NewMember(repos repository.Repositories) Member {
 }
 
 func (m member) GetAll(ctx context.Context, organizationId string) ([]repository.OrganizationMemberWithRole, error) {
+	_, finish := Span(ctx, "service.member.GetAll", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	result, err := m.repos.OrganizationMember.List(ctx, organizationId, 0, 0)
 	if err != nil {
 		return result, common.StringError(err)
@@ -48,6 +51,9 @@ func (m member) GetAll(ctx context.Context, organizationId string) ([]repository
 }
 
 func (m member) Get(ctx context.Context, callerId string, organizationId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	_, finish := Span(ctx, "service.member.Get", SpanTag{"organizationId": organizationId})
+	defer finish()
+
 	result := repository.OrganizationMemberWithRole{}
 	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")
 	if err != nil {
@@ -72,6 +78,9 @@ func (m member) Get(ctx context.Context, callerId string, organizationId string,
 }
 
 func (m member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.OrganizationMemberWithRole, error) {
+	_, finish := Span(ctx, "service.member.UpdateSelf")
+	defer finish()
+
 	result := repository.OrganizationMemberWithRole{}
 
 	// Actual DB request
@@ -125,6 +134,9 @@ func (m member) UpdateSelf(ctx context.Context, request model.RequestMemberUpdat
 }
 
 func (m member) SendPasswordResetEmail(ctx context.Context, request model.RequestPasswordResetEmail) error {
+	_, finish := Span(ctx, "service.member.SendPasswordResetEmail")
+	defer finish()
+
 	email := request.Email
 
 	// Anyone can request this, so ensure member is associated with 'email'
@@ -161,6 +173,9 @@ func (m member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 }
 
 func (m member) PasswordReset(ctx context.Context, request model.RequestPasswordReset) error {
+	_, finish := Span(ctx, "service.member.PasswordReset")
+	defer finish()
+
 	// Get the member Id from the password reset token
 	secret := os.Getenv("STRING_ENCRYPTION_KEY")
 	memberId, err := common.DecryptString(request.ResetToken, secret)
@@ -190,6 +205,9 @@ func (m member) PasswordReset(ctx context.Context, request model.RequestPassword
 }
 
 func (m member) UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	_, finish := Span(ctx, "service.member.UpdateMember")
+	defer finish()
+
 	result := repository.OrganizationMemberWithRole{}
 
 	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")
@@ -236,6 +254,9 @@ func (m member) UpdateMember(ctx context.Context, request model.RequestMemberUpd
 }
 
 func (m member) TransferOwnership(ctx context.Context, request model.RequestTransferOwnership, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	_, finish := Span(ctx, "service.member.TransferOwnership")
+	defer finish()
+
 	result := repository.OrganizationMemberWithRole{}
 
 	caller, err := m.repos.OrganizationMember.GetById(ctx, callerId)
@@ -303,6 +324,9 @@ func (m member) TransferOwnership(ctx context.Context, request model.RequestTran
 }
 
 func (m member) Deactivate(ctx context.Context, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	_, finish := Span(ctx, "service.member.Deactivate")
+	defer finish()
+
 	result := repository.OrganizationMemberWithRole{}
 
 	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")
@@ -352,6 +376,9 @@ func (m member) Deactivate(ctx context.Context, callerId string, memberId string
 }
 
 func (m member) Reactivate(ctx context.Context, callerId string, memberId string) (repository.OrganizationMemberWithRole, error) {
+	_, finish := Span(ctx, "service.member.Reactivate")
+	defer finish()
+
 	result := repository.OrganizationMemberWithRole{}
 
 	err := RequireAuthority(m.repos, callerId, "Owner", "Admin")

@@ -55,6 +55,7 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 func (c contract) GetAll(ctx context.Context, platformId string, organizationId string) (contracts []model.Contract, err error) {
 	_, finish := Span(ctx, "service.contract.GetAll", SpanTag{"organizationId": organizationId})
 	defer finish()
+
 	if platformId != "" {
 		contracts, err = c.repos.Contract.ListByPlatform(ctx, platformId, 0, 0)
 		if err != nil {

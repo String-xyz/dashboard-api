@@ -41,6 +41,7 @@ func NewInvite(repos repository.Repositories, redis database.RedisStore) Invite 
 func (i invite) Send(ctx context.Context, request model.RequestInviteSend, callerId *string, organizationId string) (repository.MemberInviteInfo, error) {
 	_, finish := Span(ctx, "service.invite.Send", SpanTag{"organizationId": organizationId})
 	defer finish()
+
 	// Ensure there are no duplicate emails
 	preexisting, err := i.repos.OrganizationMember.GetByEmail(ctx, request.Email)
 	if err != nil && !serror.Is(err, serror.NOT_FOUND) {
@@ -222,6 +223,7 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 func (i invite) Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
 	_, finish := Span(ctx, "service.invite.Update")
 	defer finish()
+
 	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
