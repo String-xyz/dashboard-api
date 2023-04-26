@@ -2,10 +2,20 @@ package model
 
 import "github.com/lib/pq"
 
+type RequestOrganizationCreate struct {
+	OrganizationName string `json:"organizationName" validate:"required"`
+	Email            string `json:"email" validate:"required,email"`
+	Name             string `json:"name" validate:"required"`
+}
+
+type RequestOrganizationUpdate struct {
+	Name        *string `json:"organizationName" db:"name"`
+	Description *string `json:"description" db:"description"`
+}
+
 type RequestPlatformCreate struct {
-	PlatformName string `json:"platformName" validate:"required"`
-	Email        string `json:"email" validate:"required,email"`
-	Name         string `json:"name" validate:"required"`
+	PlatformName        string `json:"platformName" validate:"required"`
+	PlatformDescription string `json:"platformDescription"`
 }
 
 type RequestPlatformUpdate struct {
@@ -58,8 +68,12 @@ type RequestTransferOwnership struct {
 	Password string `json:"password" validate:"required,min=8,max=100"`
 }
 
+type RequestAPIKeyCreate struct {
+	PlatformId string `json:"platformId" validate:"required,uuid"`
+}
+
 type RequestApikeyUpdate struct {
-	Description string `json:"description"`
+	Description string `json:"description" validate:"omitempty,max=144"`
 }
 
 type RequestPasswordResetEmail struct {
@@ -72,15 +86,16 @@ type RequestPasswordReset struct {
 }
 
 type RequestContractCreate struct {
-	Name      string         `json:"name" db:"name"`
-	Address   string         `json:"address" db:"address"`
-	Functions pq.StringArray `json:"functions" db:"functions"`
-	NetworkID string         `json:"networkId" db:"network_id"`
+	Name       string         `json:"name" db:"name"`
+	Address    string         `json:"address" db:"address"`
+	Functions  pq.StringArray `json:"functions" db:"functions"`
+	NetworkId  string         `json:"networkId" db:"network_id"`
+	PlatformId string         `json:"platformId" db:"platform_id"`
 }
 
 type RequestContractUpdate struct {
 	Name      *string         `json:"name" db:"name"`
 	Address   *string         `json:"address" db:"address"`
 	Functions *pq.StringArray `json:"functions" db:"functions"`
-	NetworkID *string         `json:"networkId" db:"network_id"`
+	NetworkId *string         `json:"networkId" db:"network_id"`
 }

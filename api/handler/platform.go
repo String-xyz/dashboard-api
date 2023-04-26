@@ -2,11 +2,9 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/String-xyz/go-lib/common"
 	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -15,6 +13,7 @@ import (
 type Platform interface {
 	Create(e echo.Context) error
 	Get(e echo.Context) error
+	GetAll(c echo.Context) error
 	Update(e echo.Context) error
 	RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc)
 }
@@ -36,37 +35,59 @@ func (p platform) Create(c echo.Context) error {
 		return httperror.BadRequestError(c)
 	}
 
-	body.Email = strings.ToLower(body.Email)
-
 	if err := c.Validate(body); err != nil {
 		return httperror.InvalidPayloadError(c, err)
 	}
 
-	m, err := p.service.Create(c.Request().Context(), body)
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid organizationId")
+	}
+
+	m, err := p.service.Create(c.Request().Context(), body, organizationId)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
-
-		if serror.Is(err, serror.ALREADY_IN_USE) {
-			return httperror.ConflictError(c, "email already in use")
-		}
-
 		return httperror.InternalError(c)
 	}
 	return c.JSON(http.StatusCreated, m)
 }
 
 func (p platform) Get(c echo.Context) error {
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
 	}
 
-	m, err := p.service.Get(c.Request().Context(), platformId)
+	platformId := c.Param("id")
+	if platformId == "" {
+		return httperror.BadRequestError(c)
+	}
+
+	m, err := p.service.Get(c.Request().Context(), platformId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "platform: get")
 	}
 
 	return c.JSON(http.StatusAccepted, m)
+}
+
+func (p platform) GetAll(c echo.Context) error {
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid memberId")
+	}
+
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.InternalError(c, "missing or invalid organizationId")
+	}
+
+	m, err := p.service.GetAll(c.Request().Context(), callerId, organizationId)
+	if err != nil {
+		return DefaultErrorHandler(c, err, "apikey: get all")
+	}
+
+	return c.JSON(http.StatusOK, m)
 }
 
 func (p platform) Update(c echo.Context) error {
@@ -75,9 +96,14 @@ func (p platform) Update(c echo.Context) error {
 		return httperror.InternalError(c, "missing or invalid memberId")
 	}
 
-	platformId, ok := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid platformId")
+		return httperror.InternalError(c, "missing or invalid organizationId")
+	}
+
+	platformId := c.Param("id")
+	if platformId == "" {
+		return httperror.BadRequestError(c)
 	}
 
 	body := model.RequestPlatformUpdate{}
@@ -97,7 +123,7 @@ func (p platform) Update(c echo.Context) error {
 		return httperror.InvalidPayloadError(c, err)
 	}
 
-	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId)
+	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "platform: update")
 	}
@@ -109,7 +135,8 @@ func (p platform) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 		panic("no group attached to the platform handler")
 	}
 	p.Group = g
-	g.POST("", p.Create)
-	g.GET("", p.Get, ms...)
-	g.PATCH("", p.Update, ms...)
+	g.POST("", p.Create, ms...)
+	g.GET("", p.GetAll, ms...)
+	g.GET("/:id", p.Get, ms...)
+	g.PATCH("/:id", p.Update, ms...)
 }

@@ -20,8 +20,11 @@ func NewNetwork(repos repository.Repositories) Network {
 	return &network{repos}
 }
 
-func (a network) GetAll(ctx context.Context) ([]model.NetworkData, error) {
-	networks, err := a.repos.Network.List(ctx, 0, 0)
+func (n network) GetAll(ctx context.Context) ([]model.NetworkData, error) {
+	_, finish := Span(ctx, "service.network.GetAll")
+	defer finish()
+
+	networks, err := n.repos.Network.List(ctx, 0, 0)
 	if err != nil {
 		return nil, common.StringError(err)
 	}

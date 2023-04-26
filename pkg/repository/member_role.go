@@ -8,7 +8,7 @@ import (
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/go-lib/database"
-	strrepo "github.com/String-xyz/go-lib/repository"
+	librepository "github.com/String-xyz/go-lib/repository"
 	serror "github.com/String-xyz/go-lib/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
@@ -20,49 +20,47 @@ type MemberRoleUpdates struct {
 
 type MemberRole interface {
 	database.Transactable
-	Create(ctx context.Context, model model.MemberRole) (model.MemberRole, error)
-	GetById(ctx context.Context, ID string) (model.MemberRole, error)
-	List(ctx context.Context, limit int, offset int) ([]model.MemberRole, error)
-	Update(ctx context.Context, ID string, updates any) error
-	GetByName(ctx context.Context, m model.MemberRole) (model.MemberRole, error)
+	Create(ctx context.Context, request model.MemberRole) (role model.MemberRole, err error)
+	GetById(ctx context.Context, id string) (role model.MemberRole, err error)
+	List(ctx context.Context, limit int, offset int) (roles []model.MemberRole, err error)
+	Update(ctx context.Context, id string, updates any) error
+	GetByName(ctx context.Context, name string) (role model.MemberRole, err error)
 }
 
 type memberRole[T any] struct {
-	strrepo.Base[T]
+	librepository.Base[T]
 }
 
 func NewMemberRole(db database.Queryable) MemberRole {
-	return &memberRole[model.MemberRole]{strrepo.Base[model.MemberRole]{Store: db, Table: "member_role"}}
+	return &memberRole[model.MemberRole]{librepository.Base[model.MemberRole]{Store: db, Table: "member_role"}}
 }
 
-func (p memberRole[T]) Create(ctx context.Context, m model.MemberRole) (model.MemberRole, error) {
-	newModel := model.MemberRole{}
-	rows, err := p.Store.NamedQuery(`
+func (r memberRole[T]) Create(ctx context.Context, request model.MemberRole) (role model.MemberRole, err error) {
+	rows, err := r.Store.NamedQuery(`
 		INSERT INTO member_role (id, name) 
-		VALUES(:id, :name) RETURNING *`, m)
+		VALUES(:id, :name) RETURNING *`, request)
 
 	if err != nil {
-		return newModel, common.StringError(err)
+		return role, common.StringError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.StructScan(&newModel)
+		err := rows.StructScan(&role)
 		if err != nil {
-			return newModel, common.StringError(err)
+			return role, common.StringError(err)
 		}
 	}
 
-	return newModel, nil
+	return role, nil
 }
 
-func (p memberRole[T]) GetByName(ctx context.Context, m model.MemberRole) (model.MemberRole, error) {
-	result := model.MemberRole{}
-	err := p.Store.Get(&result, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1", p.Table), m.Name)
+func (r memberRole[T]) GetByName(ctx context.Context, name string) (role model.MemberRole, err error) {
+	err = r.Store.Get(&role, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1", r.Table), name)
 	if err != nil && err == sql.ErrNoRows {
-		return result, common.StringError(serror.NOT_FOUND)
+		return role, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
-		return result, common.StringError(err)
+		return role, common.StringError(err)
 	}
-	return result, nil
+	return role, nil
 }

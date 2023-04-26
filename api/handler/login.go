@@ -75,14 +75,14 @@ func (l login) RefreshToken(c echo.Context) error {
 		return httperror.Unauthorized(c, "Invalid or expired token")
 	}
 
-	resp, err := l.auth.RefreshToken(cookie.Value)
+	response, err := l.auth.RefreshToken(cookie.Value)
 	if err != nil {
 		common.LogStringError(c, err, "login: refresh token")
 		return httperror.Unauthorized(c, "Invalid or expired token")
 	}
 
 	// If member is denied, do not refresh token
-	denied, err := l.auth.IsDenied(resp.Member.ID)
+	denied, err := l.auth.IsDenied(response.Member.Id)
 	if err != nil {
 		common.LogStringError(c, err, "login: fail denylist check")
 		return httperror.InternalError(c)
@@ -93,13 +93,13 @@ func (l login) RefreshToken(c echo.Context) error {
 	}
 
 	// set auth in cookies
-	err = SetAuthCookies(c, resp.JWT)
+	err = SetAuthCookies(c, response.JWT)
 	if err != nil {
 		common.LogStringError(c, err, "RefreshToken: unable to set auth cookies")
 		return httperror.InternalError(c)
 	}
 
-	return c.JSON(http.StatusOK, resp)
+	return c.JSON(http.StatusOK, response)
 }
 
 // logout

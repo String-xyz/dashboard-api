@@ -22,7 +22,7 @@ func heartbeat(c echo.Context) error {
 }
 
 func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
-	e.Use(middleware.Tracer())
+	e.Use(middleware.Tracer("platform-api"))
 	e.Use(middleware.CORS())
 	e.Use(middleware.RequestId())
 	e.Use(middleware.Recover())
@@ -42,6 +42,7 @@ func Start(config APIConfig) {
 	redis := newRedis()
 	service := newServices(config, repos, redis)
 
+	organizationRoute(service, e)
 	platformRoute(service, e)
 	memberRoute(service, e)
 	loginRoute(service, e)
