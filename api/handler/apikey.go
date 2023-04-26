@@ -147,12 +147,12 @@ func (a apikey) Delete(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := a.service.Delete(c.Request().Context(), keyId, callerId, organizationId)
+	err := a.service.Delete(c.Request().Context(), keyId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "apikey: deactivate")
 	}
 
-	return c.JSON(http.StatusOK, m)
+	return c.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
 
 func (a apikey) Update(c echo.Context) error {

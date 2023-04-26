@@ -71,7 +71,7 @@ func (m organizationMember[T]) GetByEmail(ctx context.Context, email string) (me
 		ON organization_member.id = member_to_role.member_id
 		LEFT JOIN member_role 
 		ON member_role.id = member_to_role.role_id 
-		WHERE organization_member.email = $1 AND deleted_at IS NULL`, email)
+		WHERE organization_member.email = $1 AND organization_member.deleted_at IS NULL`, email)
 	if err != nil && err == sql.ErrNoRows {
 		return member, serror.NOT_FOUND
 	} else if err != nil {
@@ -88,7 +88,7 @@ func (m organizationMember[T]) GetById(ctx context.Context, id string) (member O
 		ON organization_member.id = member_to_role.member_id
 		LEFT JOIN member_role 
 		ON member_role.id = member_to_role.role_id 
-		WHERE organization_member.id = $1 AND deleted_at IS NULL`, id)
+		WHERE organization_member.id = $1 AND organization_member.deleted_at IS NULL`, id)
 	if err != nil && err == sql.ErrNoRows {
 		return member, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
@@ -113,7 +113,7 @@ func (m organizationMember[T]) List(ctx context.Context, organizationId string, 
 		ON organization_member.id = member_to_organization.member_id 
 		LEFT JOIN organization
 		ON organization.id = member_to_organization.organization_id
-		WHERE organization.id = $1 AND deleted_at IS NULL
+		WHERE organization.id = $1 AND organization_member.deleted_at IS NULL
 		LIMIT $2
 		OFFSET $3;`, organizationId, limit, offset)
 

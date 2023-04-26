@@ -28,9 +28,9 @@ func (n network[T]) List(ctx context.Context, limit int, offset int) (networks [
 	if limit == 0 {
 		limit = 20
 	}
-	results := []model.NetworkData{}
+	results := []model.NetworkFull{}
 
-	err = n.Store.SelectContext(ctx, &results, `SELECT * FROM network LIMIT $1 OFFSET $2 AND deleted_at IS NULL;`, limit, offset)
+	err = n.Store.SelectContext(ctx, &results, `SELECT * FROM network WHERE deleted_at IS NULL LIMIT $1 OFFSET $2;`, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return nil, common.StringError(serror.NOT_FOUND)
