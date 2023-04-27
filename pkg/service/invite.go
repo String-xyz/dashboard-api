@@ -20,7 +20,7 @@ type Invite interface {
 	List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error)
 	Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error)
-	Revoke(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
+	Revoke(ctx context.Context, inviteId string, callerId string) error
 	Get(ctx context.Context, id string) (repository.MemberInviteInfo, error)
 }
 
@@ -250,25 +250,18 @@ func (i invite) Update(ctx context.Context, request model.RequestInviteUpdate, i
 	return result, nil
 }
 
-func (i invite) Revoke(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+func (i invite) Revoke(ctx context.Context, inviteId string, callerId string) error {
 	_, finish := Span(ctx, "service.invite.Deactive")
 	defer finish()
 
-	result := repository.MemberInviteInfo{}
 	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
-		return result, common.StringError(err)
+		return common.StringError(err)
 	}
 
 	err = i.repos.MemberInvite.SoftDelete(ctx, inviteId)
-	if err != nil {
-		return result, common.StringError(err)
-	}
-	result, err = i.repos.MemberInvite.GetById(ctx, inviteId)
-	if err != nil {
-		return result, common.StringError(err)
-	}
-	return result, nil
+
+	return err
 }
 
 func (i invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo, error) {

@@ -21,7 +21,7 @@ type Invite interface {
 	List(e echo.Context) error
 	Resend(e echo.Context) error
 	Update(e echo.Context) error
-	Deactivate(e echo.Context) error
+	Revoke(e echo.Context) error
 	RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc)
 }
 
@@ -190,7 +190,7 @@ func (i invite) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
-func (i invite) Deactivate(c echo.Context) error {
+func (i invite) Revoke(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
 		return httperror.InternalError(c, "missing or invalid memberId")
@@ -201,7 +201,7 @@ func (i invite) Deactivate(c echo.Context) error {
 		return httperror.BadRequestError(c, "invalid id")
 	}
 
-	m, err := i.service.Revoke(c.Request().Context(), id, callerId)
+	err := i.service.Revoke(c.Request().Context(), id, callerId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: update")
 
@@ -215,7 +215,7 @@ func (i invite) Deactivate(c echo.Context) error {
 
 		return httperror.InternalError(c)
 	}
-	return c.JSON(http.StatusOK, m)
+	return c.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
 
 func (i invite) Get(c echo.Context) error {
@@ -242,7 +242,7 @@ func (i invite) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", i.List, ms...)
 	g.POST("/:id/resend", i.Resend, ms...)
 	g.PATCH("/:id", i.Update, ms...)
-	g.DELETE("/:id", i.Deactivate, ms...)
+	g.DELETE("/:id", i.Revoke, ms...)
 	g.GET("/:id", i.Get) // No auth required. This is used for the invite link
 
 }
