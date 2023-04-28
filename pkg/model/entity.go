@@ -21,6 +21,8 @@ type Platform struct {
 	CreatedAt      time.Time      `json:"createdAt,omitempty" db:"created_at"`
 	UpdatedAt      time.Time      `json:"updatedAt,omitempty" db:"updated_at"`
 	DeletedAt      *time.Time     `json:"deletedAt,omitempty" db:"deleted_at"`
+	DeactivatedAt  *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	ActivatedAt    *time.Time     `json:"activatedAt,omitempty" db:"activated_at"`
 	Name           string         `json:"name" db:"name"`
 	Description    string         `json:"description" db:"description"`
 	Domains        pq.StringArray `json:"domains" db:"domains"`
