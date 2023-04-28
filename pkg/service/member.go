@@ -364,7 +364,7 @@ func (m member) Deactivate(ctx context.Context, callerId string, memberId string
 	}
 
 	// Once a member has been deactivated,
-	result, err = m.repos.OrganizationMember.GetByIdIncludingDeactivated(ctx, memberId)
+	result, err = m.repos.OrganizationMember.GetById(ctx, memberId)
 	if err != nil {
 		return result, common.StringError(err)
 	}

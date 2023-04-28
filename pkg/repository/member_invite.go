@@ -17,7 +17,7 @@ func GetInviteStatus(invite MemberInviteInfo) string {
 		return "accepted"
 	} else if invite.ExpiredAt != nil {
 		return "expired"
-	} else if invite.DeactivatedAt != nil {
+	} else if invite.DeletedAt != nil {
 		return "revoked"
 	} else if invite.Id != "" {
 		return "pending"
@@ -50,6 +50,7 @@ type MemberInvite interface {
 	Update(ctx context.Context, id string, updates any) error
 	GetByOrganization(ctx context.Context, organizationId string) (invites []MemberInviteInfo, err error)
 	GetByEmail(ctx context.Context, email string) (invite MemberInviteInfo, err error)
+	SoftDelete(ctx context.Context, id string) error
 }
 
 type memberInvite[T any] struct {
@@ -88,7 +89,7 @@ func (i memberInvite[T]) Create(ctx context.Context, request model.MemberInvite)
 }
 
 func (i memberInvite[T]) GetByOrganization(ctx context.Context, organizationId string) (invites []MemberInviteInfo, err error) {
-	err = i.Store.Select(&invites, getBaseQuery()+`WHERE member_invite.organization_id = $1`, organizationId)
+	err = i.Store.Select(&invites, getBaseQuery()+`WHERE member_invite.organization_id = $1 AND member_invite.deleted_at IS NULL`, organizationId)
 
 	if err != nil && err == sql.ErrNoRows {
 		return invites, common.StringError(serror.NOT_FOUND)
@@ -106,7 +107,7 @@ func (i memberInvite[T]) GetByOrganization(ctx context.Context, organizationId s
 }
 
 func (i memberInvite[T]) GetById(ctx context.Context, id string) (invite MemberInviteInfo, err error) {
-	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.id = $1`, id)
+	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.id = $1 AND member_invite.deleted_at IS NULL`, id)
 
 	if err == sql.ErrNoRows {
 		return invite, common.StringError(serror.NOT_FOUND)
@@ -122,7 +123,7 @@ func (i memberInvite[T]) GetById(ctx context.Context, id string) (invite MemberI
 }
 
 func (i memberInvite[T]) GetByEmail(ctx context.Context, email string) (invite MemberInviteInfo, err error) {
-	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.email = $1`, email)
+	err = i.Store.GetContext(ctx, &invite, getBaseQuery()+`WHERE member_invite.email = $1 AND member_invite.deleted_at IS NULL`, email)
 
 	if err != nil && err == sql.ErrNoRows {
 		return invite, common.StringError(serror.NOT_FOUND)

@@ -56,7 +56,7 @@ func (r memberRole[T]) Create(ctx context.Context, request model.MemberRole) (ro
 }
 
 func (r memberRole[T]) GetByName(ctx context.Context, name string) (role model.MemberRole, err error) {
-	err = r.Store.Get(&role, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1", r.Table), name)
+	err = r.Store.Get(&role, fmt.Sprintf("SELECT * FROM %s WHERE name = $1 LIMIT 1 AND member_invite.deleted_at IS NULL", r.Table), name)
 	if err != nil && err == sql.ErrNoRows {
 		return role, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {

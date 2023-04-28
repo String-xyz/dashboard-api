@@ -31,6 +31,7 @@ type Apikey interface {
 	ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error)
 	ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (keys []model.Apikey, err error)
 	Update(ctx context.Context, id string, updates any) error
+	SoftDelete(ctx context.Context, ID string) error
 }
 
 type apikey[T any] struct {
@@ -68,7 +69,7 @@ func (a apikey[T]) Create(ctx context.Context, request model.Apikey) (key model.
 }
 
 func (a apikey[T]) GetById(ctx context.Context, id string) (key model.Apikey, err error) {
-	err = a.Store.GetContext(ctx, &key, fmt.Sprintf("SELECT * FROM %s WHERE id = $1", a.Table), id)
+	err = a.Store.GetContext(ctx, &key, fmt.Sprintf("SELECT * FROM %s WHERE id = $1 AND deleted_at IS NULL", a.Table), id)
 	if err == sql.ErrNoRows {
 		return key, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
@@ -82,7 +83,7 @@ func (a apikey[T]) ListByPlatform(ctx context.Context, platformId string, limit 
 		limit = 20
 	}
 
-	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.platform_id = $1 LIMIT $2 OFFSET $3;`, platformId, limit, offset)
+	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.platform_id = $1 AND apikey.deleted_at IS NULL  LIMIT $2 OFFSET $3;`, platformId, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return keys, common.StringError(serror.NOT_FOUND)
@@ -98,7 +99,7 @@ func (a apikey[T]) ListByOrganization(ctx context.Context, organizationId string
 		limit = 20
 	}
 
-	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.organization_id = $1 LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
+	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.organization_id = $1 AND apikey.deleted_at IS NULL LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
 		return keys, common.StringError(serror.NOT_FOUND)

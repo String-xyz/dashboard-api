@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/String-xyz/go-lib/common"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
@@ -14,7 +13,7 @@ type Apikey interface {
 	Create(ctx context.Context, keyType string, callerId string, platformId string, organizationId string) (model.Apikey, error)
 	GetAll(ctx context.Context, callerId string, platformId string, organizationId string, limit int, offset int) ([]model.Apikey, error)
 	Get(ctx context.Context, id string, callerId string, organizationId string) (model.Apikey, error)
-	Deactivate(ctx context.Context, keyId string, callerId string, organizationId string) (model.Apikey, error)
+	Delete(ctx context.Context, keyId string, callerId string, organizationId string) error
 	Update(ctx context.Context, keyId string, request model.RequestApikeyUpdate, callerId string, organizationId string) (model.Apikey, error)
 }
 
@@ -104,41 +103,26 @@ func (a apikey) Get(ctx context.Context, id string, callerId string, organizatio
 	return key, nil
 }
 
-func (a apikey) Deactivate(ctx context.Context, keyId string, callerId string, organizationId string) (key model.Apikey, err error) {
+func (a apikey) Delete(ctx context.Context, keyId string, callerId string, organizationId string) error {
 	_, finish := Span(ctx, "service.apikey.Deactivate", SpanTag{"organizationId": organizationId})
 	defer finish()
 
-	err = RequireAuthority(a.repos, callerId, "Admin", "Owner")
+	err := RequireAuthority(a.repos, callerId, "Admin", "Owner")
 	if err != nil {
-		return key, common.StringError(err)
+		return common.StringError(err)
 	}
 
-	key, err = a.repos.Apikey.GetById(ctx, keyId)
+	key, err := a.repos.Apikey.GetById(ctx, keyId)
 	if err != nil {
-		return model.Apikey{}, common.StringError(err)
+		return common.StringError(err)
 	}
 	if key.OrganizationId != organizationId {
-		return model.Apikey{}, common.StringError(fmt.Errorf("key not maintained by accessing organization %s", organizationId))
+		return common.StringError(fmt.Errorf("key not maintained by accessing organization %s", organizationId))
 	}
 
-	type DeactivateUpdate struct {
-		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-	}
+	err = a.repos.Apikey.SoftDelete(ctx, keyId)
 
-	now := time.Now()
-	update := DeactivateUpdate{DeactivatedAt: &now}
-
-	err = a.repos.Apikey.Update(ctx, keyId, update)
-	if err != nil {
-		return key, common.StringError(err)
-	}
-
-	key, err = a.repos.Apikey.GetById(ctx, keyId)
-	if err != nil {
-		return key, common.StringError(err)
-	}
-
-	return key, nil
+	return err
 }
 
 func (a apikey) Update(ctx context.Context, keyId string, request model.RequestApikeyUpdate, callerId string, organizationId string) (key model.Apikey, err error) {

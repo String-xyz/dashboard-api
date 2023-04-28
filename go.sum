@@ -19,8 +19,8 @@ github.com/DataDog/sketches-go v1.2.1/go.mod h1:1xYmPLY1So10AwxV6MJV0J53XVH+WL9A
 github.com/Microsoft/go-winio v0.5.0/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/Microsoft/go-winio v0.5.1 h1:aPJp2QD7OOrhO5tQXqQoGSJc+DjDtWTGLOmNyAm6FgY=
 github.com/Microsoft/go-winio v0.5.1/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
-github.com/String-xyz/go-lib v1.7.0 h1:dDJpeqLDK0BBP6Db+upPwySmcxcmvOlnxb+PXFBHzfM=
-github.com/String-xyz/go-lib v1.7.0/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
+github.com/String-xyz/go-lib v1.8.0 h1:AHE7D0hRWvWAiF/fxJvhjRrw44Ca7DVcTA1txLpd6s8=
+github.com/String-xyz/go-lib v1.8.0/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
