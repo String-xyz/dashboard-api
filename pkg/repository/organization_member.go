@@ -14,7 +14,6 @@ import (
 
 type PlaformMemberUpdates struct {
 	DeactivatedAt *time.Time `json:"deactivatedAt" db:"deactivated_at"`
-	ActivatedAt   *time.Time `json:"activatedAt" db:"activated_at"`
 	Email         *string    `json:"email" db:"email"`
 	Password      *string    `json:"password" db:"password"`
 }

@@ -15,7 +15,6 @@ import (
 
 type PlaformUpdates struct {
 	DeactivatedAt *time.Time      `json:"deactivatedAt" db:"deactivated_at"`
-	ActivatedAt   *time.Time      `json:"activatedAt" db:"activated_at"`
 	Name          *string         `json:"name" db:"name"`
 	Description   *string         `json:"description" db:"description"`
 	Domains       *pq.StringArray `json:"domains" db:"domains"`
