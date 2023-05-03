@@ -34,6 +34,17 @@ func NewInvite(service service.Invite) Invite {
 	return &invite{service: service}
 }
 
+// @Summary Send an invite
+// @Tags Invite
+// @Accept  json
+// @Produce  json
+// @Param memberId header string true "Member ID"
+// @Param organizationId header string true "Organization ID"
+// @Param RequestInviteSend body model.RequestInviteSend true "Invite Send Request"
+// @Success 201 {object} repository.MemberInviteInfo
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /invites [post]
 func (i invite) Send(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -66,6 +77,16 @@ func (i invite) Send(c echo.Context) error {
 	return c.JSON(http.StatusCreated, m)
 }
 
+// @Summary Accept an invite
+// @Tags Invite
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Invite ID"
+// @Param RequestInviteAcceptance body model.RequestInviteAcceptance true "Invite Acceptance Request"
+// @Success 200 {object} model.OrganizationMember
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /invites/{id} [post]
 func (i invite) Accept(c echo.Context) error {
 	id := c.Param("id")
 
@@ -109,6 +130,14 @@ func (i invite) Accept(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+// @Summary List invites
+// @Tags Invite
+// @Produce  json
+// @Param organizationId header string true "Organization ID"
+// @Param status query string false "Invite status"
+// @Success 200 {array} repository.MemberInviteInfo
+// @Failure 500 {object} httperror.HTTPError
+// @Router /invites [get]
 func (i invite) List(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
@@ -126,6 +155,15 @@ func (i invite) List(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+// @Summary Resend an invite
+// @Tags Invite
+// @Produce  json
+// @Param memberId header string true "Member ID"
+// @Param id path string true "Invite ID"
+// @Success 200 {object} repository.MemberInviteInfo
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /invites/{id}/resend [post]
 func (i invite) Resend(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -150,6 +188,17 @@ func (i invite) Resend(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+// @Summary Update an invite
+// @Tags Invite
+// @Accept  json
+// @Produce  json
+// @Param memberId header string true "Member ID"
+// @Param id path string true "Invite ID"
+// @Param RequestInviteUpdate body model.RequestInviteUpdate true "Invite Update Request"
+// @Success 200 {object} repository.MemberInviteInfo
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /invites/{id} [patch]
 func (i invite) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -190,6 +239,15 @@ func (i invite) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+// @Summary Revoke an invite
+// @Tags Invite
+// @Produce  json
+// @Param memberId header string true "Member ID"
+// @Param id path string true "Invite ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /invites/{id} [delete]
 func (i invite) Revoke(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -218,6 +276,14 @@ func (i invite) Revoke(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
 
+// @Summary Get an invite
+// @Tags Invite
+// @Produce  json
+// @Param id path string true "Invite ID"
+// @Success 200 {object} repository.MemberInviteInfo
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /invites/{id} [get]
 func (i invite) Get(c echo.Context) error {
 	id := c.Param("id")
 	if !validator.IsUUID(id) {

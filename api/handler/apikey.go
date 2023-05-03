@@ -31,6 +31,15 @@ func NewApikey(service service.Apikey) Apikey {
 	return &apikey{service: service}
 }
 
+// @Summary Create API key
+// @Description Create an API key
+// @Tags Apikey
+// @Accept json
+// @Produce json
+// @Param type query string false "Type of API key (public or secret)"
+// @Param platformId query string false "Platform ID"
+// @Success 201 {object} model.Apikey
+// @Router /apikeys [post]
 func (a apikey) Create(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -66,6 +75,16 @@ func (a apikey) Create(c echo.Context) error {
 	return c.JSON(http.StatusCreated, m)
 }
 
+// @Summary Get all API keys
+// @Description Get all API keys
+// @Tags Apikey
+// @Accept json
+// @Produce json
+// @Param platformId query string false "Platform ID"
+// @Param limit query int false "Limit the number of returned results"
+// @Param offset query int false "Offset the starting point of returned results"
+// @Success 200 {array} model.Apikey
+// @Router /apikeys [get]
 func (a apikey) GetAll(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -106,6 +125,14 @@ func (a apikey) GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+// @Summary Get API key
+// @Description Get API key by ID
+// @Tags Apikey
+// @Accept json
+// @Produce json
+// @Param id path string true "API Key ID"
+// @Success 200 {object} model.Apikey
+// @Router /apikeys/{id} [get]
 func (a apikey) Get(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -130,6 +157,14 @@ func (a apikey) Get(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+// @Summary Delete API key
+// @Description Delete API key by ID
+// @Tags Apikey
+// @Accept json
+// @Produce json
+// @Param id path string true "API Key ID"
+// @Success 204 "No Content"
+// @Router /apikeys/{id} [delete]
 func (a apikey) Delete(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -155,6 +190,15 @@ func (a apikey) Delete(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
 
+// @Summary Update API key
+// @Description Update API key by ID
+// @Tags Apikey
+// @Accept json
+// @Produce json
+// @Param id path string true "API Key ID"
+// @Param description body string false "API key description"
+// @Success 200 {object} model.Apikey
+// @Router /apikeys/{id} [put]
 func (a apikey) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {

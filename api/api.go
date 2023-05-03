@@ -30,6 +30,16 @@ func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
 	e.Use(middleware.LogRequest())
 }
 
+// @title Platform Management API
+// @version 1.0
+// @description Platform Management API for managing Organizations, Platforms, API keys, etc.
+
+// @contact.name Platform Management API Support
+// @contact.url http://string.xyz
+// @contact.email support@stringxyz.com
+
+// @host https://platform-api.string-api.xyz
+// @BasePath /
 func Start(config APIConfig) {
 	e := echo.New()
 	e.Validator = validator.New()

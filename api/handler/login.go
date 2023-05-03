@@ -29,6 +29,16 @@ func NewLogin(service service.Services) Login {
 	return &login{service: service.Login, auth: service.Auth}
 }
 
+// @Summary Login
+// @Tags Login
+// @Accept  json
+// @Produce  json
+// @Param body body model.RequestLogin true "Login Request"
+// @Success 200 {object} repository.OrganizationMemberWithRole
+// @Failure 400 {object} httperror.HTTPError
+// @Failure 401 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /login [post]
 func (l login) Login(c echo.Context) error {
 	body := model.RequestLogin{}
 	err := c.Bind(&body)
@@ -68,6 +78,13 @@ func (l login) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, member)
 }
 
+// @Summary Refresh token
+// @Tags Login
+// @Produce  json
+// @Success 200 {object} JWTResponse
+// @Failure 401 {object} httperror.HTTPError
+// @Failure 500 {object} httperror.HTTPError
+// @Router /login/refresh [post]
 func (l login) RefreshToken(c echo.Context) error {
 	cookie, err := c.Cookie("StringAdminRefreshToken")
 	if err != nil {
@@ -102,7 +119,11 @@ func (l login) RefreshToken(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-// logout
+// @Summary Logout
+// @Tags Login
+// @Success 204
+// @Failure 500 {object} httperror.HTTPError
+// @Router /login/logout [post]
 func (l login) Logout(c echo.Context) error {
 	// get refresh token from cookie
 	cookie, err := c.Cookie("StringAdminRefreshToken")
