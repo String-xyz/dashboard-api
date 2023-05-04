@@ -22,6 +22,11 @@ const docTemplate = `{
     "paths": {
         "/apikeys": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "description": "Get all API keys",
                 "consumes": [
                     "application/json"
@@ -66,6 +71,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "description": "Create an API key",
                 "consumes": [
                     "application/json"
@@ -103,6 +113,11 @@ const docTemplate = `{
         },
         "/apikeys/{id}": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "description": "Get API key by ID",
                 "consumes": [
                     "application/json"
@@ -133,6 +148,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "description": "Update API key by ID",
                 "consumes": [
                     "application/json"
@@ -171,6 +191,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "description": "Delete API key by ID",
                 "consumes": [
                     "application/json"
@@ -200,6 +225,11 @@ const docTemplate = `{
         },
         "/contracts": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -244,6 +274,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -309,6 +344,11 @@ const docTemplate = `{
         },
         "/contracts/{id}": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -357,6 +397,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -423,6 +468,11 @@ const docTemplate = `{
         },
         "/contracts/{id}/deactivate": {
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -480,6 +530,11 @@ const docTemplate = `{
         },
         "/contracts/{id}/reactivate": {
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -537,6 +592,11 @@ const docTemplate = `{
         },
         "/invites": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -578,6 +638,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -637,6 +702,11 @@ const docTemplate = `{
         },
         "/invites/{id}": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -675,6 +745,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -725,6 +800,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -773,6 +853,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -832,6 +917,11 @@ const docTemplate = `{
         },
         "/invites/{id}/resend": {
             "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -930,6 +1020,11 @@ const docTemplate = `{
         },
         "/login/logout": {
             "post": {
+                "security": [
+                    {
+                        "RefreshTokenAuth": []
+                    }
+                ],
                 "tags": [
                     "Login"
                 ],
@@ -949,6 +1044,11 @@ const docTemplate = `{
         },
         "/login/refresh": {
             "post": {
+                "security": [
+                    {
+                        "RefreshTokenAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -980,6 +1080,11 @@ const docTemplate = `{
         },
         "/members": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1006,6 +1111,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1051,6 +1161,11 @@ const docTemplate = `{
         },
         "/members/password-reset": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1097,6 +1212,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1145,6 +1265,11 @@ const docTemplate = `{
         },
         "/members/{id}": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1183,6 +1308,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1235,6 +1365,11 @@ const docTemplate = `{
         },
         "/members/{id}/deactivate": {
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1275,6 +1410,11 @@ const docTemplate = `{
         },
         "/members/{id}/reactivate": {
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1315,6 +1455,11 @@ const docTemplate = `{
         },
         "/members/{id}/transferOwner": {
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1367,6 +1512,11 @@ const docTemplate = `{
         },
         "/networks": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1467,6 +1617,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1512,6 +1667,11 @@ const docTemplate = `{
         },
         "/platforms": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1538,6 +1698,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1583,6 +1748,11 @@ const docTemplate = `{
         },
         "/platforms/{id}": {
             "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1621,6 +1791,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],

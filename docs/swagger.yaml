@@ -398,6 +398,8 @@ paths:
             items:
               $ref: '#/definitions/model.Apikey'
             type: array
+      security:
+      - JWTAuth: []
       summary: Get all API keys
       tags:
       - Apikey
@@ -421,6 +423,8 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/model.Apikey'
+      security:
+      - JWTAuth: []
       summary: Create API key
       tags:
       - Apikey
@@ -440,6 +444,8 @@ paths:
       responses:
         "204":
           description: No Content
+      security:
+      - JWTAuth: []
       summary: Delete API key
       tags:
       - Apikey
@@ -460,6 +466,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Apikey'
+      security:
+      - JWTAuth: []
       summary: Get API key
       tags:
       - Apikey
@@ -485,6 +493,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Apikey'
+      security:
+      - JWTAuth: []
       summary: Update API key
       tags:
       - Apikey
@@ -515,6 +525,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get all contracts
       tags:
       - Contract
@@ -557,6 +569,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Create a new contract
       tags:
       - Contract
@@ -590,6 +604,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get a specific contract
       tags:
       - Contract
@@ -633,6 +649,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Update a contract
       tags:
       - Contract
@@ -671,6 +689,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Deactivate a contract
       tags:
       - Contract
@@ -709,6 +729,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Reactivate a contract
       tags:
       - Contract
@@ -737,6 +759,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: List invites
       tags:
       - Invite
@@ -775,6 +799,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Send an invite
       tags:
       - Invite
@@ -808,6 +834,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Revoke an invite
       tags:
       - Invite
@@ -833,6 +861,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get an invite
       tags:
       - Invite
@@ -871,6 +901,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Update an invite
       tags:
       - Invite
@@ -904,6 +936,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Accept an invite
       tags:
       - Invite
@@ -935,6 +969,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Resend an invite
       tags:
       - Invite
@@ -980,6 +1016,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - RefreshTokenAuth: []
       summary: Logout
       tags:
       - Login
@@ -1000,6 +1038,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - RefreshTokenAuth: []
       summary: Refresh token
       tags:
       - Login
@@ -1018,6 +1058,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get all members
       tags:
       - Member
@@ -1046,6 +1088,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Update self
       tags:
       - Member
@@ -1072,6 +1116,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get a member by ID
       tags:
       - Member
@@ -1105,6 +1151,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Update member
       tags:
       - Member
@@ -1131,6 +1179,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Deactivate member
       tags:
       - Member
@@ -1157,6 +1207,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Reactivate member
       tags:
       - Member
@@ -1191,6 +1243,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Transfer ownership
       tags:
       - Member
@@ -1222,6 +1276,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Send password reset email
       tags:
       - Member
@@ -1252,6 +1308,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Reset password
       tags:
       - Member
@@ -1270,6 +1328,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get all networks
       tags:
       - Network
@@ -1314,6 +1374,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Update organization
       tags:
       - Organization
@@ -1364,6 +1426,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get all platforms
       tags:
       - Platform
@@ -1392,6 +1456,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Create platform
       tags:
       - Platform
@@ -1418,6 +1484,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Get platform
       tags:
       - Platform
@@ -1451,6 +1519,8 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - JWTAuth: []
       summary: Update platform
       tags:
       - Platform
