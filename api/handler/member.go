@@ -35,8 +35,6 @@ func NewMember(services service.Services) Member {
 // @Summary Get all members
 // @Tags Member
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Success 200 {array} repository.OrganizationMemberWithRole
 // @Failure 500 {object} httperror.HTTPError
 // @Router /members [get]
@@ -57,8 +55,6 @@ func (a member) GetAll(c echo.Context) error {
 // @Summary Get a member by ID
 // @Tags Member
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Member ID"
 // @Success 200 {object} repository.OrganizationMemberWithRole
 // @Failure 400 {object} httperror.HTTPError
@@ -93,8 +89,6 @@ func (a member) Get(c echo.Context) error {
 // @Tags Member
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Member ID"
 // @Param body body model.RequestMemberUpdateOther true "Update Member Request"
 // @Success 200 {object} repository.OrganizationMemberWithRole
@@ -132,8 +126,6 @@ func (a member) Update(c echo.Context) error {
 // @Tags Member
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param body body model.RequestMemberUpdateSelf true "Update Self Request"
 // @Success 200 {object} repository.OrganizationMemberWithRole
 // @Failure 400 {object} httperror.HTTPError
@@ -173,8 +165,6 @@ func (a member) UpdateSelf(c echo.Context) error {
 // @Tags Member
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Member ID"
 // @Param body body model.RequestTransferOwnership true "Transfer Ownership Request"
 // @Success 200 {object} repository.OrganizationMemberWithRole
@@ -211,8 +201,6 @@ func (a member) TransferOwnership(c echo.Context) error {
 // @Summary Deactivate member
 // @Tags Member
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Member ID"
 // @Success 200 {object} repository.OrganizationMemberWithRole
 // @Failure 400 {object} httperror.HTTPError
@@ -245,8 +233,6 @@ func (a member) Deactivate(c echo.Context) error {
 // @Summary Reactivate member
 // @Tags Member
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Member ID"
 // @Success 200 {object} repository.OrganizationMemberWithRole
 // @Failure 400 {object} httperror.HTTPError
@@ -275,8 +261,6 @@ func (a member) Reactivate(c echo.Context) error {
 // @Tags Member
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param body body model.RequestPasswordResetEmail true "Password Reset Email Request"
 // @Success 200 {object} map[string]string "Email sent message"
 // @Failure 400 {object} httperror.HTTPError
@@ -308,8 +292,6 @@ func (a member) SendPasswordResetEmail(c echo.Context) error {
 // @Tags Member
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param body body model.RequestPasswordReset true "Password Reset Request"
 // @Success 200 {object} map[string]string "Password reset message"
 // @Failure 400 {object} httperror.HTTPError

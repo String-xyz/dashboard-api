@@ -15,14 +15,6 @@
     "paths": {
         "/apikeys": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Get all API keys",
                 "consumes": [
                     "application/json"
@@ -67,14 +59,6 @@
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Create an API key",
                 "consumes": [
                     "application/json"
@@ -119,14 +103,6 @@
         },
         "/apikeys/{id}": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Get API key by ID",
                 "consumes": [
                     "application/json"
@@ -157,14 +133,6 @@
                 }
             },
             "put": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Update API key by ID",
                 "consumes": [
                     "application/json"
@@ -203,14 +171,6 @@
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Delete API key by ID",
                 "consumes": [
                     "application/json"
@@ -240,14 +200,6 @@
         },
         "/contracts": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -285,14 +237,6 @@
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -344,14 +288,6 @@
         },
         "/contracts/{id}": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -393,14 +329,6 @@
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -453,14 +381,6 @@
         },
         "/contracts/{id}/deactivate": {
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -504,14 +424,6 @@
         },
         "/contracts/{id}/reactivate": {
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -555,14 +467,6 @@
         },
         "/invites": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -604,14 +508,6 @@
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -671,14 +567,6 @@
         },
         "/invites/{id}": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -717,14 +605,6 @@
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -775,14 +655,6 @@
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -831,14 +703,6 @@
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -898,14 +762,6 @@
         },
         "/invites/{id}/resend": {
             "post": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1004,14 +860,6 @@
         },
         "/login/logout": {
             "post": {
-                "security": [
-                    {
-                        "RefreshTokenAuth": []
-                    },
-                    {
-                        "RefreshBearerAuth": []
-                    }
-                ],
                 "tags": [
                     "Login"
                 ],
@@ -1031,14 +879,6 @@
         },
         "/login/refresh": {
             "post": {
-                "security": [
-                    {
-                        "RefreshTokenAuth": []
-                    },
-                    {
-                        "RefreshBearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1070,14 +910,6 @@
         },
         "/members": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1104,14 +936,6 @@
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1157,14 +981,6 @@
         },
         "/members/password-reset": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1211,14 +1027,6 @@
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1267,14 +1075,6 @@
         },
         "/members/{id}": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1313,14 +1113,6 @@
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1373,14 +1165,6 @@
         },
         "/members/{id}/deactivate": {
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1421,14 +1205,6 @@
         },
         "/members/{id}/reactivate": {
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1469,14 +1245,6 @@
         },
         "/members/{id}/transferOwner": {
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1529,14 +1297,6 @@
         },
         "/networks": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1637,14 +1397,6 @@
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1690,14 +1442,6 @@
         },
         "/platforms": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1724,14 +1468,6 @@
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1777,14 +1513,6 @@
         },
         "/platforms/{id}": {
             "get": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1823,14 +1551,6 @@
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],

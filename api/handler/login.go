@@ -81,8 +81,6 @@ func (l login) Login(c echo.Context) error {
 // @Summary Refresh token
 // @Tags Login
 // @Produce  json
-// @Security RefreshTokenAuth
-// @Security RefreshBearerAuth
 // @Success 200 {object} service.MemberCreateResponse
 // @Failure 401 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError
@@ -123,8 +121,6 @@ func (l login) RefreshToken(c echo.Context) error {
 
 // @Summary Logout
 // @Tags Login
-// @Security RefreshTokenAuth
-// @Security RefreshBearerAuth
 // @Success 204
 // @Failure 500 {object} httperror.HTTPError
 // @Router /login/logout [post]

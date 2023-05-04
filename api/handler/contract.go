@@ -37,8 +37,6 @@ func NewContract(service service.Contract) Contract {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param RequestContractCreate body model.RequestContractCreate true "Contract Create Request"
 // @Success 201 {object} model.Contract
 // @Failure 400 {object} httperror.HTTPError
@@ -85,8 +83,6 @@ func (a contract) Create(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param platformId query string false "Platform ID"
 // @Success 200 {array} model.Contract
 // @Failure 500 {object} httperror.HTTPError
@@ -111,8 +107,6 @@ func (a contract) GetAll(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Contract ID"
 // @Success 200 {object} model.Contract
 // @Failure 400 {object} httperror.HTTPError
@@ -141,8 +135,6 @@ func (a contract) Get(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Contract ID"
 // @Success 200 {object} model.Contract
 // @Failure 400 {object} httperror.HTTPError
@@ -176,8 +168,6 @@ func (a contract) Deactivate(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Contract ID"
 // @Success 200 {object} model.Contract
 // @Failure 400 {object} httperror.HTTPError
@@ -211,8 +201,6 @@ func (a contract) Reactivate(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
-// @Security JWTAuth
-// @Security BearerAuth
 // @Param id path string true "Contract ID"
 // @Param RequestContractUpdate body model.RequestContractUpdate true "Contract Update Request"
 // @Success 200 {object} model.Contract
