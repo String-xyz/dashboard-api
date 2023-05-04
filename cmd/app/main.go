@@ -10,6 +10,7 @@ import (
 	"github.com/String-xyz/platform-admin-api/pkg/store"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
+
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 )

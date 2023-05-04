@@ -17,8 +17,8 @@ type PlaformUpdates struct {
 	DeactivatedAt *time.Time      `json:"deactivatedAt" db:"deactivated_at"`
 	Name          *string         `json:"name" db:"name"`
 	Description   *string         `json:"description" db:"description"`
-	Domains       *pq.StringArray `json:"domains" db:"domains"`
-	IPAddresses   *pq.StringArray `json:"ipAddresses" db:"ip_addresses"`
+	Domains       *pq.StringArray `json:"domains" db:"domains" swaggertype:"array,string"`
+	IPAddresses   *pq.StringArray `json:"ipAddresses" db:"ip_addresses" swaggertype:"array,string"`
 }
 
 type Platform interface {

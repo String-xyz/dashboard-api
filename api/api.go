@@ -6,8 +6,10 @@ import (
 	"github.com/String-xyz/go-lib/database"
 	"github.com/String-xyz/go-lib/middleware"
 	"github.com/String-xyz/go-lib/validator"
+	_ "github.com/String-xyz/platform-admin-api/docs"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 type APIConfig struct {
@@ -44,6 +46,9 @@ func Start(config APIConfig) {
 	e := echo.New()
 	e.Validator = validator.New()
 	e.GET("/heartbeat", heartbeat)
+
+	// setup swagger docs
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	baseMiddleware(config.Logger, e)
 

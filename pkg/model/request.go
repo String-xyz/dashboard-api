@@ -21,8 +21,8 @@ type RequestPlatformCreate struct {
 type RequestPlatformUpdate struct {
 	Name        *string         `json:"platformName" db:"name"`
 	Description *string         `json:"description" db:"description"`
-	Domains     *pq.StringArray `json:"domains" db:"domains"`
-	IPAddresses *pq.StringArray `json:"ipAddresses" db:"ip_addresses"`
+	Domains     *pq.StringArray `json:"domains" db:"domains" swaggertype:"array,string"`
+	IPAddresses *pq.StringArray `json:"ipAddresses" db:"ip_addresses" swaggertype:"array,string"`
 }
 
 type RequestInviteSend struct {
@@ -88,7 +88,7 @@ type RequestPasswordReset struct {
 type RequestContractCreate struct {
 	Name       string         `json:"name" db:"name"`
 	Address    string         `json:"address" db:"address"`
-	Functions  pq.StringArray `json:"functions" db:"functions"`
+	Functions  pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
 	NetworkId  string         `json:"networkId" db:"network_id"`
 	PlatformId string         `json:"platformId" db:"platform_id"`
 }
@@ -96,6 +96,6 @@ type RequestContractCreate struct {
 type RequestContractUpdate struct {
 	Name      *string         `json:"name" db:"name"`
 	Address   *string         `json:"address" db:"address"`
-	Functions *pq.StringArray `json:"functions" db:"functions"`
+	Functions *pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
 	NetworkId *string         `json:"networkId" db:"network_id"`
 }

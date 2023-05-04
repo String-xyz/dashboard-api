@@ -81,7 +81,7 @@ func (l login) Login(c echo.Context) error {
 // @Summary Refresh token
 // @Tags Login
 // @Produce  json
-// @Success 200 {object} JWTResponse
+// @Success 200 {object} service.MemberCreateResponse
 // @Failure 401 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError
 // @Router /login/refresh [post]

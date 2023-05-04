@@ -23,8 +23,8 @@ type Platform struct {
 	DeactivatedAt  *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
 	Name           string         `json:"name" db:"name"`
 	Description    string         `json:"description" db:"description"`
-	Domains        pq.StringArray `json:"domains" db:"domains"`
-	IPAddresses    pq.StringArray `json:"ipAddresses" db:"ip_addresses"`
+	Domains        pq.StringArray `json:"domains" db:"domains" swaggertype:"array,string"`
+	IPAddresses    pq.StringArray `json:"ipAddresses" db:"ip_addresses" swaggertype:"array,string"`
 	OrganizationId string         `json:"organizationId" db:"organization_id"`
 }
 
@@ -93,7 +93,7 @@ type Contract struct {
 	DeletedAt     *time.Time     `json:"deletedAt,omitempty" db:"deleted_at"`
 	Name          string         `json:"name" db:"name"`
 	Address       string         `json:"address" db:"address"`
-	Functions     pq.StringArray `json:"functions" db:"functions"`
+	Functions     pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
 	NetworkId     string         `json:"networkId" db:"network_id"`
 	PlatformId    string         `json:"platformId" db:"platform_id"`
 }
