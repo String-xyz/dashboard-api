@@ -39,6 +39,7 @@ func NewInvite(service service.Invite) Invite {
 // @Accept  json
 // @Produce  json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param memberId header string true "Member ID"
 // @Param organizationId header string true "Organization ID"
 // @Param RequestInviteSend body model.RequestInviteSend true "Invite Send Request"
@@ -83,6 +84,7 @@ func (i invite) Send(c echo.Context) error {
 // @Accept  json
 // @Produce  json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param id path string true "Invite ID"
 // @Param RequestInviteAcceptance body model.RequestInviteAcceptance true "Invite Acceptance Request"
 // @Success 200 {object} model.OrganizationMember
@@ -136,6 +138,7 @@ func (i invite) Accept(c echo.Context) error {
 // @Tags Invite
 // @Produce  json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param organizationId header string true "Organization ID"
 // @Param status query string false "Invite status"
 // @Success 200 {array} repository.MemberInviteInfo
@@ -162,6 +165,7 @@ func (i invite) List(c echo.Context) error {
 // @Tags Invite
 // @Produce  json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param memberId header string true "Member ID"
 // @Param id path string true "Invite ID"
 // @Success 200 {object} repository.MemberInviteInfo
@@ -197,6 +201,7 @@ func (i invite) Resend(c echo.Context) error {
 // @Accept  json
 // @Produce  json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param memberId header string true "Member ID"
 // @Param id path string true "Invite ID"
 // @Param RequestInviteUpdate body model.RequestInviteUpdate true "Invite Update Request"
@@ -248,6 +253,7 @@ func (i invite) Update(c echo.Context) error {
 // @Tags Invite
 // @Produce  json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param memberId header string true "Member ID"
 // @Param id path string true "Invite ID"
 // @Success 200 {object} map[string]string
@@ -286,6 +292,7 @@ func (i invite) Revoke(c echo.Context) error {
 // @Tags Invite
 // @Produce  json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param id path string true "Invite ID"
 // @Success 200 {object} repository.MemberInviteInfo
 // @Failure 400 {object} httperror.HTTPError

@@ -37,6 +37,8 @@ func NewApikey(service service.Apikey) Apikey {
 // @Accept json
 // @Produce json
 // @Security JWTAuth
+// @Security BearerAuth
+// @Param Authorization header string true "Authorization"
 // @Param type query string false "Type of API key (public or secret)"
 // @Param platformId query string false "Platform ID"
 // @Success 201 {object} model.Apikey
@@ -82,6 +84,7 @@ func (a apikey) Create(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param platformId query string false "Platform ID"
 // @Param limit query int false "Limit the number of returned results"
 // @Param offset query int false "Offset the starting point of returned results"
@@ -133,6 +136,7 @@ func (a apikey) GetAll(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param id path string true "API Key ID"
 // @Success 200 {object} model.Apikey
 // @Router /apikeys/{id} [get]
@@ -166,6 +170,7 @@ func (a apikey) Get(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param id path string true "API Key ID"
 // @Success 204 "No Content"
 // @Router /apikeys/{id} [delete]
@@ -200,6 +205,7 @@ func (a apikey) Delete(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Security JWTAuth
+// @Security BearerAuth
 // @Param id path string true "API Key ID"
 // @Param description body string false "API key description"
 // @Success 200 {object} model.Apikey

@@ -25,6 +25,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Get all API keys",
@@ -74,6 +77,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Create an API key",
@@ -88,6 +94,13 @@ const docTemplate = `{
                 ],
                 "summary": "Create API key",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Type of API key (public or secret)",
@@ -116,6 +129,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Get API key by ID",
@@ -151,6 +167,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Update API key by ID",
@@ -194,6 +213,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Delete API key by ID",
@@ -228,6 +250,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -241,13 +266,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get all contracts",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Platform ID",
@@ -277,6 +295,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -290,20 +311,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Contract Create Request",
                         "name": "RequestContractCreate",
@@ -347,6 +354,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -360,13 +370,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get a specific contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -400,6 +403,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -413,20 +419,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update a contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -471,6 +463,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -484,20 +479,6 @@ const docTemplate = `{
                 ],
                 "summary": "Deactivate a contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -533,6 +514,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -546,20 +530,6 @@ const docTemplate = `{
                 ],
                 "summary": "Reactivate a contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -595,6 +565,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -641,6 +614,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -705,6 +681,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -748,6 +727,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -803,6 +785,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -856,6 +841,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -920,6 +908,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1023,6 +1014,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "RefreshTokenAuth": []
+                    },
+                    {
+                        "RefreshBearerAuth": []
                     }
                 ],
                 "tags": [
@@ -1047,6 +1041,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "RefreshTokenAuth": []
+                    },
+                    {
+                        "RefreshBearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1083,6 +1080,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1114,6 +1114,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1164,6 +1167,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1215,6 +1221,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1268,6 +1277,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1311,6 +1323,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1368,6 +1383,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1413,6 +1431,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1458,6 +1479,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1515,6 +1539,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1620,6 +1647,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1670,6 +1700,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1701,6 +1734,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1751,6 +1787,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1794,6 +1833,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -2394,7 +2436,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "https://platform-api.string-api.xyz",
+	Host:             "platform-api.string-api.xyz",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Platform Management API",

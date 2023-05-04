@@ -40,13 +40,19 @@ func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
 // @contact.url http://string.xyz
 // @contact.email support@stringxyz.com
 
+// @SecurityScheme bearer BearerAuth apiKey StringAdminJWT
+// @SecurityRequirement BearerAuth
+
+// @SecurityScheme bearer RefreshBearerAuth apiKey StringAdminRefreshToken
+// @SecurityRequirement RefreshBearerAuth
+
 // @SecurityScheme cookie JWTAuth cookie StringAdminJWT
 // @SecurityRequirement JWTAuth
 
 // @SecurityScheme cookie RefreshTokenAuth cookie StringAdminRefreshToken
 // @SecurityRequirement RefreshTokenAuth
 
-// @host https://platform-api.string-api.xyz
+// @host platform-api.string-api.xyz
 // @BasePath /
 func Start(config APIConfig) {
 	e := echo.New()

@@ -10,7 +10,7 @@
         },
         "version": "1.0"
     },
-    "host": "https://platform-api.string-api.xyz",
+    "host": "platform-api.string-api.xyz",
     "basePath": "/",
     "paths": {
         "/apikeys": {
@@ -18,6 +18,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Get all API keys",
@@ -67,6 +70,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Create an API key",
@@ -81,6 +87,13 @@
                 ],
                 "summary": "Create API key",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Type of API key (public or secret)",
@@ -109,6 +122,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Get API key by ID",
@@ -144,6 +160,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Update API key by ID",
@@ -187,6 +206,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Delete API key by ID",
@@ -221,6 +243,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -234,13 +259,6 @@
                 ],
                 "summary": "Get all contracts",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Platform ID",
@@ -270,6 +288,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -283,20 +304,6 @@
                 ],
                 "summary": "Create a new contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Contract Create Request",
                         "name": "RequestContractCreate",
@@ -340,6 +347,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -353,13 +363,6 @@
                 ],
                 "summary": "Get a specific contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -393,6 +396,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -406,20 +412,6 @@
                 ],
                 "summary": "Update a contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -464,6 +456,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -477,20 +472,6 @@
                 ],
                 "summary": "Deactivate a contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -526,6 +507,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -539,20 +523,6 @@
                 ],
                 "summary": "Reactivate a contract",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Member ID",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organizationId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Contract ID",
@@ -588,6 +558,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -634,6 +607,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -698,6 +674,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -741,6 +720,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -796,6 +778,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -849,6 +834,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -913,6 +901,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1016,6 +1007,9 @@
                 "security": [
                     {
                         "RefreshTokenAuth": []
+                    },
+                    {
+                        "RefreshBearerAuth": []
                     }
                 ],
                 "tags": [
@@ -1040,6 +1034,9 @@
                 "security": [
                     {
                         "RefreshTokenAuth": []
+                    },
+                    {
+                        "RefreshBearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1076,6 +1073,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1107,6 +1107,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1157,6 +1160,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1208,6 +1214,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1261,6 +1270,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1304,6 +1316,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1361,6 +1376,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1406,6 +1424,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1451,6 +1472,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1508,6 +1532,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1613,6 +1640,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1663,6 +1693,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1694,6 +1727,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [
@@ -1744,6 +1780,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "produces": [
@@ -1787,6 +1826,9 @@
                 "security": [
                     {
                         "JWTAuth": []
+                    },
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "consumes": [

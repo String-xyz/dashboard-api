@@ -360,7 +360,7 @@ definitions:
       token:
         type: string
     type: object
-host: https://platform-api.string-api.xyz
+host: platform-api.string-api.xyz
 info:
   contact:
     email: support@stringxyz.com
@@ -400,6 +400,7 @@ paths:
             type: array
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get all API keys
       tags:
       - Apikey
@@ -408,6 +409,11 @@ paths:
       - application/json
       description: Create an API key
       parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Type of API key (public or secret)
         in: query
         name: type
@@ -425,6 +431,7 @@ paths:
             $ref: '#/definitions/model.Apikey'
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Create API key
       tags:
       - Apikey
@@ -446,6 +453,7 @@ paths:
           description: No Content
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Delete API key
       tags:
       - Apikey
@@ -468,6 +476,7 @@ paths:
             $ref: '#/definitions/model.Apikey'
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get API key
       tags:
       - Apikey
@@ -495,6 +504,7 @@ paths:
             $ref: '#/definitions/model.Apikey'
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Update API key
       tags:
       - Apikey
@@ -503,11 +513,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Organization ID
-        in: path
-        name: organizationId
-        required: true
-        type: string
       - description: Platform ID
         in: query
         name: platformId
@@ -527,6 +532,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get all contracts
       tags:
       - Contract
@@ -534,16 +540,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Member ID
-        in: path
-        name: memberId
-        required: true
-        type: string
-      - description: Organization ID
-        in: path
-        name: organizationId
-        required: true
-        type: string
       - description: Contract Create Request
         in: body
         name: RequestContractCreate
@@ -571,6 +567,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Create a new contract
       tags:
       - Contract
@@ -579,11 +576,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Organization ID
-        in: path
-        name: organizationId
-        required: true
-        type: string
       - description: Contract ID
         in: path
         name: id
@@ -606,6 +598,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get a specific contract
       tags:
       - Contract
@@ -613,16 +606,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Member ID
-        in: path
-        name: memberId
-        required: true
-        type: string
-      - description: Organization ID
-        in: path
-        name: organizationId
-        required: true
-        type: string
       - description: Contract ID
         in: path
         name: id
@@ -651,6 +634,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Update a contract
       tags:
       - Contract
@@ -659,16 +643,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Member ID
-        in: path
-        name: memberId
-        required: true
-        type: string
-      - description: Organization ID
-        in: path
-        name: organizationId
-        required: true
-        type: string
       - description: Contract ID
         in: path
         name: id
@@ -691,6 +665,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Deactivate a contract
       tags:
       - Contract
@@ -699,16 +674,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Member ID
-        in: path
-        name: memberId
-        required: true
-        type: string
-      - description: Organization ID
-        in: path
-        name: organizationId
-        required: true
-        type: string
       - description: Contract ID
         in: path
         name: id
@@ -731,6 +696,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Reactivate a contract
       tags:
       - Contract
@@ -761,6 +727,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: List invites
       tags:
       - Invite
@@ -801,6 +768,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Send an invite
       tags:
       - Invite
@@ -836,6 +804,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Revoke an invite
       tags:
       - Invite
@@ -863,6 +832,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get an invite
       tags:
       - Invite
@@ -903,6 +873,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Update an invite
       tags:
       - Invite
@@ -938,6 +909,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Accept an invite
       tags:
       - Invite
@@ -971,6 +943,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Resend an invite
       tags:
       - Invite
@@ -1018,6 +991,7 @@ paths:
             type: integer
       security:
       - RefreshTokenAuth: []
+      - RefreshBearerAuth: []
       summary: Logout
       tags:
       - Login
@@ -1040,6 +1014,7 @@ paths:
             type: integer
       security:
       - RefreshTokenAuth: []
+      - RefreshBearerAuth: []
       summary: Refresh token
       tags:
       - Login
@@ -1060,6 +1035,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get all members
       tags:
       - Member
@@ -1090,6 +1066,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Update self
       tags:
       - Member
@@ -1118,6 +1095,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get a member by ID
       tags:
       - Member
@@ -1153,6 +1131,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Update member
       tags:
       - Member
@@ -1181,6 +1160,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Deactivate member
       tags:
       - Member
@@ -1209,6 +1189,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Reactivate member
       tags:
       - Member
@@ -1245,6 +1226,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Transfer ownership
       tags:
       - Member
@@ -1278,6 +1260,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Send password reset email
       tags:
       - Member
@@ -1310,6 +1293,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Reset password
       tags:
       - Member
@@ -1330,6 +1314,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get all networks
       tags:
       - Network
@@ -1376,6 +1361,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Update organization
       tags:
       - Organization
@@ -1428,6 +1414,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get all platforms
       tags:
       - Platform
@@ -1458,6 +1445,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Create platform
       tags:
       - Platform
@@ -1486,6 +1474,7 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Get platform
       tags:
       - Platform
@@ -1521,7 +1510,25 @@ paths:
             type: integer
       security:
       - JWTAuth: []
+      - BearerAuth: []
       summary: Update platform
       tags:
       - Platform
+securityDefinitions:
+  BearerAuth:
+    type: apiKey
+    in: header
+    name: StringAdminJWT
+  RefreshBearerAuth:
+    type: apiKey
+    in: header
+    name: StringAdminRefreshToken
+  JWTAuth:
+    type: apiKey
+    in: cookie
+    name: StringAdminJWT
+  RefreshTokenAuth:
+    type: apiKey
+    in: cookie
+    name: StringAdminRefreshToken
 swagger: "2.0"
