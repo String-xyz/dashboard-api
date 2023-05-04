@@ -37,6 +37,7 @@ func NewContract(service service.Contract) Contract {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param memberId path string true "Member ID"
 // @Param organizationId path string true "Organization ID"
 // @Param RequestContractCreate body model.RequestContractCreate true "Contract Create Request"
@@ -85,6 +86,7 @@ func (a contract) Create(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param organizationId path string true "Organization ID"
 // @Param platformId query string false "Platform ID"
 // @Success 200 {array} model.Contract
@@ -110,6 +112,7 @@ func (a contract) GetAll(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param organizationId path string true "Organization ID"
 // @Param id path string true "Contract ID"
 // @Success 200 {object} model.Contract
@@ -139,6 +142,7 @@ func (a contract) Get(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param memberId path string true "Member ID"
 // @Param organizationId path string true "Organization ID"
 // @Param id path string true "Contract ID"
@@ -174,6 +178,7 @@ func (a contract) Deactivate(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param memberId path string true "Member ID"
 // @Param organizationId path string true "Organization ID"
 // @Param id path string true "Contract ID"
@@ -209,6 +214,7 @@ func (a contract) Reactivate(c echo.Context) error {
 // @Tags Contract
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param memberId path string true "Member ID"
 // @Param organizationId path string true "Organization ID"
 // @Param id path string true "Contract ID"

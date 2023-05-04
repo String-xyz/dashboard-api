@@ -89,6 +89,7 @@ func (o organization) Get(c echo.Context) error {
 // @Tags Organization
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param body body model.RequestOrganizationUpdate true "Organization Update Request"
 // @Success 200 {object} model.Organization
 // @Failure 400 {object} httperror.HTTPError

@@ -25,6 +25,7 @@ func NewNetwork(service service.Network) Network {
 // @Summary Get all networks
 // @Tags Network
 // @Produce  json
+// @Security JWTAuth
 // @Success 200 {array} model.NetworkData
 // @Failure 500 {object} httperror.HTTPError
 // @Router /networks [get]

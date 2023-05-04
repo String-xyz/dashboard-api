@@ -31,6 +31,7 @@ func NewPlatform(service service.Platform) Platform {
 // @Tags Platform
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param body body model.RequestPlatformCreate true "Platform Create Request"
 // @Success 201 {object} model.Platform
 // @Failure 400 {object} httperror.HTTPError
@@ -64,6 +65,7 @@ func (p platform) Create(c echo.Context) error {
 // @Summary Get platform
 // @Tags Platform
 // @Produce  json
+// @Security JWTAuth
 // @Param id path string true "Platform ID"
 // @Success 200 {object} model.Platform
 // @Failure 400 {object} httperror.HTTPError
@@ -91,6 +93,7 @@ func (p platform) Get(c echo.Context) error {
 // @Summary Get all platforms
 // @Tags Platform
 // @Produce  json
+// @Security JWTAuth
 // @Success 200 {array} model.Platform
 // @Failure 500 {object} httperror.HTTPError
 // @Router /platforms [get]
@@ -117,6 +120,7 @@ func (p platform) GetAll(c echo.Context) error {
 // @Tags Platform
 // @Accept  json
 // @Produce  json
+// @Security JWTAuth
 // @Param id path string true "Platform ID"
 // @Param body body model.RequestPlatformUpdate true "Platform Update Request"
 // @Success 200 {object} model.Platform
