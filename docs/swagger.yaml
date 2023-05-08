@@ -116,6 +116,12 @@ definitions:
       updatedAt:
         type: string
     type: object
+  model.RequestApikeyUpdate:
+    properties:
+      description:
+        maxLength: 144
+        type: string
+    type: object
   model.RequestContractCreate:
     properties:
       address:
@@ -398,6 +404,12 @@ paths:
             items:
               $ref: '#/definitions/model.Apikey'
             type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
       summary: Get all API keys
       tags:
       - Apikey
@@ -426,6 +438,12 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/model.Apikey'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
       summary: Create API key
       tags:
       - Apikey
@@ -445,6 +463,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
       summary: Delete API key
       tags:
       - Apikey
@@ -465,6 +489,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Apikey'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
       summary: Get API key
       tags:
       - Apikey
@@ -478,11 +508,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: API key description
+      - description: API key Update Request
         in: body
-        name: description
+        name: body
+        required: true
         schema:
-          type: string
+          $ref: '#/definitions/model.RequestApikeyUpdate'
       produces:
       - application/json
       responses:
@@ -490,6 +521,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Apikey'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
       summary: Update API key
       tags:
       - Apikey
@@ -513,8 +550,7 @@ paths:
             type: array
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get all contracts
       tags:
       - Contract
@@ -537,16 +573,13 @@ paths:
             $ref: '#/definitions/model.Contract'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "409":
           description: Conflict
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Create a new contract
       tags:
       - Contract
@@ -569,12 +602,10 @@ paths:
             $ref: '#/definitions/model.Contract'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get a specific contract
       tags:
       - Contract
@@ -602,12 +633,10 @@ paths:
             $ref: '#/definitions/model.Contract'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Update a contract
       tags:
       - Contract
@@ -630,12 +659,10 @@ paths:
             $ref: '#/definitions/model.Contract'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Deactivate a contract
       tags:
       - Contract
@@ -658,12 +685,10 @@ paths:
             $ref: '#/definitions/model.Contract'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Reactivate a contract
       tags:
       - Contract
@@ -690,8 +715,7 @@ paths:
             type: array
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: List invites
       tags:
       - Invite
@@ -724,12 +748,10 @@ paths:
             $ref: '#/definitions/repository.MemberInviteInfo'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Send an invite
       tags:
       - Invite
@@ -757,12 +779,10 @@ paths:
             type: object
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Revoke an invite
       tags:
       - Invite
@@ -782,12 +802,10 @@ paths:
             $ref: '#/definitions/repository.MemberInviteInfo'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get an invite
       tags:
       - Invite
@@ -820,12 +838,10 @@ paths:
             $ref: '#/definitions/repository.MemberInviteInfo'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Update an invite
       tags:
       - Invite
@@ -853,12 +869,10 @@ paths:
             $ref: '#/definitions/model.OrganizationMember'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Accept an invite
       tags:
       - Invite
@@ -884,12 +898,10 @@ paths:
             $ref: '#/definitions/repository.MemberInviteInfo'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Resend an invite
       tags:
       - Invite
@@ -913,16 +925,13 @@ paths:
             $ref: '#/definitions/repository.OrganizationMemberWithRole'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "401":
           description: Unauthorized
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Login
       tags:
       - Login
@@ -933,8 +942,7 @@ paths:
           description: No Content
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Logout
       tags:
       - Login
@@ -949,12 +957,10 @@ paths:
             $ref: '#/definitions/service.MemberCreateResponse'
         "401":
           description: Unauthorized
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Refresh token
       tags:
       - Login
@@ -971,8 +977,7 @@ paths:
             type: array
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get all members
       tags:
       - Member
@@ -995,12 +1000,10 @@ paths:
             $ref: '#/definitions/repository.OrganizationMemberWithRole'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Update self
       tags:
       - Member
@@ -1021,12 +1024,10 @@ paths:
             $ref: '#/definitions/repository.OrganizationMemberWithRole'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get a member by ID
       tags:
       - Member
@@ -1054,12 +1055,10 @@ paths:
             $ref: '#/definitions/repository.OrganizationMemberWithRole'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Update member
       tags:
       - Member
@@ -1080,12 +1079,10 @@ paths:
             $ref: '#/definitions/repository.OrganizationMemberWithRole'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Deactivate member
       tags:
       - Member
@@ -1106,12 +1103,10 @@ paths:
             $ref: '#/definitions/repository.OrganizationMemberWithRole'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Reactivate member
       tags:
       - Member
@@ -1140,12 +1135,10 @@ paths:
             $ref: '#/definitions/repository.OrganizationMemberWithRole'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Transfer ownership
       tags:
       - Member
@@ -1171,12 +1164,10 @@ paths:
             type: object
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Send password reset email
       tags:
       - Member
@@ -1201,12 +1192,10 @@ paths:
             type: object
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Reset password
       tags:
       - Member
@@ -1223,8 +1212,7 @@ paths:
             type: array
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get all networks
       tags:
       - Network
@@ -1239,8 +1227,7 @@ paths:
             $ref: '#/definitions/model.Organization'
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get organization
       tags:
       - Organization
@@ -1263,12 +1250,10 @@ paths:
             $ref: '#/definitions/model.Organization'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Update organization
       tags:
       - Organization
@@ -1291,16 +1276,13 @@ paths:
             $ref: '#/definitions/model.Organization'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "409":
           description: Conflict
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Create organization
       tags:
       - Organization
@@ -1317,8 +1299,7 @@ paths:
             type: array
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get all platforms
       tags:
       - Platform
@@ -1341,12 +1322,10 @@ paths:
             $ref: '#/definitions/model.Platform'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Create platform
       tags:
       - Platform
@@ -1367,12 +1346,10 @@ paths:
             $ref: '#/definitions/model.Platform'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Get platform
       tags:
       - Platform
@@ -1400,12 +1377,10 @@ paths:
             $ref: '#/definitions/model.Platform'
         "400":
           description: Bad Request
-          schema:
-            type: integer
+          schema: {}
         "500":
           description: Internal Server Error
-          schema:
-            type: integer
+          schema: {}
       summary: Update platform
       tags:
       - Platform

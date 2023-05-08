@@ -33,8 +33,8 @@ func NewPlatform(service service.Platform) Platform {
 // @Produce  json
 // @Param body body model.RequestPlatformCreate true "Platform Create Request"
 // @Success 201 {object} model.Platform
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /platforms [post]
 func (p platform) Create(c echo.Context) error {
 	body := model.RequestPlatformCreate{}
@@ -66,8 +66,8 @@ func (p platform) Create(c echo.Context) error {
 // @Produce  json
 // @Param id path string true "Platform ID"
 // @Success 200 {object} model.Platform
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /platforms/{id} [get]
 func (p platform) Get(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
@@ -92,7 +92,7 @@ func (p platform) Get(c echo.Context) error {
 // @Tags Platform
 // @Produce  json
 // @Success 200 {array} model.Platform
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 500 {object} error
 // @Router /platforms [get]
 func (p platform) GetAll(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -120,8 +120,8 @@ func (p platform) GetAll(c echo.Context) error {
 // @Param id path string true "Platform ID"
 // @Param body body model.RequestPlatformUpdate true "Platform Update Request"
 // @Success 200 {object} model.Platform
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /platforms/{id} [patch]
 func (p platform) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)

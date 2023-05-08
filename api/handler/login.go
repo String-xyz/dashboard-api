@@ -35,9 +35,9 @@ func NewLogin(service service.Services) Login {
 // @Produce  json
 // @Param body body model.RequestLogin true "Login Request"
 // @Success 200 {object} repository.OrganizationMemberWithRole
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 401 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 500 {object} error
 // @Router /login [post]
 func (l login) Login(c echo.Context) error {
 	body := model.RequestLogin{}
@@ -82,8 +82,8 @@ func (l login) Login(c echo.Context) error {
 // @Tags Login
 // @Produce  json
 // @Success 200 {object} service.MemberCreateResponse
-// @Failure 401 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 401 {object} error
+// @Failure 500 {object} error
 // @Router /login/refresh [post]
 func (l login) RefreshToken(c echo.Context) error {
 	cookie, err := c.Cookie("StringAdminRefreshToken")
@@ -122,7 +122,7 @@ func (l login) RefreshToken(c echo.Context) error {
 // @Summary Logout
 // @Tags Login
 // @Success 204
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 500 {object} error
 // @Router /login/logout [post]
 func (l login) Logout(c echo.Context) error {
 	// get refresh token from cookie

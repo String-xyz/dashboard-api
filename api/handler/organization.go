@@ -34,9 +34,9 @@ func NewOrganization(service service.Organization) Organization {
 // @Produce  json
 // @Param body body model.RequestOrganizationCreate true "Organization Create Request"
 // @Success 201 {object} model.Organization
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 409 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 409 {object} error
+// @Failure 500 {object} error
 // @Router /organizations [post]
 func (o organization) Create(c echo.Context) error {
 	body := model.RequestOrganizationCreate{}
@@ -69,7 +69,7 @@ func (o organization) Create(c echo.Context) error {
 // @Tags Organization
 // @Produce  json
 // @Success 200 {object} model.Organization
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 500 {object} error
 // @Router /organizations [get]
 func (o organization) Get(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
@@ -91,8 +91,8 @@ func (o organization) Get(c echo.Context) error {
 // @Produce  json
 // @Param body body model.RequestOrganizationUpdate true "Organization Update Request"
 // @Success 200 {object} model.Organization
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /organizations [patch]
 func (o organization) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)

@@ -26,7 +26,7 @@ func NewNetwork(service service.Network) Network {
 // @Tags Network
 // @Produce  json
 // @Success 200 {array} model.NetworkData
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 500 {object} error
 // @Router /networks [get]
 func (a network) GetAll(c echo.Context) error {
 	m, err := a.service.GetAll(c.Request().Context())

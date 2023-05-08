@@ -39,9 +39,9 @@ func NewContract(service service.Contract) Contract {
 // @Produce  json
 // @Param RequestContractCreate body model.RequestContractCreate true "Contract Create Request"
 // @Success 201 {object} model.Contract
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 409 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 409 {object} error
+// @Failure 500 {object} error
 // @Router /contracts [post]
 func (a contract) Create(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -85,7 +85,7 @@ func (a contract) Create(c echo.Context) error {
 // @Produce  json
 // @Param platformId query string false "Platform ID"
 // @Success 200 {array} model.Contract
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 500 {object} error
 // @Router /contracts [get]
 func (a contract) GetAll(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
@@ -109,8 +109,8 @@ func (a contract) GetAll(c echo.Context) error {
 // @Produce  json
 // @Param id path string true "Contract ID"
 // @Success 200 {object} model.Contract
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /contracts/{id} [get]
 func (a contract) Get(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
@@ -137,8 +137,8 @@ func (a contract) Get(c echo.Context) error {
 // @Produce  json
 // @Param id path string true "Contract ID"
 // @Success 200 {object} model.Contract
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /contracts/{id}/deactivate [patch]
 func (a contract) Deactivate(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -170,8 +170,8 @@ func (a contract) Deactivate(c echo.Context) error {
 // @Produce  json
 // @Param id path string true "Contract ID"
 // @Success 200 {object} model.Contract
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /contracts/{id}/reactivate [patch]
 func (a contract) Reactivate(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -204,8 +204,8 @@ func (a contract) Reactivate(c echo.Context) error {
 // @Param id path string true "Contract ID"
 // @Param RequestContractUpdate body model.RequestContractUpdate true "Contract Update Request"
 // @Success 200 {object} model.Contract
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /contracts/{id} [patch]
 func (a contract) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)

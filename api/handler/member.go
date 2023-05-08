@@ -36,7 +36,7 @@ func NewMember(services service.Services) Member {
 // @Tags Member
 // @Produce  json
 // @Success 200 {array} repository.OrganizationMemberWithRole
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 500 {object} error
 // @Router /members [get]
 func (a member) GetAll(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
@@ -57,8 +57,8 @@ func (a member) GetAll(c echo.Context) error {
 // @Produce  json
 // @Param id path string true "Member ID"
 // @Success 200 {object} repository.OrganizationMemberWithRole
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members/{id} [get]
 func (a member) Get(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -92,8 +92,8 @@ func (a member) Get(c echo.Context) error {
 // @Param id path string true "Member ID"
 // @Param body body model.RequestMemberUpdateOther true "Update Member Request"
 // @Success 200 {object} repository.OrganizationMemberWithRole
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members/{id} [patch]
 func (a member) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -128,8 +128,8 @@ func (a member) Update(c echo.Context) error {
 // @Produce  json
 // @Param body body model.RequestMemberUpdateSelf true "Update Self Request"
 // @Success 200 {object} repository.OrganizationMemberWithRole
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members [patch]
 func (a member) UpdateSelf(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -168,8 +168,8 @@ func (a member) UpdateSelf(c echo.Context) error {
 // @Param id path string true "Member ID"
 // @Param body body model.RequestTransferOwnership true "Transfer Ownership Request"
 // @Success 200 {object} repository.OrganizationMemberWithRole
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members/{id}/transferOwner [patch]
 func (a member) TransferOwnership(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -203,8 +203,8 @@ func (a member) TransferOwnership(c echo.Context) error {
 // @Produce  json
 // @Param id path string true "Member ID"
 // @Success 200 {object} repository.OrganizationMemberWithRole
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members/{id}/deactivate [patch]
 func (a member) Deactivate(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -235,8 +235,8 @@ func (a member) Deactivate(c echo.Context) error {
 // @Produce  json
 // @Param id path string true "Member ID"
 // @Success 200 {object} repository.OrganizationMemberWithRole
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members/{id}/reactivate [patch]
 func (a member) Reactivate(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
@@ -263,8 +263,8 @@ func (a member) Reactivate(c echo.Context) error {
 // @Produce  json
 // @Param body body model.RequestPasswordResetEmail true "Password Reset Email Request"
 // @Success 200 {object} map[string]string "Email sent message"
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members/password-reset [get]
 func (a member) SendPasswordResetEmail(c echo.Context) error {
 	body := model.RequestPasswordResetEmail{}
@@ -294,8 +294,8 @@ func (a member) SendPasswordResetEmail(c echo.Context) error {
 // @Produce  json
 // @Param body body model.RequestPasswordReset true "Password Reset Request"
 // @Success 200 {object} map[string]string "Password reset message"
-// @Failure 400 {object} httperror.HTTPError
-// @Failure 500 {object} httperror.HTTPError
+// @Failure 400 {object} error
+// @Failure 500 {object} error
 // @Router /members/password-reset [post]
 func (a member) PasswordReset(c echo.Context) error {
 	body := model.RequestPasswordReset{}

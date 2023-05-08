@@ -1,2 +1,0 @@
-// Replace all httperror.HTTPError with int
-replace httperror.HTTPError int
