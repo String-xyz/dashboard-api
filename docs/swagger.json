@@ -10,7 +10,7 @@
         },
         "version": "1.0"
     },
-    "host": "api.sandbox.string-api.xyz",
+    "host": "platform-api.sandbox.string-api.xyz",
     "basePath": "/",
     "paths": {
         "/apikeys": {

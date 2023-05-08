@@ -40,7 +40,7 @@ func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
 // @contact.url http://string.xyz
 // @contact.email support@stringxyz.com
 
-// @host api.sandbox.string-api.xyz
+// @host platform-api.sandbox.string-api.xyz
 // @BasePath /
 func Start(config APIConfig) {
 	e := echo.New()

@@ -360,7 +360,7 @@ definitions:
       token:
         type: string
     type: object
-host: api.sandbox.string-api.xyz
+host: platform-api.sandbox.string-api.xyz
 info:
   contact:
     email: support@stringxyz.com
