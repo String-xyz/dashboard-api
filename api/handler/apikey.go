@@ -197,7 +197,7 @@ func (a apikey) Delete(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "API Key ID"
-// @Param description body string false "API key description"
+// @Param body body model.RequestApikeyUpdate true "API key Update Request"
 // @Success 200 {object} model.Apikey
 // @Router /apikeys/{id} [put]
 func (a apikey) Update(c echo.Context) error {
