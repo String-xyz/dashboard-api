@@ -1,5 +1,5 @@
 #!/bin/sh
-
+export $(grep -v '^#' .env | xargs)
 # run app
 if [ "$DEBUG_MODE" = "true" ]; then
   echo "----- DEBUG_MODE is true"
