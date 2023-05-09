@@ -54,3 +54,23 @@ jobs:
           AWS_REGION: us-west-2
         run: |
           aws ecs --region $AWS_REGION update-service --cluster $CLUSTER --service $SERVICE --force-new-deployment
+  rdme-openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo 📚
+        uses: actions/checkout@v3
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
+      - name: Run `swag init` command 📦
+        run: |
+          go get -u github.com/swaggo/swag/cmd/swag
+          swag init -g /api/api.go
+
+      - name: Run `openapi` command 🚀
+        uses: readmeio/rdme@v8
+        with:
+          rdme: openapi docs/swagger.yaml --key=${{ secrets.README_API_KEY }} --id=64595576698e26003dae4baa
