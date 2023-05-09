@@ -38,8 +38,6 @@ func NewInvite(service service.Invite) Invite {
 // @Tags Invite
 // @Accept  json
 // @Produce  json
-// @Param memberId header string true "Member ID"
-// @Param organizationId header string true "Organization ID"
 // @Param RequestInviteSend body model.RequestInviteSend true "Invite Send Request"
 // @Success 201 {object} repository.MemberInviteInfo
 // @Failure 400 {object} error
@@ -133,7 +131,6 @@ func (i invite) Accept(c echo.Context) error {
 // @Summary List invites
 // @Tags Invite
 // @Produce  json
-// @Param organizationId header string true "Organization ID"
 // @Param status query string false "Invite status"
 // @Success 200 {array} repository.MemberInviteInfo
 // @Failure 500 {object} error
@@ -158,7 +155,6 @@ func (i invite) List(c echo.Context) error {
 // @Summary Resend an invite
 // @Tags Invite
 // @Produce  json
-// @Param memberId header string true "Member ID"
 // @Param id path string true "Invite ID"
 // @Success 200 {object} repository.MemberInviteInfo
 // @Failure 400 {object} error
@@ -192,7 +188,6 @@ func (i invite) Resend(c echo.Context) error {
 // @Tags Invite
 // @Accept  json
 // @Produce  json
-// @Param memberId header string true "Member ID"
 // @Param id path string true "Invite ID"
 // @Param RequestInviteUpdate body model.RequestInviteUpdate true "Invite Update Request"
 // @Success 200 {object} repository.MemberInviteInfo
@@ -242,7 +237,6 @@ func (i invite) Update(c echo.Context) error {
 // @Summary Revoke an invite
 // @Tags Invite
 // @Produce  json
-// @Param memberId header string true "Member ID"
 // @Param id path string true "Invite ID"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} error
