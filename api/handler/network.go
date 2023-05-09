@@ -22,8 +22,13 @@ func NewNetwork(service service.Network) Network {
 	return &network{service: service}
 }
 
+// @Summary Get all networks
+// @Tags Network
+// @Produce  json
+// @Success 200 {array} model.NetworkData
+// @Failure 500 {object} error
+// @Router /networks [get]
 func (a network) GetAll(c echo.Context) error {
-
 	m, err := a.service.GetAll(c.Request().Context())
 	if err != nil {
 		common.LogStringError(c, err, "network: get all")
