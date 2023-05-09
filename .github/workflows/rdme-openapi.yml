@@ -22,6 +22,10 @@ jobs:
         with:
           go-version: 1.19
 
+      - name: install swag
+        run: |
+          go get -u github.com/swaggo/swag/cmd/swag@latest
+          
       - name: Run `swag init` command 📦
         run: |
           go get -u github.com/swaggo/swag/cmd/swag
