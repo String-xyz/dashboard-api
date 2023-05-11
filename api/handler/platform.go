@@ -34,6 +34,7 @@ func NewPlatform(service service.Platform) Platform {
 // @Param body body model.RequestPlatformCreate true "Platform Create Request"
 // @Success 201 {object} model.Platform
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /platforms [post]
 func (p platform) Create(c echo.Context) error {
@@ -41,22 +42,22 @@ func (p platform) Create(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	m, err := p.service.Create(c.Request().Context(), body, organizationId)
 	if err != nil {
 		common.LogStringError(c, err, "platform: create")
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 	return c.JSON(http.StatusCreated, m)
 }
@@ -67,17 +68,18 @@ func (p platform) Create(c echo.Context) error {
 // @Param id path string true "Platform ID"
 // @Success 200 {object} model.Platform
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /platforms/{id} [get]
 func (p platform) Get(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	platformId := c.Param("id")
 	if platformId == "" {
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	m, err := p.service.Get(c.Request().Context(), platformId, organizationId)
@@ -92,17 +94,18 @@ func (p platform) Get(c echo.Context) error {
 // @Tags Platform
 // @Produce  json
 // @Success 200 {array} model.Platform
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /platforms [get]
 func (p platform) GetAll(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	m, err := p.service.GetAll(c.Request().Context(), callerId, organizationId)
@@ -121,22 +124,23 @@ func (p platform) GetAll(c echo.Context) error {
 // @Param body body model.RequestPlatformUpdate true "Platform Update Request"
 // @Success 200 {object} model.Platform
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /platforms/{id} [patch]
 func (p platform) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	platformId := c.Param("id")
 	if platformId == "" {
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	body := model.RequestPlatformUpdate{}
@@ -144,16 +148,16 @@ func (p platform) Update(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "platform: update bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	if body == (model.RequestPlatformUpdate{}) {
-		return httperror.BadRequestError(c, "No fields to update")
+		return httperror.BadRequest400(c, "No fields to update")
 	}
 
 	// validate body
 	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	m, err := p.service.Update(c.Request().Context(), body, platformId, callerId, organizationId)

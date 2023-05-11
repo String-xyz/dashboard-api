@@ -35,20 +35,20 @@ func JWT(auth service.Auth) echo.MiddlewareFunc {
 		SigningKey: []byte(config.Var.JWT_SECRET_KEY),
 		ErrorHandlerWithContext: func(err error, c echo.Context) error {
 			if strings.Contains(err.Error(), "token is expired") || strings.Contains(err.Error(), "missing or malformed jwt") {
-				return httperror.Unauthorized(c)
+				return httperror.Unauthorized401(c)
 			}
 
 			// If member is denied, do not honor JWT
 			var claims = &service.JWTClaims{}
 			denied, err := auth.IsDenied(claims.MemberId)
 			if err != nil {
-				return httperror.InternalError(c)
+				return httperror.Internal500(c)
 			}
 			if denied {
-				return httperror.Unauthorized(c)
+				return httperror.Unauthorized401(c)
 			}
 
-			return httperror.Unauthorized(c)
+			return httperror.Unauthorized401(c)
 		},
 	}
 	return echoMiddleware.JWTWithConfig(config)

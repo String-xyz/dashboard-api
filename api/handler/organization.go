@@ -43,13 +43,13 @@ func (o organization) Create(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "organization: create bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	body.Email = strings.ToLower(body.Email)
 
 	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	m, err := o.service.Create(c.Request().Context(), body)
@@ -57,10 +57,10 @@ func (o organization) Create(c echo.Context) error {
 		common.LogStringError(c, err, "organization: create")
 
 		if serror.Is(err, serror.ALREADY_IN_USE) {
-			return httperror.ConflictError(c, "email already in use")
+			return httperror.Conflict409(c, "email already in use")
 		}
 
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 	return c.JSON(http.StatusCreated, m)
 }
@@ -69,12 +69,13 @@ func (o organization) Create(c echo.Context) error {
 // @Tags Organization
 // @Produce  json
 // @Success 200 {object} model.Organization
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /organizations [get]
 func (o organization) Get(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	m, err := o.service.Get(c.Request().Context(), organizationId)
@@ -92,17 +93,18 @@ func (o organization) Get(c echo.Context) error {
 // @Param body body model.RequestOrganizationUpdate true "Organization Update Request"
 // @Success 200 {object} model.Organization
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /organizations [patch]
 func (o organization) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	body := model.RequestOrganizationUpdate{}
@@ -110,16 +112,16 @@ func (o organization) Update(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "organization: update bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	if body == (model.RequestOrganizationUpdate{}) {
-		return httperror.BadRequestError(c, "No fields to update")
+		return httperror.BadRequest400(c, "No fields to update")
 	}
 
 	// validate body
 	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	m, err := o.service.Update(c.Request().Context(), body, organizationId, callerId)
