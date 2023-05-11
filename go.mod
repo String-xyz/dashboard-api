@@ -3,7 +3,7 @@ module github.com/String-xyz/platform-admin-api
 go 1.19
 
 require (
-	github.com/String-xyz/go-lib v1.8.0
+	github.com/String-xyz/go-lib v1.8.1-0.20230511201101-8832eadeab95
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/jmoiron/sqlx v1.3.5
