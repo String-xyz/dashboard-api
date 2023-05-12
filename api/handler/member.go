@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/String-xyz/go-lib/common"
-	httperror "github.com/String-xyz/go-lib/httperror"
-	validator "github.com/String-xyz/go-lib/validator"
+	"github.com/String-xyz/go-lib/v2/common"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	validator "github.com/String-xyz/go-lib/v2/validator"
 
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"

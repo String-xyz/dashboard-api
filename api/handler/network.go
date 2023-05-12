@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/String-xyz/go-lib/common"
+	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
 )

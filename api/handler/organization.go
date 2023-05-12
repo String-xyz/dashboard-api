@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/String-xyz/go-lib/common"
-	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/go-lib/v2/common"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"

@@ -3,9 +3,9 @@ package middleware
 import (
 	"strings"
 
-	validator "github.com/String-xyz/go-lib/validator"
+	validator "github.com/String-xyz/go-lib/v2/validator"
 
-	httperror "github.com/String-xyz/go-lib/httperror"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
 	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/golang-jwt/jwt"

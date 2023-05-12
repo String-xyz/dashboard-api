@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/String-xyz/go-lib/common"
-	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/go-lib/v2/common"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )

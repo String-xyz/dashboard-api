@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 
-	"github.com/String-xyz/go-lib/common"
+	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"

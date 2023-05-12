@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/String-xyz/go-lib/database"
+	"github.com/String-xyz/go-lib/v2/database"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/String-xyz/platform-admin-api/pkg/store"

@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/String-xyz/go-lib/common"
+	"github.com/String-xyz/go-lib/v2/common"
 
-	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
-	validator "github.com/String-xyz/go-lib/validator"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
+	validator "github.com/String-xyz/go-lib/v2/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"

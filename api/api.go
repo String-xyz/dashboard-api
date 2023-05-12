@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/String-xyz/go-lib/database"
-	"github.com/String-xyz/go-lib/middleware"
-	"github.com/String-xyz/go-lib/validator"
+	"github.com/String-xyz/go-lib/v2/database"
+	"github.com/String-xyz/go-lib/v2/middleware"
+	"github.com/String-xyz/go-lib/v2/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
 )
