@@ -3,9 +3,9 @@ package repository
 import (
 	"time"
 
-	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/database"
-	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/go-lib/v2/common"
+	"github.com/String-xyz/go-lib/v2/database"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 )
 
 const KEY_PREFIX = "deny_"

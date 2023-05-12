@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/String-xyz/go-lib/common"
-	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/go-lib/v2/common"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -105,26 +105,26 @@ func DefaultErrorHandler(c echo.Context, err error, handlerName string) error {
 	common.LogStringError(c, err, handlerName)
 
 	if serror.Is(err, serror.NOT_FOUND) {
-		return httperror.NotFoundError(c)
+		return httperror.NotFound404(c)
 	}
 
 	if serror.Is(err, serror.FORBIDDEN) {
-		return httperror.ForbiddenError(c, "Invoking member lacks authority")
+		return httperror.Forbidden403(c, "Invoking member lacks authority")
 	}
 
 	if serror.Is(err, serror.INVALID_RESET_TOKEN) {
-		return httperror.BadRequestError(c, "Invalid password reset token")
+		return httperror.BadRequest400(c, "Invalid password reset token")
 	}
 
 	if serror.Is(err, serror.INVALID_PASSWORD) {
-		return httperror.BadRequestError(c, "Invalid password")
+		return httperror.BadRequest400(c, "Invalid password")
 	}
 
 	if serror.Is(err, serror.ALREADY_IN_USE) {
-		return httperror.ConflictError(c, "Already in use")
+		return httperror.Conflict409(c, "Already in use")
 	}
 
-	return httperror.InternalError(c)
+	return httperror.Internal500(c)
 }
 
 func validAddress(addr string) bool {

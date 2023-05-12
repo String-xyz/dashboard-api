@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/String-xyz/go-lib/common"
-	httperror "github.com/String-xyz/go-lib/httperror"
-	validator "github.com/String-xyz/go-lib/validator"
+	"github.com/String-xyz/go-lib/v2/common"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	validator "github.com/String-xyz/go-lib/v2/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -41,18 +41,19 @@ func NewApikey(service service.Apikey) Apikey {
 // @Param platformId query string false "Platform ID"
 // @Success 201 {object} model.Apikey
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 400 {object} error
 // @Failure 500 {object} error
 // @Router /apikeys [post]
 func (a apikey) Create(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	keyType := c.QueryParam("type")
@@ -63,12 +64,12 @@ func (a apikey) Create(c echo.Context) error {
 	keyType = strings.ToLower(keyType)
 
 	if keyType != "public" && keyType != "secret" {
-		return httperror.BadRequestError(c, "invalid key type")
+		return httperror.BadRequest400(c, "invalid key type")
 	}
 
 	platformId := c.QueryParam("platformId")
 	if keyType == "public" && platformId == "" {
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	m, err := a.service.Create(c.Request().Context(), keyType, callerId, platformId, organizationId)
@@ -89,18 +90,19 @@ func (a apikey) Create(c echo.Context) error {
 // @Param offset query int false "Offset the starting point of returned results"
 // @Success 200 {array} model.Apikey
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 400 {object} error
 // @Failure 500 {object} error
 // @Router /apikeys [get]
 func (a apikey) GetAll(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	platformId := c.QueryParam("platformId")
@@ -114,13 +116,13 @@ func (a apikey) GetAll(c echo.Context) error {
 	if limitStr != "" {
 		limit, err = strconv.Atoi(limitStr)
 		if err != nil {
-			return httperror.BadRequestError(c, "invalid limit")
+			return httperror.BadRequest400(c, "invalid limit")
 		}
 	}
 	if offsetStr != "" {
 		offset, err = strconv.Atoi(offsetStr)
 		if err != nil {
-			return httperror.BadRequestError(c, "invalid offset")
+			return httperror.BadRequest400(c, "invalid offset")
 		}
 	}
 
@@ -140,22 +142,23 @@ func (a apikey) GetAll(c echo.Context) error {
 // @Param id path string true "API Key ID"
 // @Success 200 {object} model.Apikey
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /apikeys/{id} [get]
 func (a apikey) Get(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	keyId := c.Param("id")
 	if keyId == "" {
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	m, err := a.service.Get(c.Request().Context(), keyId, callerId, organizationId)
@@ -174,23 +177,24 @@ func (a apikey) Get(c echo.Context) error {
 // @Param id path string true "API Key ID"
 // @Success 204 "No Content"
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /apikeys/{id} [delete]
 func (a apikey) Delete(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid callerId")
+		return httperror.Internal500(c, "missing or invalid callerId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	keyId := c.Param("id")
 
 	if !validator.IsUUID(keyId) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	err := a.service.Delete(c.Request().Context(), keyId, callerId, organizationId)
@@ -210,36 +214,37 @@ func (a apikey) Delete(c echo.Context) error {
 // @Param body body model.RequestApikeyUpdate true "API key Update Request"
 // @Success 200 {object} model.Apikey
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 400 {object} error
 // @Failure 500 {object} error
 // @Router /apikeys/{id} [put]
 func (a apikey) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	keyId := c.Param("id")
 
 	if !validator.IsUUID(keyId) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	body := model.RequestApikeyUpdate{}
 
 	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "apikey: update bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	if err := c.Validate(&body); err != nil {
 		common.LogStringError(c, err, "apikey: update validate")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	m, err := a.service.Update(c.Request().Context(), keyId, body, callerId, organizationId)

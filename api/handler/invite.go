@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/String-xyz/go-lib/common"
+	"github.com/String-xyz/go-lib/v2/common"
 
-	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
-	validator "github.com/String-xyz/go-lib/validator"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
+	validator "github.com/String-xyz/go-lib/v2/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -46,25 +46,25 @@ func NewInvite(service service.Invite) Invite {
 func (i invite) Send(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid callerId")
+		return httperror.Internal500(c, "missing or invalid callerId")
 	}
 
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
 	body := model.RequestInviteSend{}
 	err := c.Bind(&body)
 	if err != nil {
-		return httperror.BadRequestError(c, "invalid payload")
+		return httperror.BadRequest400(c, "invalid payload")
 	}
 
 	body.Email = strings.ToLower(body.Email)
 
 	if err := c.Validate(body); err != nil {
 		common.LogStringError(c, err, "invite: send validate")
-		return httperror.InvalidPayloadError(c, err)
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	m, err := i.service.Send(c.Request().Context(), body, &callerId, organizationId)
@@ -92,15 +92,15 @@ func (i invite) Accept(c echo.Context) error {
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: accept bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	if err := c.Validate(body); err != nil {
-		return httperror.InvalidPayloadError(c, err)
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	if !validator.IsUUID(id) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	m, jwt, err := i.service.Accept(c.Request().Context(), id, body)
@@ -108,21 +108,21 @@ func (i invite) Accept(c echo.Context) error {
 		common.LogStringError(c, err, "invite: accept")
 
 		if serror.Is(err, serror.ALREADY_IN_USE) {
-			return httperror.ConflictError(c, "Invite is not pending")
+			return httperror.Conflict409(c, "Invite is not pending")
 		}
 
 		// the token is invalid or expired
 		if serror.Is(err, serror.FORBIDDEN) {
-			return httperror.BadRequestError(c, "Invalid password reset token")
+			return httperror.BadRequest400(c, "Invalid password reset token")
 		}
 
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 
 	err = SetAuthCookies(c, jwt)
 	if err != nil {
 		common.LogStringError(c, err, "invite: set auth cookies")
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 
 	return c.JSON(http.StatusOK, m)
@@ -133,18 +133,16 @@ func (i invite) Accept(c echo.Context) error {
 // @Produce  json
 // @Param status query string false "Invite status"
 // @Success 200 {array} repository.MemberInviteInfo
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /invites [get]
 func (i invite) List(c echo.Context) error {
 	organizationId, ok := c.Get("organizationId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid organizationId")
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
-	status := c.QueryParam("status") // optional
-	// if status == "" {
-	// 	return httperror.BadRequestError(c)
-	// }
+	status := c.QueryParam("status")
 	m, err := i.service.List(c.Request().Context(), status, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "invite: list")
@@ -158,17 +156,18 @@ func (i invite) List(c echo.Context) error {
 // @Param id path string true "Invite ID"
 // @Success 200 {object} repository.MemberInviteInfo
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /invites/{id}/resend [post]
 func (i invite) Resend(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid callerId")
+		return httperror.Internal500(c, "missing or invalid callerId")
 	}
 
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	m, err := i.service.Resend(c.Request().Context(), id, callerId)
@@ -176,10 +175,10 @@ func (i invite) Resend(c echo.Context) error {
 		common.LogStringError(c, err, "invite: resend")
 
 		if serror.Is(err, serror.NOT_FOUND) {
-			return httperror.NotFoundError(c, errors.Cause(err).Error())
+			return httperror.NotFound404(c, errors.Cause(err).Error())
 		}
 
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -192,29 +191,32 @@ func (i invite) Resend(c echo.Context) error {
 // @Param RequestInviteUpdate body model.RequestInviteUpdate true "Invite Update Request"
 // @Success 200 {object} repository.MemberInviteInfo
 // @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 403 {object} error
+// @Failure 404 {object} error
 // @Failure 500 {object} error
 // @Router /invites/{id} [patch]
 func (i invite) Update(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	body := model.RequestInviteUpdate{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "invite: update bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
 	}
 
 	if err := c.Validate(body); err != nil {
 		common.LogStringError(c, err, "invite: update validate")
-		return httperror.InvalidPayloadError(c, err)
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	m, err := i.service.Update(c.Request().Context(), body, id, callerId)
@@ -222,14 +224,14 @@ func (i invite) Update(c echo.Context) error {
 		common.LogStringError(c, err, "invite: update")
 
 		if serror.Is(err, serror.NOT_FOUND) {
-			return httperror.NotFoundError(c, errors.Cause(err).Error())
+			return httperror.NotFound404(c, errors.Cause(err).Error())
 		}
 
 		if serror.Is(err, serror.FORBIDDEN) {
-			return httperror.ForbiddenError(c, "cannot elevate member to owner")
+			return httperror.Forbidden403(c, "cannot elevate member to owner")
 		}
 
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -240,17 +242,20 @@ func (i invite) Update(c echo.Context) error {
 // @Param id path string true "Invite ID"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 403 {object} error
+// @Failure 404 {object} error
 // @Failure 500 {object} error
 // @Router /invites/{id} [delete]
 func (i invite) Revoke(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
-		return httperror.InternalError(c, "missing or invalid memberId")
+		return httperror.Internal500(c, "missing or invalid memberId")
 	}
 
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	err := i.service.Revoke(c.Request().Context(), id, callerId)
@@ -258,14 +263,14 @@ func (i invite) Revoke(c echo.Context) error {
 		common.LogStringError(c, err, "invite: update")
 
 		if serror.Is(err, serror.NOT_FOUND) {
-			return httperror.NotFoundError(c, errors.Cause(err).Error())
+			return httperror.NotFound404(c, errors.Cause(err).Error())
 		}
 
 		if serror.Is(err, serror.FORBIDDEN) {
-			return httperror.ForbiddenError(c, errors.Cause(err).Error())
+			return httperror.Forbidden403(c, errors.Cause(err).Error())
 		}
 
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 	return c.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
@@ -276,12 +281,13 @@ func (i invite) Revoke(c echo.Context) error {
 // @Param id path string true "Invite ID"
 // @Success 200 {object} repository.MemberInviteInfo
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 500 {object} error
 // @Router /invites/{id} [get]
 func (i invite) Get(c echo.Context) error {
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	m, err := i.service.Get(c.Request().Context(), id)
