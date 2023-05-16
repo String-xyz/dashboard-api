@@ -14,7 +14,7 @@ func organizationRoute(services service.Services, e *echo.Echo) {
 
 func platformRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewPlatform(services.Platform)
-	handler.RegisterRoutes(e.Group("/platforms"), middleware.JWT(services.Auth))
+	handler.RegisterRoutes(e.Group("/platforms"), middleware.APIKeyOrJWTAuth(services.Auth))
 }
 
 func memberRoute(services service.Services, e *echo.Echo) {
@@ -34,15 +34,15 @@ func inviteRoute(services service.Services, e *echo.Echo) {
 
 func apikeyRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewApikey(services.Apikey)
-	handler.RegisterRoutes(e.Group("/apikeys"), middleware.JWT(services.Auth))
+	handler.RegisterRoutes(e.Group("/apikeys"), middleware.APIKeyOrJWTAuth(services.Auth))
 }
 
 func contractRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewContract(services.Contract)
-	handler.RegisterRoutes(e.Group("/contracts"), middleware.JWT(services.Auth))
+	handler.RegisterRoutes(e.Group("/contracts"), middleware.APIKeyOrJWTAuth(services.Auth))
 }
 
 func networkRoute(services service.Services, e *echo.Echo) {
 	handler := handler.NewNetwork(services.Network)
-	handler.RegisterRoutes(e.Group("/networks"), middleware.JWT(services.Auth))
+	handler.RegisterRoutes(e.Group("/networks"), middleware.APIKeyOrJWTAuth(services.Auth))
 }

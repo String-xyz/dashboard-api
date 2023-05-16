@@ -28,6 +28,7 @@ type Apikey interface {
 	database.Transactable
 	Create(ctx context.Context, request model.Apikey) (key model.Apikey, err error)
 	GetById(ctx context.Context, id string) (key model.Apikey, err error)
+	GetByData(ctx context.Context, data string, keyType string) (model.Apikey, error)
 	ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error)
 	ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (keys []model.Apikey, err error)
 	Update(ctx context.Context, id string, updates any) error
@@ -76,6 +77,17 @@ func (a apikey[T]) GetById(ctx context.Context, id string) (key model.Apikey, er
 		return key, common.StringError(err)
 	}
 	return key, nil
+}
+
+func (p apikey[T]) GetByData(ctx context.Context, data string, keyType string) (model.Apikey, error) {
+	m := model.Apikey{}
+	err := p.Store.GetContext(ctx, &m, fmt.Sprintf("SELECT * FROM %s WHERE data = $1 AND type = $2", p.Table), data, keyType)
+	if err == sql.ErrNoRows {
+		return m, common.StringError(serror.NOT_FOUND)
+	} else if err != nil {
+		return m, common.StringError(err)
+	}
+	return m, nil
 }
 
 func (a apikey[T]) ListByPlatform(ctx context.Context, platformId string, limit int, offset int) (keys []model.Apikey, err error) {
