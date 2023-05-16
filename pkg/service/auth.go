@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/String-xyz/go-lib/v2/database"
 
 	"github.com/String-xyz/platform-admin-api/config"
+	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -62,6 +64,7 @@ type Auth interface {
 	ValidateJWT(token string) (bool, error)
 	InvalidateRefreshToken(refreshToken string) error
 	GetUserIdFromRefreshToken(refreshToken string) (string, error)
+	ValidateAPIKeySecret(ctx context.Context, key string) (model.Apikey, error)
 	IsDenied(memberId string) (bool, error)
 	Get(key string) (JWTStrategy, error)
 	Delete(key string) error
@@ -192,6 +195,29 @@ func (a auth) GetUserIdFromRefreshToken(refreshToken string) (string, error) {
 	}
 	// if all is well, return the user id
 	return authStrat.Data, nil
+}
+
+func (a auth) ValidateAPIKeySecret(ctx context.Context, key string) (model.Apikey, error) {
+	_, finish := Span(ctx, "service.akikey.ValidateAPIKeySecret")
+	defer finish()
+
+	var authKey model.Apikey
+
+	data := common.ToSha256(key)
+	authKey, err := a.repos.Apikey.GetByData(ctx, data, "secret")
+	if err != nil {
+		return authKey, common.StringError(err)
+	}
+
+	if authKey.Id == "" {
+		return authKey, common.StringError(errors.New("invalid secret key"))
+	}
+
+	if authKey.Data != data {
+		return authKey, common.StringError(errors.New("invalid secret key"))
+	}
+
+	return authKey, nil
 }
 
 func (a auth) IsDenied(memberId string) (bool, error) {
