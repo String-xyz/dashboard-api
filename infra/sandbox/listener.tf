@@ -1,3 +1,7 @@
+data "aws_ssm_parameter" "alb_listener" {
+  name = "string-api-alb-listener-arn"
+}
+
 module "alb_listener_acm" {
   source      = "git@github.com:String-xyz/terraform-modules.git//acm"
   domain_name = "${local.domain}.${local.root_domain}"
@@ -5,12 +9,8 @@ module "alb_listener_acm" {
   zone_id     = data.aws_route53_zone.root.zone_id
   tags = {
     Environment = local.env
-    Name = "${local.service_name}.${local.root_domain}"
+    Name = "${local.env}-${local.service_name}.${local.root_domain}"
   }
-}
-
-data "aws_ssm_parameter" "alb_listener" {
-  name = "string-api-alb-listener-arn"
 }
 
 resource "aws_alb_listener_certificate" "cert" {
@@ -19,7 +19,7 @@ resource "aws_alb_listener_certificate" "cert" {
 }
 
 resource "aws_alb_target_group" "ecs_task_target_group" {
-  name        = "${local.service_name}-tg"
+  name        = "${local.env}-${local.service_name}-tg"
   port        = local.container_port
   vpc_id      = data.terraform_remote_state.vpc.outputs.id
   target_type = "ip"
@@ -40,7 +40,7 @@ resource "aws_alb_target_group" "ecs_task_target_group" {
   }
 
   tags = {
-    Name = "${local.service_name}-tg"
+    Name = "${local.env}-${local.service_name}-tg"
   }
 }
 

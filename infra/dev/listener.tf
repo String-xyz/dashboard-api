@@ -19,7 +19,7 @@ resource "aws_alb_listener_certificate" "cert" {
 }
 
 resource "aws_alb_target_group" "ecs_task_target_group" {
-  name        = "${local.service_name}-tg"
+  name        = "${local.env}-${local.service_name}-tg"
   port        = local.container_port
   vpc_id      = data.terraform_remote_state.vpc.outputs.id
   target_type = "ip"

@@ -1,11 +1,11 @@
 locals {
   cluster_name       = "core-sandbox"
   env                = "sandbox"
-  service_name       = "sandbox-platform-api"
+  service_name       = "dashboard-api"
   root_domain        = "sandbox.string-api.xyz"
-  domain             = "platform-api"
+  domain             = "dashboard-api"
   container_port     = "3000"
-  origin_id          = "sandbox-platform-api"
+  origin_id          = "dashboard-api"
   desired_task_count = "1"
   db_port            = "5432"
   redis_port         = "6379"
@@ -28,7 +28,7 @@ locals {
       dockerLabels = {
         "com.datadoghq.ad.instances" : "[{\"host\":\"%%host%%\"}]",
         "com.datadoghq.ad.check_names" : "[\"${local.service_name}\"]",
-      },
+     },
       portMappings = [
         {
           containerPort = 3000

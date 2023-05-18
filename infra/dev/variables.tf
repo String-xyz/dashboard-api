@@ -1,10 +1,10 @@
 locals {
   cluster_name       = "string-core"
   env                = "dev"
-  service_name       = "platform-api"
+  service_name       = "dashboard-api"
   root_domain        = "dev.string-api.xyz"
   container_port     = "3000"
-  origin_id          = "platform-api"
+  origin_id          = "dashboard-api"
   desired_task_count = "1"
   db_port            = "5432"
   redis_port         = "6379"
