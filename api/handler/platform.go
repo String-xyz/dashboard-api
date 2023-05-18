@@ -5,6 +5,7 @@ import (
 
 	"github.com/String-xyz/go-lib/v2/common"
 	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	validator "github.com/String-xyz/go-lib/v2/validator"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/service"
 	"github.com/labstack/echo/v4"
@@ -167,6 +168,53 @@ func (p platform) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+func (p platform) Deactivate(c echo.Context) error {
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid callerId")
+	}
+
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
+
+	id := c.Param("id")
+	if !validator.IsUUID(id, organizationId, callerId) {
+		return httperror.BadRequest400(c, "invalid id")
+	}
+
+	m, err := p.service.Deactivate(c.Request().Context(), id, callerId, organizationId)
+	if err != nil {
+		return DefaultErrorHandler(c, err, "contract: deactivate")
+	}
+	return c.JSON(http.StatusOK, m)
+
+}
+
+func (p platform) Reactivate(c echo.Context) error {
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid callerId")
+	}
+
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
+
+	id := c.Param("id")
+	if !validator.IsUUID(id, organizationId, callerId) {
+		return httperror.BadRequest400(c, "invalid id")
+	}
+
+	m, err := p.service.Reactivate(c.Request().Context(), id, callerId, organizationId)
+	if err != nil {
+		return DefaultErrorHandler(c, err, "contract: reactivate")
+	}
+	return c.JSON(http.StatusOK, m)
+}
+
 func (p platform) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	if g == nil {
 		panic("no group attached to the platform handler")
@@ -176,4 +224,6 @@ func (p platform) RegisterRoutes(g *echo.Group, ms ...echo.MiddlewareFunc) {
 	g.GET("", p.GetAll, ms...)
 	g.GET("/:id", p.Get, ms...)
 	g.PATCH("/:id", p.Update, ms...)
+	g.PATCH("/:id/deactivate", p.Deactivate, ms...)
+	g.PATCH("/:id/reactivate", p.Reactivate, ms...)
 }
