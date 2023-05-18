@@ -47,12 +47,12 @@ func setupTracer() {
 	rules := []tracer.SamplingRule{tracer.RateRule(1)}
 	tracer.Start(
 		tracer.WithSamplingRules(rules),
-		tracer.WithService("platform-admin-api"),
+		tracer.WithService("dashboard-api"),
 		tracer.WithEnv(config.Var.ENV),
 	)
 
 	err := profiler.Start(
-		profiler.WithService("platform-admin-api"),
+		profiler.WithService("dashboard-api"),
 		profiler.WithEnv(config.Var.ENV),
 		profiler.WithProfileTypes(
 			profiler.CPUProfile,
