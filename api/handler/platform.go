@@ -168,6 +168,16 @@ func (p platform) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, m)
 }
 
+// @Summary Deactivate platform
+// @Tags Platform
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Platform ID"
+// @Success 200 {object} model.Platform
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /platforms/{id}/deactivate [patch]
 func (p platform) Deactivate(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
@@ -192,6 +202,16 @@ func (p platform) Deactivate(c echo.Context) error {
 
 }
 
+// @Summary Reactivate platform
+// @Tags Platform
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Platform ID"
+// @Success 200 {object} model.Platform
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /platforms/{id}/reactivate [patch]
 func (p platform) Reactivate(c echo.Context) error {
 	callerId, ok := c.Get("memberId").(string)
 	if !ok {
