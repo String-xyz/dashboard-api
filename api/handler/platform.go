@@ -232,6 +232,7 @@ func (p platform) Reactivate(c echo.Context) error {
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: reactivate")
 	}
+
 	return c.JSON(http.StatusOK, m)
 }
 
