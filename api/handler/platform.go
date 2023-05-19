@@ -198,6 +198,7 @@ func (p platform) Deactivate(c echo.Context) error {
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: deactivate")
 	}
+
 	return c.JSON(http.StatusOK, m)
 
 }
