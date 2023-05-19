@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/String-xyz/go-lib/v2/common"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
@@ -44,6 +45,12 @@ func (a *apikey) Create(ctx context.Context, keyType string, callerId string, pl
 		if err != nil {
 			return model.Apikey{}, err
 		}
+	}
+
+	// platform must be active
+	err := a.repos.Platform.CheckActive(ctx, platformId)
+	if err != nil {
+		return model.Apikey{}, common.StringError(serror.FORBIDDEN)
 	}
 
 	// Generate the key either as a secret or a public key
