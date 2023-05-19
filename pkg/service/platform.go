@@ -93,7 +93,7 @@ func (p platform) Update(ctx context.Context, request model.RequestPlatformUpdat
 }
 
 func (p platform) Deactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error) {
-	_, finish := Span(ctx, "service.member.Deactivate")
+	_, finish := Span(ctx, "service.platform.Deactivate")
 	defer finish()
 
 	result := model.Platform{}
