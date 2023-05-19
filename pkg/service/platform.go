@@ -93,7 +93,7 @@ func (p platform) Update(ctx context.Context, request model.RequestPlatformUpdat
 }
 
 func (p platform) Deactivate(ctx context.Context, platformId string, callerId string, organizationId string) (result model.Platform, err error) {
-	_, finish := Span(ctx, "service.platform.Reactivate")
+	_, finish := Span(ctx, "service.platform.Deactivate")
 	defer finish()
 
 	err = RequireAuthority(p.repos, callerId, "Owner", "Admin")
