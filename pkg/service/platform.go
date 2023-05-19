@@ -127,7 +127,7 @@ func (p platform) Deactivate(ctx context.Context, platformId string, callerId st
 }
 
 func (p platform) Reactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error) {
-	_, finish := Span(ctx, "service.member.Reactivate")
+	_, finish := Span(ctx, "service.platform.Reactivate")
 	defer finish()
 
 	result := model.Platform{}
