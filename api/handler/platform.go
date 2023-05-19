@@ -190,7 +190,7 @@ func (p platform) Deactivate(c echo.Context) error {
 	}
 
 	id := c.Param("id")
-	if !validator.IsUUID(id, organizationId, callerId) {
+	if !validator.IsUUID(id) {
 		return httperror.BadRequest400(c, "invalid id")
 	}
 
@@ -225,7 +225,7 @@ func (p platform) Reactivate(c echo.Context) error {
 	}
 
 	id := c.Param("id")
-	if !validator.IsUUID(id, organizationId, callerId) {
+	if !validator.IsUUID(id) {
 		return httperror.BadRequest400(c, "invalid id")
 	}
 

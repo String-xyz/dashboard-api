@@ -92,13 +92,11 @@ func (p platform) Update(ctx context.Context, request model.RequestPlatformUpdat
 	return platform, nil
 }
 
-func (p platform) Deactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error) {
-	_, finish := Span(ctx, "service.platform.Deactivate")
+func (p platform) Deactivate(ctx context.Context, platformId string, callerId string, organizationId string) (result model.Platform, err error) {
+	_, finish := Span(ctx, "service.platform.Reactivate")
 	defer finish()
 
-	result := model.Platform{}
-
-	err := RequireAuthority(p.repos, callerId, "Owner", "Admin")
+	err = RequireAuthority(p.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -126,13 +124,11 @@ func (p platform) Deactivate(ctx context.Context, platformId string, callerId st
 	return result, nil
 }
 
-func (p platform) Reactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error) {
+func (p platform) Reactivate(ctx context.Context, platformId string, callerId string, organizationId string) (result model.Platform, err error) {
 	_, finish := Span(ctx, "service.platform.Reactivate")
 	defer finish()
 
-	result := model.Platform{}
-
-	err := RequireAuthority(p.repos, callerId, "Owner", "Admin")
+	err = RequireAuthority(p.repos, callerId, "Owner", "Admin")
 	if err != nil {
 		return result, common.StringError(err)
 	}
