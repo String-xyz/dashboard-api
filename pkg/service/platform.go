@@ -6,6 +6,7 @@ import (
 
 	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/go-lib/v2/database"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
@@ -15,6 +16,8 @@ type Platform interface {
 	Get(ctx context.Context, platformId string, organizationId string) (platform model.Platform, err error)
 	GetAll(ctx context.Context, callerId string, organizationId string) (platforms []model.Platform, err error)
 	Update(ctx context.Context, request model.RequestPlatformUpdate, platformId string, callerId string, organizationId string) (platform model.Platform, err error)
+	Deactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error)
+	Reactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error)
 }
 
 type platform struct {
@@ -87,4 +90,67 @@ func (p platform) Update(ctx context.Context, request model.RequestPlatformUpdat
 		return platform, common.StringError(fmt.Errorf("Platform does not belong to organization"))
 	}
 	return platform, nil
+}
+
+func (p platform) Deactivate(ctx context.Context, platformId string, callerId string, organizationId string) (result model.Platform, err error) {
+	_, finish := Span(ctx, "service.platform.Deactivate")
+	defer finish()
+
+	err = RequireAuthority(p.repos, callerId, "Owner", "Admin")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	platform, err := p.repos.Platform.GetById(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	if platform.OrganizationId != organizationId {
+		return result, common.StringError(serror.FORBIDDEN)
+	}
+
+	p.repos.Platform.Deactivate(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	// return deactivated platform
+	result, err = p.repos.Platform.GetById(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	return result, nil
+}
+
+func (p platform) Reactivate(ctx context.Context, platformId string, callerId string, organizationId string) (result model.Platform, err error) {
+	_, finish := Span(ctx, "service.platform.Reactivate")
+	defer finish()
+
+	err = RequireAuthority(p.repos, callerId, "Owner", "Admin")
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	platform, err := p.repos.Platform.GetById(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	if platform.OrganizationId != organizationId {
+		return result, common.StringError(serror.FORBIDDEN)
+	}
+
+	p.repos.Platform.Activate(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	result, err = p.repos.Platform.GetById(ctx, platformId)
+	if err != nil {
+		return result, common.StringError(err)
+	}
+
+	return result, nil
 }

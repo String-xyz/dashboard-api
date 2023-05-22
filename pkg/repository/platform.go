@@ -27,6 +27,8 @@ type Platform interface {
 	GetById(ctx context.Context, id string) (platform model.Platform, err error)
 	List(ctx context.Context, organizationId string, limit int, offset int) (platforms []model.Platform, err error)
 	Update(ctx context.Context, id string, updates any) error
+	Deactivate(ctx context.Context, id string) error
+	Activate(ctx context.Context, id string) error
 }
 
 type platform[T any] struct {
