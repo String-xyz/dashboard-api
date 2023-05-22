@@ -48,8 +48,12 @@ func (a *apikey) Create(ctx context.Context, keyType string, callerId string, pl
 	}
 
 	// platform must be active
-	err := a.repos.Platform.CheckActive(ctx, platformId)
+	platform, err := a.repos.Platform.GetById(ctx, platformId)
 	if err != nil {
+		return model.Apikey{}, common.StringError(err)
+	}
+
+	if platform.DeactivatedAt != nil {
 		return model.Apikey{}, common.StringError(serror.FORBIDDEN)
 	}
 

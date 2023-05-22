@@ -29,7 +29,6 @@ type Platform interface {
 	Update(ctx context.Context, id string, updates any) error
 	Deactivate(ctx context.Context, id string) error
 	Activate(ctx context.Context, id string) error
-	CheckActive(ctx context.Context, id string) error
 }
 
 type platform[T any] struct {
@@ -74,17 +73,4 @@ func (p platform[T]) List(ctx context.Context, organizationId string, limit int,
 	}
 
 	return platforms, nil
-}
-
-func (p platform[T]) CheckActive(ctx context.Context, id string) error {
-	var platform model.Platform
-	err := p.Store.GetContext(ctx, &platform, `SELECT * FROM platform WHERE platform.id = $1 AND platform.deactivated_at IS NULL;`, id)
-
-	if err == sql.ErrNoRows {
-		return common.StringError(serror.NOT_FOUND)
-	} else if err != nil {
-		return common.StringError(err)
-	}
-
-	return nil
 }
