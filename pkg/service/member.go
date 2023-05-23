@@ -7,10 +7,11 @@ import (
 
 	"github.com/String-xyz/go-lib/v2/common"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/String-xyz/platform-admin-api/config"
 	"github.com/String-xyz/platform-admin-api/pkg/model"
 	"github.com/String-xyz/platform-admin-api/pkg/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type MemberCreateResponse struct {

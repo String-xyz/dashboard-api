@@ -4,7 +4,7 @@ data "aws_ecs_cluster" "cluster" {
 
 resource "aws_ecs_task_definition" "task_definition" {
   container_definitions    = local.task_definition
-  family                   = local.service_name
+  family                   = "${local.env}-${local.service_name}"
   cpu                      = local.cpu
   memory                   = local.memory
   requires_compatibilities = ["FARGATE"]
@@ -14,7 +14,8 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 resource "aws_ecr_repository" "repo" {
-  name                 = local.service_name
+  # adding a prefix to the repo name to avoid conflicts with the dev environment
+  name                 = "${local.env}-${local.service_name}"
   image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
@@ -29,7 +30,7 @@ resource "aws_ecr_repository" "repo" {
 
 resource "aws_ecs_service" "ecs_service" {
   name            = local.service_name
-  task_definition = local.service_name
+  task_definition = "${local.env}-${local.service_name}"
   desired_count   = local.desired_task_count
   cluster         = data.aws_ecs_cluster.cluster.cluster_name
   launch_type     = "FARGATE"
