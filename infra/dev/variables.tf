@@ -1,5 +1,5 @@
 locals {
-  cluster_name       = "string-core"
+  cluster_name       = "core"
   env                = "dev"
   service_name       = "dashboard-api"
   root_domain        = "dev.string-api.xyz"
@@ -37,6 +37,10 @@ locals {
         {
           name      = "STRING_ENCRYPTION_KEY"
           valueFrom = data.aws_ssm_parameter.string_encryption_secret.arn
+        },
+        {
+          name      = "JWT_SECRET_KEY"
+          valueFrom = data.aws_ssm_parameter.jwt_secret.arn
         },
         {
           name      = "SENDGRID_API_KEY"
@@ -110,12 +114,8 @@ locals {
           value = data.aws_kms_key.kms_key.key_id
         },
         {
-          name  = "DD_LOGS_ENABLED"
-          value = "true"
-        },
-        {
-          name  = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL"
-          value = "true"
+          name = "AUTH_EMAIL_ADDRESS"
+          value = "auth@string.xyz"
         },
         {
           name  = "DD_SERVICE"
@@ -128,20 +128,9 @@ locals {
         {
           name  = "DD_ENV"
           value = local.env
-        },
-        {
-          name  = "DD_APM_ENABLED"
-          value = "true"
-        },
-        {
-          name  = "DD_SITE"
-          value = "datadoghq.com"
-        },
-        {
-          name  = "ECS_FARGATE"
-          value = "true"
         }
-      ],
+      ]
+
       logConfiguration = {
         logDriver = "awsfirelens"
         secretOptions = [{
@@ -150,9 +139,9 @@ locals {
         }]
         options = {
           Name             = "datadog"
-          "dd_service"     = "${local.service_name}"
+          "dd_service"     = local.service_name
           "Host"           = "http-intake.logs.datadoghq.com"
-          "dd_source"      = "${local.service_name}"
+          "dd_source"      = local.service_name
           "dd_message_key" = "log"
           "dd_tags"        = "project:${local.service_name}"
           "TLS"            = "on"

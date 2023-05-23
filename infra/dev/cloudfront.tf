@@ -10,7 +10,7 @@ module "cloudfront_acm" {
 }
 
 data "aws_ssm_parameter" "alb_dns" {
-  name = "string-api-alb-dns"
+  name = "api-alb-dns"
 }
 
 resource "aws_cloudfront_distribution" "this" {

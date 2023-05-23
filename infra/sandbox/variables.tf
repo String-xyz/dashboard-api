@@ -1,5 +1,5 @@
 locals {
-  cluster_name       = "core-sandbox"
+  cluster_name       = "sandbox-core"
   env                = "sandbox"
   service_name       = "dashboard-api"
   root_domain        = "sandbox.string-api.xyz"
@@ -40,6 +40,10 @@ locals {
           valueFrom = data.aws_ssm_parameter.string_encryption_secret.arn
         },
         {
+          name      = "JWT_SECRET_KEY"
+          valueFrom = data.aws_ssm_parameter.jwt_secret.arn
+        },
+        {
           name      = "SENDGRID_API_KEY"
           valuefrom = data.aws_ssm_parameter.sendgrid_api_key.arn
         },
@@ -75,7 +79,7 @@ locals {
         },
         {
           name  = "MEMBER_ROLE_OWNER_ID"
-          value = data.aws_ssm_parameter.member_role_admin_id.value
+          value = data.aws_ssm_parameter.member_role_owner_id.value
         },
         {
           name  = "MEMBER_ROLE_ADMIN_ID"
@@ -110,38 +114,11 @@ locals {
           value = data.aws_kms_key.kms_key.key_id
         },
         {
-          name  = "DD_LOGS_ENABLED"
-          value = "true"
-        },
-        {
-          name  = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL"
-          value = "true"
-        },
-        {
-          name  = "DD_SERVICE"
-          value = local.service_name
-        },
-        {
-          name  = "DD_VERSION"
-          value = var.versioning
-        },
-        {
-          name  = "DD_ENV"
-          value = local.env
-        },
-        {
-          name  = "DD_APM_ENABLED"
-          value = "true"
-        },
-        {
-          name  = "DD_SITE"
-          value = "datadoghq.com"
-        },
-        {
-          name  = "ECS_FARGATE"
-          value = "true"
+          name = "AUTH_EMAIL_ADDRESS"
+          value = "auth@string.xyz"
         }
-      ],
+      ]
+
       logConfiguration = {
         logDriver = "awsfirelens"
         secretOptions = [{
@@ -150,9 +127,9 @@ locals {
         }]
         options = {
           Name             = "datadog"
-          "dd_service"     = "${local.service_name}"
+          "dd_service"     = local.service_name
           "Host"           = "http-intake.logs.datadoghq.com"
-          "dd_source"      = "${local.service_name}"
+          "dd_source"      = local.service_name
           "dd_message_key" = "log"
           "dd_tags"        = "project:${local.service_name}"
           "TLS"            = "on"
@@ -164,16 +141,25 @@ locals {
       name      = "datadog-agent"
       image     = "public.ecr.aws/datadog/agent:latest"
       essential = true
-      secrets = [{
-        name      = "DD_API_KEY"
-        valueFrom = data.aws_ssm_parameter.datadog.arn
-      }],
       portMappings = [{
         hostPort      = 8126,
         protocol      = "tcp",
         containerPort = 8126
       }
-    ]
+      ]
+      secrets = [{
+        name      = "DD_API_KEY"
+        valueFrom = data.aws_ssm_parameter.datadog.arn
+      }]
+      environment = [
+        {
+          name  = "DD_VERSION"
+         value = var.versioning
+        },
+        {
+          name  = "DD_ENV"
+          value = local.env
+       }]
   },
   {
     name      = "log_router"

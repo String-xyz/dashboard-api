@@ -23,7 +23,6 @@ type vars struct {
 	MEMBER_ROLE_OWNER_ID  string
 	MEMBER_ROLE_ADMIN_ID  string
 	MEMBER_ROLE_MEMBER_ID string
-	SERVICE_NAME          string
 	JWT_SECRET_KEY        string
 	SENDGRID_API_KEY      string
 	STRING_ENCRYPTION_KEY string

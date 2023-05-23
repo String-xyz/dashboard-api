@@ -36,6 +36,7 @@ data "aws_iam_policy_document" "task_policy" {
     resources = [
       data.aws_ssm_parameter.datadog.arn,
       data.aws_ssm_parameter.string_encryption_secret.arn,
+      data.aws_ssm_parameter.jwt_secret.arn,
       data.aws_ssm_parameter.db_password.arn,
       data.aws_ssm_parameter.db_username.arn,
       data.aws_ssm_parameter.db_name.arn,

@@ -1,5 +1,5 @@
 resource "aws_security_group" "ecs_task_sg" {
-  name   = "${local.service_name}-task-sg"
+  name   = "${local.env}-${local.service_name}-task-sg"
   vpc_id = data.terraform_remote_state.vpc.outputs.id
   ingress {
     from_port   = local.container_port
@@ -20,7 +20,7 @@ resource "aws_security_group" "ecs_task_sg" {
   }
 
   tags = {
-    Name        = "${local.service_name}-task-sg"
+    Name        = "${local.env}-${local.service_name}-task-sg"
     environment = local.env
   }
 }

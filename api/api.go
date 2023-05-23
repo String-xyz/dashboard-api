@@ -22,7 +22,7 @@ func heartbeat(c echo.Context) error {
 }
 
 func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
-	e.Use(middleware.Tracer("platform-api"))
+	e.Use(middleware.Tracer("dashboard-api"))
 	e.Use(middleware.CORS())
 	e.Use(middleware.RequestId())
 	e.Use(middleware.Recover())

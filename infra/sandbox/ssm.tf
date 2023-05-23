@@ -18,8 +18,8 @@ data "aws_ssm_parameter" "member_role_admin_id" {
   name = "${local.env}-platform-member-role-admin-id"
 }
 
-data "aws_ssm_parameter" "user_jwt_secret" {
-  name = "${local.env}-platform-jwt-secret"
+data "aws_ssm_parameter" "jwt_secret" {
+  name = "${local.env}-dashboard-jwt-secret"
 }
 
 data "aws_ssm_parameter" "sendgrid_api_key" {

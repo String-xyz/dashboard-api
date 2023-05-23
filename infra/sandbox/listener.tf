@@ -1,5 +1,5 @@
 data "aws_ssm_parameter" "alb_listener" {
-  name = "string-api-alb-listener-arn"
+  name = "${local.env}-api-alb-listener-arn"
 }
 
 module "alb_listener_acm" {
