@@ -1,10 +1,10 @@
 package api
 
 import (
+	"github.com/String-xyz/dashboard-api/pkg/repository"
+	"github.com/String-xyz/dashboard-api/pkg/service"
+	"github.com/String-xyz/dashboard-api/pkg/store"
 	"github.com/String-xyz/go-lib/v2/database"
-	"github.com/String-xyz/platform-admin-api/pkg/repository"
-	"github.com/String-xyz/platform-admin-api/pkg/service"
-	"github.com/String-xyz/platform-admin-api/pkg/store"
 )
 
 func newRepos(config APIConfig) repository.Repositories {

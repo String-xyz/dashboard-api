@@ -1,10 +1,10 @@
 package service
 
 import (
+	"github.com/String-xyz/dashboard-api/config"
+	"github.com/String-xyz/dashboard-api/pkg/repository"
 	"github.com/String-xyz/go-lib/v2/common"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
-	"github.com/String-xyz/platform-admin-api/config"
-	"github.com/String-xyz/platform-admin-api/pkg/repository"
 )
 
 // In: Handle to repos, PlatformMember Id of caller, allowable roles (["Member", "Admin", "Owner"])

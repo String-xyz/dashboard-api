@@ -9,9 +9,9 @@ import (
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/String-xyz/platform-admin-api/config"
-	"github.com/String-xyz/platform-admin-api/pkg/model"
-	"github.com/String-xyz/platform-admin-api/pkg/repository"
+	"github.com/String-xyz/dashboard-api/config"
+	"github.com/String-xyz/dashboard-api/pkg/model"
+	"github.com/String-xyz/dashboard-api/pkg/repository"
 )
 
 type MemberCreateResponse struct {

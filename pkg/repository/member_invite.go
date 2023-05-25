@@ -10,7 +10,7 @@ import (
 	librepository "github.com/String-xyz/go-lib/v2/repository"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
 
-	"github.com/String-xyz/platform-admin-api/pkg/model"
+	"github.com/String-xyz/dashboard-api/pkg/model"
 )
 
 func GetInviteStatus(invite MemberInviteInfo) string {

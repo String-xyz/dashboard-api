@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/go-lib/v2/database"
 	librepository "github.com/String-xyz/go-lib/v2/repository"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
-	"github.com/String-xyz/platform-admin-api/pkg/model"
 )
 
 type MemberRoleUpdates struct {

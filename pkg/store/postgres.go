@@ -9,7 +9,7 @@ import (
 	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
 	sqlxtrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/jmoiron/sqlx"
 
-	"github.com/String-xyz/platform-admin-api/config"
+	"github.com/String-xyz/dashboard-api/config"
 )
 
 var pgDB *sqlx.DB

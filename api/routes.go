@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/String-xyz/platform-admin-api/api/handler"
-	"github.com/String-xyz/platform-admin-api/api/middleware"
-	"github.com/String-xyz/platform-admin-api/pkg/service"
+	"github.com/String-xyz/dashboard-api/api/handler"
+	"github.com/String-xyz/dashboard-api/api/middleware"
+	"github.com/String-xyz/dashboard-api/pkg/service"
 	"github.com/labstack/echo/v4"
 )
 
