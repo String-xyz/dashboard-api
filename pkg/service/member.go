@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/String-xyz/dashboard-api/config"
+	"github.com/String-xyz/dashboard-api/pkg/internal/emailer"
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/repository"
 )
@@ -149,28 +150,15 @@ func (m member) SendPasswordResetEmail(ctx context.Context, request model.Reques
 	// generate reset token by hashing member id
 	secret := config.Var.STRING_ENCRYPTION_KEY
 	resetToken, err := common.EncryptString(member.Id, secret)
+	if err != nil {
+		return common.StringError(err)
+	}
 
 	// url encode token
 	resetToken = url.QueryEscape(resetToken)
 
-	if err != nil {
-		return common.StringError(err)
-	}
-
-	body := "" +
-		"<a href='https://www.string.xyz'>" +
-		"<img src='https://uploads-ssl.webflow.com/63163482142485bcffc0cd47/6318c58524a46f188e0adef6_Logo-dark-lg-p-500.png'></img></a>" +
-		"<header>You have requested a password reset for the String API</header>" +
-		"<br>Dear " + member.Name + "," +
-		"<br>If you have forgotten your password, click the link below to reset it:" +
-		"<br><a href='" + config.Var.BASE_DASHBOARD_URL + "/members/password-reset/" + resetToken + "'>Reset Password</a>" // TODO: Change URL to Password Reset page and include resetToken
-
-	err = SendEmail("String API", member.Name, email, "String API Password Reset", body)
-	if err != nil {
-		return common.StringError(err)
-	}
-
-	return nil
+	emailer := emailer.New()
+	return emailer.SendPasswordResetEmail(ctx, email, resetToken, member.Name)
 }
 
 func (m member) PasswordReset(ctx context.Context, request model.RequestPasswordReset) error {
