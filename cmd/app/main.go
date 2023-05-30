@@ -8,9 +8,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
 
-	"github.com/String-xyz/platform-admin-api/api"
-	"github.com/String-xyz/platform-admin-api/config"
-	"github.com/String-xyz/platform-admin-api/pkg/store"
+	"github.com/String-xyz/dashboard-api/api"
+	"github.com/String-xyz/dashboard-api/config"
+	"github.com/String-xyz/dashboard-api/pkg/store"
 
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/profiler"

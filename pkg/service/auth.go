@@ -13,9 +13,9 @@ import (
 	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/go-lib/v2/database"
 
-	"github.com/String-xyz/platform-admin-api/config"
-	"github.com/String-xyz/platform-admin-api/pkg/model"
-	"github.com/String-xyz/platform-admin-api/pkg/repository"
+	"github.com/String-xyz/dashboard-api/config"
+	"github.com/String-xyz/dashboard-api/pkg/model"
+	"github.com/String-xyz/dashboard-api/pkg/repository"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )

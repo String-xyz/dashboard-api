@@ -8,8 +8,8 @@ import (
 	httperror "github.com/String-xyz/go-lib/v2/httperror"
 	validator "github.com/String-xyz/go-lib/v2/validator"
 
-	"github.com/String-xyz/platform-admin-api/pkg/model"
-	"github.com/String-xyz/platform-admin-api/pkg/service"
+	"github.com/String-xyz/dashboard-api/pkg/model"
+	"github.com/String-xyz/dashboard-api/pkg/service"
 	"github.com/labstack/echo/v4"
 )
 

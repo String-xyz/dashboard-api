@@ -5,12 +5,13 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/String-xyz/dashboard-api/config"
+	"github.com/String-xyz/dashboard-api/pkg/internal/emailer"
+	"github.com/String-xyz/dashboard-api/pkg/model"
+	"github.com/String-xyz/dashboard-api/pkg/repository"
 	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/go-lib/v2/database"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
-	"github.com/String-xyz/platform-admin-api/config"
-	"github.com/String-xyz/platform-admin-api/pkg/model"
-	"github.com/String-xyz/platform-admin-api/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -77,10 +78,10 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	if err != nil {
 		return invite, common.StringError(err)
 	}
+	token = url.QueryEscape(token) // make
 
-	body := i.createEmailBody(invite.Id, request.Name, token)
-
-	err = SendEmail("String API", "New String API User", request.Email, "String API Invitation", body)
+	emailer := emailer.New()
+	err = emailer.SendInviteEmail(ctx, request.Email, token, invite.Id, request.Name)
 	if err != nil {
 		return invite, common.StringError(err)
 	}
@@ -200,9 +201,10 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 		return result, common.StringError(err)
 	}
 
-	body := i.createEmailBody(result.Id, result.Name, token)
+	token = url.QueryEscape(token)
 
-	err = SendEmail("String API", "New String API User", result.Email, "String API Invitation", body)
+	emailer := emailer.New()
+	err = emailer.SendInviteEmail(ctx, result.Email, token, result.Id, result.Name)
 	if err != nil {
 		return result, common.StringError(err)
 	}
@@ -273,20 +275,4 @@ func (i invite) Get(ctx context.Context, id string) (repository.MemberInviteInfo
 		return result, common.StringError(err)
 	}
 	return result, nil
-}
-
-func (i invite) createEmailBody(inviteId, userName, token string) string {
-	token = url.QueryEscape(token) // make
-
-	href := config.Var.BASE_DASHBOARD_URL + "/invite/" + inviteId + "?token=" + token
-
-	body := "" +
-		"<a href='https://www.string.xyz'>" +
-		"<img src='https://uploads-ssl.webflow.com/63163482142485bcffc0cd47/6318c58524a46f188e0adef6_Logo-dark-lg-p-500.png'></img></a>" +
-		"<header>You have been invited to use the String API</header>" +
-		"<br>Dear " + userName + "," +
-		"<br>Thank you for signing up to use the String API.  Please click the link below to set your password and complete your registration process:" +
-		"<br><a href='" + href + "'>Accept Invitation</a>"
-
-	return body
 }

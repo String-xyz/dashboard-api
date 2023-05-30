@@ -1,4 +1,4 @@
-module github.com/String-xyz/platform-admin-api
+module github.com/String-xyz/dashboard-api
 
 go 1.19
 
