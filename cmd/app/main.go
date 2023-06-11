@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	env "github.com/String-xyz/go-lib/config"
 	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
@@ -18,7 +19,7 @@ import (
 
 func main() {
 	// load env vars
-	err := config.LoadEnv()
+	err := env.LoadEnv(&config.Var)
 	if err != nil {
 		panic(err)
 	}

@@ -1,51 +1,24 @@
 package config
 
-import (
-	"os"
-	"reflect"
-	"strings"
-
-	"github.com/joho/godotenv"
-)
-
 type vars struct {
-	ENV                   string
-	PORT                  string
-	BASE_DASHBOARD_URL    string
-	DB_NAME               string
-	DB_USERNAME           string
-	DB_PASSWORD           string
-	DB_HOST               string
-	DB_PORT               string
-	REDIS_PASSWORD        string
-	REDIS_HOST            string
-	REDIS_PORT            string
-	MEMBER_ROLE_OWNER_ID  string
-	MEMBER_ROLE_ADMIN_ID  string
-	MEMBER_ROLE_MEMBER_ID string
-	JWT_SECRET_KEY        string
-	SENDGRID_API_KEY      string
-	STRING_ENCRYPTION_KEY string
-	AUTH_EMAIL_ADDRESS    string
+	ENV                   string `required:"true"`
+	PORT                  string `required:"true"`
+	BASE_DASHBOARD_URL    string `required:"true"`
+	DB_NAME               string `required:"true"`
+	DB_USERNAME           string `required:"true"`
+	DB_PASSWORD           string `required:"true"`
+	DB_HOST               string `required:"true"`
+	DB_PORT               string `required:"true"`
+	REDIS_PASSWORD        string `required:"true"`
+	REDIS_HOST            string `required:"true"`
+	REDIS_PORT            string `required:"true"`
+	MEMBER_ROLE_OWNER_ID  string `required:"true"`
+	MEMBER_ROLE_ADMIN_ID  string `required:"true"`
+	MEMBER_ROLE_MEMBER_ID string `required:"true"`
+	JWT_SECRET_KEY        string `required:"true"`
+	SENDGRID_API_KEY      string `required:"true"`
+	STRING_ENCRYPTION_KEY string `required:"true"`
+	AUTH_EMAIL_ADDRESS    string `required:"true"`
 }
 
 var Var vars
-
-func LoadEnv() error {
-	godotenv.Load(".env")
-	missing := []string{}
-	stype := reflect.ValueOf(&Var).Elem()
-	for i := 0; i < stype.NumField(); i++ {
-		field := stype.Field(i)
-		key := stype.Type().Field(i).Name
-		value := os.Getenv(key)
-		if value == "" {
-			missing = append(missing, key)
-		}
-		field.SetString(value)
-	}
-	if len(missing) > 0 {
-		panic("Missing environment variable: " + strings.Join(missing, ", "))
-	}
-	return nil
-}
