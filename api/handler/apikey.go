@@ -9,8 +9,10 @@ import (
 	"github.com/String-xyz/dashboard-api/pkg/service"
 	"github.com/String-xyz/go-lib/v2/common"
 	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	validator "github.com/String-xyz/go-lib/v2/validator"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 type Apikey interface {
@@ -127,7 +129,7 @@ func (a apikey) GetAll(c echo.Context) error {
 	}
 
 	m, err := a.service.GetAll(c.Request().Context(), callerId, platformId, organizationId, limit, offset)
-	if err != nil {
+	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "apikey: get all")
 	}
 
