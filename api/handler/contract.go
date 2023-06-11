@@ -57,6 +57,7 @@ func (a contract) Create(c echo.Context) error {
 
 	body := model.RequestContractCreate{}
 	if err := c.Bind(&body); err != nil {
+		common.LogStringError(c, err, "contract: create bind")
 		return httperror.BadRequest400(c)
 	}
 

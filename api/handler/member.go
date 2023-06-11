@@ -282,6 +282,7 @@ func (a member) SendPasswordResetEmail(c echo.Context) error {
 	}
 
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "member: send password reset email validate")
 		return httperror.InvalidPayload400(c, err)
 	}
 
@@ -313,6 +314,7 @@ func (a member) PasswordReset(c echo.Context) error {
 	}
 
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "member: password reset validate")
 		return httperror.InvalidPayload400(c, err)
 	}
 
