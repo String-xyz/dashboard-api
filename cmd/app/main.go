@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	env "github.com/String-xyz/go-lib/config"
 	"github.com/String-xyz/go-lib/v2/common"
+	env "github.com/String-xyz/go-lib/v2/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
 
