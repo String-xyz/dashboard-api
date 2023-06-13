@@ -118,12 +118,14 @@ func (a apikey) GetAll(c echo.Context) error {
 	if limitStr != "" {
 		limit, err = strconv.Atoi(limitStr)
 		if err != nil {
+			common.LogStringError(c, err, "apikey get all: invalid limit")
 			return httperror.BadRequest400(c, "invalid limit")
 		}
 	}
 	if offsetStr != "" {
 		offset, err = strconv.Atoi(offsetStr)
 		if err != nil {
+			common.LogStringError(c, err, "apikey get all: invalid offset")
 			return httperror.BadRequest400(c, "invalid offset")
 		}
 	}

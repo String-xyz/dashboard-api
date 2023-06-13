@@ -49,6 +49,7 @@ func (p platform) Create(c echo.Context) error {
 	}
 
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "platform: create validate body")
 		return httperror.InvalidPayload400(c, err)
 	}
 
@@ -160,6 +161,7 @@ func (p platform) Update(c echo.Context) error {
 
 	// validate body
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "platform: update validate body")
 		return httperror.InvalidPayload400(c, err)
 	}
 
