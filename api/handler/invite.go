@@ -144,7 +144,7 @@ func (i invite) List(c echo.Context) error {
 
 	status := c.QueryParam("status")
 	m, err := i.service.List(c.Request().Context(), status, organizationId)
-	if err != nil {
+	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "invite: list")
 	}
 	return c.JSON(http.StatusOK, m)

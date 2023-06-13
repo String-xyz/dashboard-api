@@ -67,7 +67,7 @@ func (p platform[T]) List(ctx context.Context, organizationId string, limit int,
 	err = p.Store.SelectContext(ctx, &platforms, `SELECT * FROM platform WHERE platform.organization_id = $1 LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return platforms, common.StringError(serror.NOT_FOUND)
+		return []model.Platform{}, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
 		return platforms, common.StringError(err)
 	}

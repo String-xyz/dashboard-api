@@ -98,7 +98,7 @@ func (a apikey[T]) ListByPlatform(ctx context.Context, platformId string, limit 
 	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.platform_id = $1 AND apikey.deleted_at IS NULL  LIMIT $2 OFFSET $3;`, platformId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return keys, common.StringError(serror.NOT_FOUND)
+		return []model.Apikey{}, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
 		return keys, common.StringError(err)
 	}
@@ -114,7 +114,7 @@ func (a apikey[T]) ListByOrganization(ctx context.Context, organizationId string
 	err = a.Store.SelectContext(ctx, &keys, `SELECT * FROM apikey WHERE apikey.organization_id = $1 AND apikey.deleted_at IS NULL LIMIT $2 OFFSET $3;`, organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return keys, common.StringError(serror.NOT_FOUND)
+		return []model.Apikey{}, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
 		return keys, common.StringError(err)
 	}

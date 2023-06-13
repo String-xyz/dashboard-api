@@ -7,6 +7,7 @@ import (
 	httperror "github.com/String-xyz/go-lib/v2/httperror"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/pkg/errors"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/service"
@@ -98,7 +99,7 @@ func (a contract) GetAll(c echo.Context) error {
 	platformId := c.QueryParam("platformId")
 
 	m, err := a.service.GetAll(c.Request().Context(), platformId, organizationId)
-	if err != nil {
+	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "contract: get all")
 	}
 	return c.JSON(http.StatusOK, m)

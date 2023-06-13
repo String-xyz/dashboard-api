@@ -6,7 +6,9 @@ import (
 
 	"github.com/String-xyz/go-lib/v2/common"
 	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/pkg/errors"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/service"
@@ -46,7 +48,7 @@ func (a member) GetAll(c echo.Context) error {
 	}
 
 	m, err := a.service.GetAll(c.Request().Context(), organizationId)
-	if err != nil {
+	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		common.LogStringError(c, err, "member: get all")
 		return httperror.Internal500(c)
 	}
