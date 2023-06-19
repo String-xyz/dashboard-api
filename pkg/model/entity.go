@@ -113,6 +113,7 @@ type NetworkFull struct {
 }
 
 type NetworkData struct {
-	Id   string `json:"id,omitempty" db:"id"`
-	Name string `json:"name" db:"name"`
+	Id      string `json:"id,omitempty" db:"id"`
+	Name    string `json:"name" db:"name"`
+	ChainId uint64 `json:"chainId" db:"chain_id"`
 }

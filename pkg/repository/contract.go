@@ -74,7 +74,7 @@ func (c contract[T]) ListByOrganization(ctx context.Context, organizationId stri
 		`SELECT contract.* FROM contract 
 			LEFT JOIN platform 
 			ON contract.platform_id = platform.id 
-			WHERE platform.organization_id = $1 AND deleted_at IS NULL
+			WHERE platform.organization_id = $1 AND contract.deleted_at IS NULL
 			LIMIT $2 OFFSET $3`,
 		organizationId, limit, offset)
 
