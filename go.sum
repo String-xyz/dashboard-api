@@ -19,14 +19,8 @@ github.com/DataDog/sketches-go v1.2.1/go.mod h1:1xYmPLY1So10AwxV6MJV0J53XVH+WL9A
 github.com/Microsoft/go-winio v0.5.0/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/Microsoft/go-winio v0.5.1 h1:aPJp2QD7OOrhO5tQXqQoGSJc+DjDtWTGLOmNyAm6FgY=
 github.com/Microsoft/go-winio v0.5.1/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
-github.com/String-xyz/go-lib v1.8.0 h1:AHE7D0hRWvWAiF/fxJvhjRrw44Ca7DVcTA1txLpd6s8=
-github.com/String-xyz/go-lib v1.8.0/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
-github.com/String-xyz/go-lib v1.8.1-0.20230511201101-8832eadeab95 h1:REWxPn4B4m74pSB8UOgIMUSwBygwsen0LdKFLFoFhEQ=
-github.com/String-xyz/go-lib v1.8.1-0.20230511201101-8832eadeab95/go.mod h1:TFAJPYo6YXvk3A1p1WkFuoN5k1wGHbRTxuOg9KLjpUI=
-github.com/String-xyz/go-lib/v2 v2.0.1 h1:b3D0rcdh1rgCpK3y/trahe4a9cvckmnPr6eEw5ddYnE=
-github.com/String-xyz/go-lib/v2 v2.0.1/go.mod h1:CQWGpuggF+oiyzmMw+uaO6ophou3eIr4aqA6XxJKKJk=
-github.com/String-xyz/go-lib/v2 v2.0.2 h1:pGJXqs+/LiI/vIbhQmc2xflQ/CTOu7fWlTnZwlFxXFs=
-github.com/String-xyz/go-lib/v2 v2.0.2/go.mod h1:CQWGpuggF+oiyzmMw+uaO6ophou3eIr4aqA6XxJKKJk=
+github.com/String-xyz/go-lib/v2 v2.0.3 h1:Ls+kgTuZfhjv3J5zDK61ZZ/nFyip3+0AnIRk+Ciq1Ps=
+github.com/String-xyz/go-lib/v2 v2.0.3/go.mod h1:ifMnKUbxfLatYJjFMcrhgjdMicJNAlCIa1vNOoqc24w=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
@@ -112,8 +106,8 @@ github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpO
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/jmoiron/sqlx v1.3.5 h1:vFFPA71p1o5gAeqtEAwLU4dnX2napprKtHr7PYIcN3g=
 github.com/jmoiron/sqlx v1.3.5/go.mod h1:nRVWtLre0KfCLJvgxzCsLVMogSvQ1zNJtpYr2Ccp0mQ=
-github.com/joho/godotenv v1.4.0 h1:3l4+N6zfMWnkbPEXKng2o2/MR5mSwTrBih4ZEkkz1lg=
-github.com/joho/godotenv v1.4.0/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/josharian/intern v1.0.0 h1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=
 github.com/josharian/intern v1.0.0/go.mod h1:5DoeVV0s6jJacbCEi61lwdGj/aVlrQvzHFFd8Hwg//Y=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

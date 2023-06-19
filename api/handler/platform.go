@@ -7,8 +7,10 @@ import (
 	"github.com/String-xyz/dashboard-api/pkg/service"
 	"github.com/String-xyz/go-lib/v2/common"
 	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	validator "github.com/String-xyz/go-lib/v2/validator"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 type Platform interface {
@@ -47,6 +49,7 @@ func (p platform) Create(c echo.Context) error {
 	}
 
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "platform: create validate body")
 		return httperror.InvalidPayload400(c, err)
 	}
 
@@ -110,7 +113,7 @@ func (p platform) GetAll(c echo.Context) error {
 	}
 
 	m, err := p.service.GetAll(c.Request().Context(), callerId, organizationId)
-	if err != nil {
+	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "apikey: get all")
 	}
 
@@ -158,6 +161,7 @@ func (p platform) Update(c echo.Context) error {
 
 	// validate body
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "platform: update validate body")
 		return httperror.InvalidPayload400(c, err)
 	}
 

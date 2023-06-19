@@ -57,6 +57,7 @@ func (i invite) Send(c echo.Context) error {
 	body := model.RequestInviteSend{}
 	err := c.Bind(&body)
 	if err != nil {
+		common.LogStringError(c, err, "invite: send bind")
 		return httperror.BadRequest400(c, "invalid payload")
 	}
 
@@ -144,7 +145,7 @@ func (i invite) List(c echo.Context) error {
 
 	status := c.QueryParam("status")
 	m, err := i.service.List(c.Request().Context(), status, organizationId)
-	if err != nil {
+	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "invite: list")
 	}
 	return c.JSON(http.StatusOK, m)

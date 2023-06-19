@@ -57,7 +57,7 @@ func (c contract[T]) ListByPlatform(ctx context.Context, platformId string, limi
 	}
 	err = c.Store.SelectContext(ctx, &contracts, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1 AND deleted_at IS NULL LIMIT $2 OFFSET $3", c.Table), platformId, limit, offset)
 	if err == sql.ErrNoRows {
-		return contracts, nil
+		return []model.Contract{}, nil
 	}
 	if err != nil {
 		return contracts, err
@@ -79,7 +79,7 @@ func (c contract[T]) ListByOrganization(ctx context.Context, organizationId stri
 		organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return contracts, nil
+		return []model.Contract{}, nil
 	}
 	if err != nil {
 		return contracts, err

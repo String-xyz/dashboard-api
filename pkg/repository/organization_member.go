@@ -117,7 +117,7 @@ func (m organizationMember[T]) List(ctx context.Context, organizationId string, 
 		OFFSET $3;`, organizationId, limit, offset)
 
 	if err == sql.ErrNoRows {
-		return members, common.StringError(serror.NOT_FOUND)
+		return []OrganizationMemberWithRole{}, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
 		return members, common.StringError(err)
 	}

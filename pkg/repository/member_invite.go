@@ -93,7 +93,7 @@ func (i memberInvite[T]) GetByOrganization(ctx context.Context, organizationId s
 	err = i.Store.Select(&invites, getBaseQuery()+`WHERE member_invite.organization_id = $1 AND member_invite.deleted_at IS NULL`, organizationId)
 
 	if err != nil && err == sql.ErrNoRows {
-		return invites, common.StringError(serror.NOT_FOUND)
+		return []MemberInviteInfo{}, common.StringError(serror.NOT_FOUND)
 	} else if err != nil {
 		return invites, common.StringError(err)
 	}

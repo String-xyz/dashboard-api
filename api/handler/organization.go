@@ -49,6 +49,7 @@ func (o organization) Create(c echo.Context) error {
 	body.Email = strings.ToLower(body.Email)
 
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "organization: create validate body")
 		return httperror.InvalidPayload400(c, err)
 	}
 
@@ -121,6 +122,7 @@ func (o organization) Update(c echo.Context) error {
 
 	// validate body
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "organization: update validate body")
 		return httperror.InvalidPayload400(c, err)
 	}
 

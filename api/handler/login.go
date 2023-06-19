@@ -51,6 +51,7 @@ func (l login) Login(c echo.Context) error {
 
 	// validate body
 	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "login: login validate body")
 		return httperror.InvalidPayload400(c, err)
 	}
 
@@ -65,8 +66,6 @@ func (l login) Login(c echo.Context) error {
 		if serror.Is(err, serror.NOT_FOUND) {
 			return httperror.Unauthorized401(c, "Invalid email or password")
 		}
-
-		return DefaultErrorHandler(c, err, "login: login")
 	}
 
 	err = SetAuthCookies(c, jwt)
@@ -129,6 +128,7 @@ func (l login) Logout(c echo.Context) error {
 	cookie, err := c.Cookie("StringAdminRefreshToken")
 	if err != nil {
 		// already logged out, idempotent
+		common.LogStringError(c, err, "Logout: unable to get StringAdminRefreshToken cookie")
 		return c.JSON(http.StatusNoContent, nil)
 	}
 
