@@ -86,16 +86,17 @@ type RequestPasswordReset struct {
 }
 
 type RequestContractCreate struct {
-	Name       string         `json:"name" db:"name"`
-	Address    string         `json:"address" db:"address"`
-	Functions  pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
-	NetworkId  string         `json:"networkId" db:"network_id"`
-	PlatformId string         `json:"platformId" db:"platform_id"`
+	Name        string         `json:"name" db:"name"`
+	Address     string         `json:"address" db:"address"`
+	Functions   pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
+	NetworkId   string         `json:"networkId" db:"network_id"`
+	PlatformIds pq.StringArray `json:"platformIds" db:"platform_ids" swaggertype:"array,string"`
 }
 
 type RequestContractUpdate struct {
-	Name      *string         `json:"name" db:"name"`
-	Address   *string         `json:"address" db:"address"`
-	Functions *pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
-	NetworkId *string         `json:"networkId" db:"network_id"`
+	Name        *string         `json:"name" db:"name"`
+	Address     *string         `json:"address" db:"address"`
+	Functions   *pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
+	NetworkId   *string         `json:"networkId" db:"network_id"`
+	PlatformIds *pq.StringArray `json:"platformIds" db:"platform_ids" swaggertype:"array,string"`
 }

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/go-lib/v2/common"
@@ -21,7 +20,7 @@ type Contract interface {
 	ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (contracts []model.Contract, err error)
 	List(ctx context.Context, limit int, offset int) (contracts []model.Contract, err error)
 	Update(ctx context.Context, id string, updates any) error
-	GetByAddressAndNetworkAndPlatform(ctx context.Context, address string, networkId string, platformId string) (contract model.Contract, err error)
+	GetByAddressAndNetwork(ctx context.Context, address string, networkId string) (contract model.Contract, err error)
 	Activate(ctx context.Context, id string) error
 }
 
@@ -34,20 +33,52 @@ func NewContract(db database.Queryable) Contract {
 }
 
 func (c contract[T]) Create(request model.Contract) (contract model.Contract, err error) {
+	c.MustBegin()
+	defer c.Reset()
+
+	// Insert contract
 	rows, err := c.Store.NamedQuery(`
-		INSERT INTO contract (name, address, functions, network_id, platform_id) 
-		VALUES(:name, :address, :functions, :network_id, :platform_id) RETURNING *`, request)
+		INSERT INTO contract (name, address, functions, network_id, organization_id) 
+		VALUES(:name, :address, :functions, :network_id, :organization_id) RETURNING *`, request)
 	if err != nil {
+		c.Rollback()
 		return contract, libcommon.StringError(err)
 	}
 	for rows.Next() {
 		err = rows.StructScan(&contract)
 		if err != nil {
+			c.Rollback()
 			return contract, libcommon.StringError(err)
 		}
 	}
+	rows.Close()
 
-	defer rows.Close()
+	// Insert platforms for contract
+	for _, platformId := range request.PlatformIds {
+		rows, err = c.Store.NamedQuery(`
+			INSERT INTO contract_to_platform (contract_id, platform_id)
+			VALUES(:contract_id, :platform_id) RETURNING *
+			USING (SELECT organization_id FROM platform WHERE id = :platform_id) org_id
+			WHERE contract.organization_id = org_id`,
+			map[string]interface{}{"contract_id": contract.Id, "platform_id": platformId})
+		if err != nil {
+			c.Rollback()
+			return contract, libcommon.StringError(err)
+		}
+		for rows.Next() {
+			err = rows.StructScan(&contract)
+			if err != nil {
+				c.Rollback()
+				return contract, libcommon.StringError(err)
+			}
+		}
+		rows.Close()
+	}
+
+	if err := c.Commit(); err != nil {
+		return contract, libcommon.StringError(err)
+	}
+
 	return contract, nil
 }
 
@@ -55,7 +86,16 @@ func (c contract[T]) ListByPlatform(ctx context.Context, platformId string, limi
 	if limit == 0 {
 		limit = 100
 	}
-	err = c.Store.SelectContext(ctx, &contracts, fmt.Sprintf("SELECT * FROM %s WHERE platform_id = $1 AND deleted_at IS NULL LIMIT $2 OFFSET $3", c.Table), platformId, limit, offset)
+	// Query contracts along with their associated platform IDs
+	err = c.Store.SelectContext(ctx, &contracts,
+		`SELECT contract.*, array_agg(contract_to_platform.platform_id) AS platform_ids
+			FROM contract
+			JOIN contract_to_platform ON contract.id = contract_to_platform.contract_id
+			WHERE contract_to_platform.platform_id = $1 AND contract.deleted_at IS NULL
+			GROUP BY contract.id
+			LIMIT $2 OFFSET $3`,
+		platformId, limit, offset)
+
 	if err == sql.ErrNoRows {
 		return []model.Contract{}, nil
 	}
@@ -70,11 +110,15 @@ func (c contract[T]) ListByOrganization(ctx context.Context, organizationId stri
 	if limit == 0 {
 		limit = 100
 	}
+
+	// Query contracts along with their associated platform IDs
 	err = c.Store.SelectContext(ctx, &contracts,
-		`SELECT contract.* FROM contract 
-			LEFT JOIN platform 
-			ON contract.platform_id = platform.id 
+		`SELECT contract.*, array_agg(distinct contract_to_platform.platform_id) AS platform_ids
+			FROM contract
+			JOIN contract_to_platform ON contract.id = contract_to_platform.contract_id
+			JOIN platform ON contract_to_platform.platform_id = platform.id
 			WHERE platform.organization_id = $1 AND contract.deleted_at IS NULL
+			GROUP BY contract.id
 			LIMIT $2 OFFSET $3`,
 		organizationId, limit, offset)
 
@@ -88,20 +132,40 @@ func (c contract[T]) ListByOrganization(ctx context.Context, organizationId stri
 	return contracts, nil
 }
 
-func (c contract[T]) GetByAddressAndNetworkAndPlatform(ctx context.Context, address string, networkId string, platformId string) (contract model.Contract, err error) {
-	err = c.Store.GetContext(ctx, &contract, fmt.Sprintf("SELECT * FROM %s WHERE address = $1 AND network_id = $2 AND platform_id = $3 AND deleted_at IS NULL LIMIT 1", c.Table), address, networkId, platformId)
-	if err != nil && err == sql.ErrNoRows {
-		return contract, serror.NOT_FOUND
+func (c contract[T]) GetByAddressAndNetwork(ctx context.Context, address string, networkId string) (contract model.Contract, err error) {
+	err = c.Store.GetContext(ctx, &contract,
+		`SELECT contract.*, array_agg(contract_to_platform.platform_id) AS platform_ids
+			FROM contract
+			JOIN contract_to_platform ON contract.id = contract_to_platform.contract_id
+			WHERE address = $1 AND network_id = $2 AND contract.deleted_at IS NULL
+			GROUP BY contract.id`,
+		address, networkId)
+
+	if err == sql.ErrNoRows {
+		return model.Contract{}, serror.NOT_FOUND
 	}
-	return contract, libcommon.StringError(err)
+	if err != nil {
+		return contract, libcommon.StringError(err)
+	}
+
+	return contract, nil
 }
 
 func (c contract[T]) GetById(ctx context.Context, id string) (contract model.Contract, err error) {
-	err = c.Store.GetContext(ctx, &contract, fmt.Sprintf("SELECT * FROM %s WHERE id = $1 AND deleted_at IS NULL", c.Table), id)
+	err = c.Store.GetContext(ctx, &contract,
+		`SELECT contract.*, array_agg(contract_to_platform.platform_id) AS platform_ids
+			FROM contract
+			JOIN contract_to_platform ON contract.id = contract_to_platform.contract_id
+			WHERE contract.id = $1 AND contract.deleted_at IS NULL
+			GROUP BY contract.id`,
+		id)
+
 	if err == sql.ErrNoRows {
-		return contract, common.StringError(serror.NOT_FOUND)
-	} else if err != nil {
+		return model.Contract{}, common.StringError(serror.NOT_FOUND)
+	}
+	if err != nil {
 		return contract, common.StringError(err)
 	}
+
 	return contract, nil
 }

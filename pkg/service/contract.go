@@ -37,14 +37,16 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 	}
 
 	// Check if contract already exists
-	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkId, create.PlatformId)
+	exists, err := c.repos.Contract.GetByAddressAndNetwork(ctx, create.Address, create.NetworkId)
 	if err != nil && err != serror.NOT_FOUND {
 		return model.Contract{}, common.StringError(err)
 	} else if exists.Id != "" {
 		return model.Contract{}, common.StringError(serror.ALREADY_IN_USE)
 	}
 
-	row := model.Contract{Name: create.Name, PlatformId: create.PlatformId, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkId}
+	// TODO: We need to introduce a check to see if all platforms are owned by the organization
+
+	row := model.Contract{Name: create.Name, PlatformIds: create.PlatformIds, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkId, OrganizationId: organizationId}
 	row, err = c.repos.Contract.Create(row)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
@@ -79,13 +81,7 @@ func (c contract) Get(ctx context.Context, contractId string, organizationId str
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	platform, err := c.repos.Platform.GetById(ctx, contract.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
-	}
+
 	return contract, nil
 }
 
@@ -96,18 +92,6 @@ func (c contract) Deactivate(ctx context.Context, contractId string, callerId st
 	err := RequireAuthority(c.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
-	}
-
-	deactivate, err := c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	platform, err := c.repos.Platform.GetById(ctx, deactivate.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
 	}
 
 	type DeactivateUpdate struct {
@@ -122,7 +106,7 @@ func (c contract) Deactivate(ctx context.Context, contractId string, callerId st
 		return model.Contract{}, common.StringError(err)
 	}
 
-	deactivate, err = c.repos.Contract.GetById(ctx, contractId)
+	deactivate, err := c.repos.Contract.GetById(ctx, contractId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
@@ -139,24 +123,12 @@ func (c contract) Reactivate(ctx context.Context, contractId string, callerId st
 		return model.Contract{}, common.StringError(err)
 	}
 
-	reactivate, err := c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	platform, err := c.repos.Platform.GetById(ctx, reactivate.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
-	}
-
 	err = c.repos.Contract.Activate(ctx, contractId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
 
-	reactivate, err = c.repos.Contract.GetById(ctx, contractId)
+	reactivate, err := c.repos.Contract.GetById(ctx, contractId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
@@ -173,24 +145,12 @@ func (c contract) Update(ctx context.Context, request model.RequestContractUpdat
 		return model.Contract{}, common.StringError(err)
 	}
 
-	update, err := c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	platform, err := c.repos.Platform.GetById(ctx, update.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
-	}
-
 	err = c.repos.Contract.Update(ctx, contractId, request)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
 
-	update, err = c.repos.Contract.GetById(ctx, contractId)
+	update, err := c.repos.Contract.GetById(ctx, contractId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}

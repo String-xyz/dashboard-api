@@ -62,7 +62,12 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.BadRequest400(c)
 	}
 
-	ok = validator.IsUUID(body.PlatformId)
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "contract: create validate body")
+		return httperror.InvalidPayload400(c, err)
+	}
+
+	ok = validator.IsUUID(body.PlatformIds...)
 	if !ok {
 		return httperror.BadRequest400(c, "missing or invalid platformId")
 	}

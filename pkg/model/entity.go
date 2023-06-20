@@ -86,16 +86,17 @@ type Apikey struct {
 }
 
 type Contract struct {
-	Id            string         `json:"id,omitempty" db:"id"`
-	CreatedAt     time.Time      `json:"createdAt,omitempty" db:"created_at"`
-	UpdatedAt     time.Time      `json:"updatedAt,omitempty" db:"updated_at"`
-	DeactivatedAt *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-	DeletedAt     *time.Time     `json:"deletedAt,omitempty" db:"deleted_at"`
-	Name          string         `json:"name" db:"name"`
-	Address       string         `json:"address" db:"address"`
-	Functions     pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
-	NetworkId     string         `json:"networkId" db:"network_id"`
-	PlatformId    string         `json:"platformId" db:"platform_id"`
+	Id             string         `json:"id,omitempty" db:"id"`
+	CreatedAt      time.Time      `json:"createdAt,omitempty" db:"created_at"`
+	UpdatedAt      time.Time      `json:"updatedAt,omitempty" db:"updated_at"`
+	DeactivatedAt  *time.Time     `json:"deactivatedAt,omitempty" db:"deactivated_at"`
+	DeletedAt      *time.Time     `json:"deletedAt,omitempty" db:"deleted_at"`
+	Name           string         `json:"name" db:"name"`
+	Address        string         `json:"address" db:"address"`
+	Functions      pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
+	NetworkId      string         `json:"networkId" db:"network_id"`
+	PlatformIds    pq.StringArray `json:"platformIds" db:"platform_ids" swaggertype:"array,string"`
+	OrganizationId string         `json:"organizationId" db:"organization_id"`
 }
 
 type NetworkFull struct {
