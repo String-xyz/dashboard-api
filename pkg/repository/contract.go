@@ -46,28 +46,28 @@ func NewContract(db database.Queryable) Contract {
 // The result is a single contract record with an array of platform ids.
 func (c contract[T]) Create(ctx context.Context, request model.RequestContractCreate) (contract model.Contract, err error) {
 	rows, err := c.Store.NamedQuery(`
-	WITH c AS (
-    	INSERT INTO contract (name, address, functions, network_id, organization_id)
-    	VALUES (:name, :address, :functions, :network_id, :organization_id)
-    	ON CONFLICT (address, organization_id, network_id) DO UPDATE SET name = name WHERE FALSE
-    	RETURNING *
-	),
-	platforms AS (
-    	SELECT UNNEST(:platform_ids::uuid[]) AS platform_id
-    	FROM platform
-    	WHERE organization_id = :organization_id
-	),
-	ctp AS (
-    	INSERT INTO contract_to_platform (platform_id, contract_id)
-    	SELECT platforms.platform_id, c.id
-    	FROM platforms, c
-    	ON CONFLICT(platform_id, contract_id) DO NOTHING
-    	RETURNING platform_id, contract_id
-	)
-	SELECT c.*, array_agg(jctp.platform_id) AS platform_ids
-	FROM c
-	JOIN contract_to_platform jctp ON c.id = jctp.contract_id
-	GROUP BY c.id
+		WITH c AS (
+			INSERT INTO contract (name, address, functions, network_id, organization_id)
+			VALUES (:name, :address, :functions, :network_id, :organization_id)
+			ON CONFLICT (address, organization_id, network_id) DO UPDATE SET name = name WHERE FALSE
+			RETURNING *
+		),
+		platforms AS (
+			SELECT UNNEST(:platform_ids::uuid[]) AS platform_id
+			FROM platform
+			WHERE organization_id = :organization_id
+		),
+		ctp AS (
+			INSERT INTO contract_to_platform (platform_id, contract_id)
+			SELECT platforms.platform_id, c.id
+			FROM platforms, c
+			ON CONFLICT(platform_id, contract_id) DO NOTHING
+			RETURNING platform_id, contract_id
+		)
+		SELECT c.*, array_agg(jctp.platform_id) AS platform_ids
+		FROM c
+		JOIN contract_to_platform jctp ON c.id = jctp.contract_id
+		GROUP BY c.id
 	`, request)
 	if err != nil {
 		return contract, libcommon.StringError(err)
