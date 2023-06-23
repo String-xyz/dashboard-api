@@ -185,23 +185,23 @@ func (c contract[T]) GetById(ctx context.Context, id string) (contract model.Con
 
 func (c contract[T]) Deactivate(ctx context.Context, id string, organizationId string) (model model.Contract, err error) {
 	err = c.Store.GetContext(ctx, &model, `
-	WITH updated_contract AS (
-    	UPDATE contract c
-    	SET deactivated_at = NOW()
-    	WHERE EXISTS (
-        	SELECT 1
-        	FROM contract_to_platform ctp
-        	JOIN platform p ON ctp.platform_id = p.id
-        	WHERE ctp.contract_id = c.id
-        	AND p.organization_id = $2
-    	)
-    	AND c.id = $1
-    	RETURNING *
-	)
-	SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
-	FROM updated_contract uc
-	JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-	GROUP BY uc.id
+		WITH updated_contract AS (
+			UPDATE contract c
+			SET deactivated_at = NOW()
+			WHERE EXISTS (
+					SELECT 1
+					FROM contract_to_platform ctp
+					JOIN platform p ON ctp.platform_id = p.id
+					WHERE ctp.contract_id = c.id
+					AND p.organization_id = $2
+			)
+			AND c.id = $1
+			RETURNING *
+		)
+		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
+		FROM updated_contract uc
+		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
+		GROUP BY uc.id
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
@@ -209,23 +209,23 @@ func (c contract[T]) Deactivate(ctx context.Context, id string, organizationId s
 
 func (c contract[T]) Activate(ctx context.Context, id string, organizationId string) (model model.Contract, err error) {
 	err = c.Store.GetContext(ctx, &model, `
-	WITH updated_contract AS (
-    	UPDATE contract c
-    	SET deactivated_at = NULL
-    	WHERE EXISTS (
-        SELECT 1
-        FROM contract_to_platform ctp
-        JOIN platform p ON ctp.platform_id = p.id
-        WHERE ctp.contract_id = c.id
-        AND p.organization_id = $2
-    	)
+		WITH updated_contract AS (
+			UPDATE contract c
+			SET deactivated_at = NULL
+			WHERE EXISTS (
+				SELECT 1
+				FROM contract_to_platform ctp
+				JOIN platform p ON ctp.platform_id = p.id
+				WHERE ctp.contract_id = c.id
+				AND p.organization_id = $2
+			)
     	AND c.id = $1
     	RETURNING *
-	)
-	SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
-	FROM updated_contract uc
-	JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-	GROUP BY uc.id
+		)
+		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
+		FROM updated_contract uc
+		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
+		GROUP BY uc.id
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
@@ -240,11 +240,11 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 		WITH updated_contract AS (
 		UPDATE contract SET %s  
 		WHERE EXISTS (
-				SELECT 1
-				FROM contract_to_platform
-				JOIN platform ON contract_to_platform.platform_id = platform.id
-				WHERE contract_to_platform.contract_id = contract.id
-				AND platform.organization_id = %s
+			SELECT 1
+			FROM contract_to_platform
+			JOIN platform ON contract_to_platform.platform_id = platform.id
+			WHERE contract_to_platform.contract_id = contract.id
+			AND platform.organization_id = %s
 		)
 		AND contract.id = %s AND deleted_at IS NULL
 		RETURNING *
