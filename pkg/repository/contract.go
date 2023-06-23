@@ -161,8 +161,10 @@ func (c contract[T]) ListByOrganization(ctx context.Context, organizationId stri
 
 func (c contract[T]) GetByAddressAndNetwork(ctx context.Context, address string, networkId string) (contract model.Contract, err error) {
 	err = c.Store.GetContext(ctx, &contract, `
-		SELECT * FROM contract
+		SELECT c.* array_agg(ctp.platform_id) AS platform_ids FROM contract c
+		LEFT JOIN contract_to_platform ctp ON ctp.contract_id = c.id
 		WHERE address = $1 AND network_id = $2 AND deleted_at IS NULL LIMIT 1
+		GROUP BY c.id 
 		`, address, networkId)
 
 	if err != nil && err == sql.ErrNoRows {
@@ -236,7 +238,7 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 	}
 	query := fmt.Sprintf(`
 		WITH updated_contract AS (
-		UDATE contract SET %s  
+		UPDATE contract SET %s  
 		WHERE EXISTS (
         SELECT 1
         FROM contract_to_platform
@@ -247,6 +249,10 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
     AND contract.id = %s AND deleted_at IS NULL
 		RETURNING *
 		)
+		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
+		FROM updated_contract uc
+		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
+		GROUP BY uc.id
 		`, strings.Join(names, ", "), organizationId, id)
 	err = c.Store.GetContext(ctx, &model, query, keyToUpdate)
 	if err != nil {
