@@ -240,13 +240,13 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 		WITH updated_contract AS (
 		UPDATE contract SET %s  
 		WHERE EXISTS (
-        SELECT 1
-        FROM contract_to_platform
-        JOIN platform ON contract_to_platform.platform_id = platform.id
-        WHERE contract_to_platform.contract_id = contract.id
-        AND platform.organization_id = %s
-    )
-    AND contract.id = %s AND deleted_at IS NULL
+				SELECT 1
+				FROM contract_to_platform
+				JOIN platform ON contract_to_platform.platform_id = platform.id
+				WHERE contract_to_platform.contract_id = contract.id
+				AND platform.organization_id = %s
+		)
+		AND contract.id = %s AND deleted_at IS NULL
 		RETURNING *
 		)
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
