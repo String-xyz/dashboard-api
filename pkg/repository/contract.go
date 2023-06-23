@@ -213,11 +213,11 @@ func (c contract[T]) Activate(ctx context.Context, id string, organizationId str
     	UPDATE contract c
     	SET deactivated_at = NULL
     	WHERE EXISTS (
-        	SELECT 1
-        	FROM contract_to_platform ctp
-        	JOIN platform p ON ctp.platform_id = p.id
-        	WHERE ctp.contract_id = c.id
-        	AND p.organization_id = $2
+        SELECT 1
+        FROM contract_to_platform ctp
+        JOIN platform p ON ctp.platform_id = p.id
+        WHERE ctp.contract_id = c.id
+        AND p.organization_id = $2
     	)
     	AND c.id = $1
     	RETURNING *
