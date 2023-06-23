@@ -49,7 +49,7 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 	WITH c AS (
     	INSERT INTO contract (name, address, functions, network_id, organization_id)
     	VALUES (:name, :address, :functions, :network_id, :organization_id)
-    	ON CONFLICT (network_id, organization_id, address) DO UPDATE SET name = name WHERE FALSE
+    	ON CONFLICT (address, organization_id, network_id) DO UPDATE SET name = name WHERE FALSE
     	RETURNING *
 	),
 	platforms AS (
