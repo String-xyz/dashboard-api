@@ -91,7 +91,7 @@ type RequestContractCreate struct {
 	Functions      pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
 	NetworkId      string         `json:"networkId" db:"network_id"`
 	PlatformIds    pq.StringArray `json:"platformIds" db:"platform_ids" swaggertype:"array,string"`
-	OrganizationId string         `json:"organizationId" db:"organization_id"`
+	OrganizationId string         `json:"-" db:"organization_id"`
 }
 
 type RequestContractUpdate struct {

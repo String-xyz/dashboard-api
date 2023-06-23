@@ -134,7 +134,7 @@ func (c contract[T]) ListByPlatform(ctx context.Context, platformId string, limi
 	}
 
 	return contracts, nil
-}
+}t 
 
 func (c contract[T]) ListByOrganization(ctx context.Context, organizationId string, limit int, offset int) (contracts []model.Contract, err error) {
 	if limit == 0 {

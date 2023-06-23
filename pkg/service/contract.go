@@ -33,10 +33,8 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	// If the organizationId is not provided, use the caller's organizationId
-	if create.OrganizationId == "" {
-		create.OrganizationId = organizationId
-	}
+
+	create.OrganizationId = organizationId
 
 	contract, err := c.repos.Contract.Create(ctx, create)
 	if err != nil {
