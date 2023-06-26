@@ -47,15 +47,15 @@ locals {
           valuefrom = data.aws_ssm_parameter.sendgrid_api_key.arn
         },
         {
-          name  = "MEMBER_ROLE_OWNER_ID"
+          name      = "MEMBER_ROLE_OWNER_ID"
           valueFrom = data.aws_ssm_parameter.member_role_owner_id.arn
         },
         {
-          name  = "MEMBER_ROLE_ADMIN_ID"
+          name      = "MEMBER_ROLE_ADMIN_ID"
           valueFrom = data.aws_ssm_parameter.member_role_admin_id.arn
         },
         {
-          name  = "MEMBER_ROLE_MEMBER_ID"
+          name      = "MEMBER_ROLE_MEMBER_ID"
           valueFrom = data.aws_ssm_parameter.member_role_member_id.arn
         },
         {
