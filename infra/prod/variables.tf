@@ -71,10 +71,6 @@ locals {
           valueFrom = data.aws_ssm_parameter.db_name.arn
         },
         {
-          name      = "REDIS_HOST",
-          valuefrom = data.aws_ssm_parameter.redis_host_url.arn
-        },
-        {
           name      = "REDIS_PASSWORD",
           valuefrom = data.aws_ssm_parameter.redis_auth_token.arn
         }
@@ -87,6 +83,10 @@ locals {
         {
           name  = "REDIS_PORT"
           value = local.redis_port
+        },
+        {
+          name      = "REDIS_HOST",
+          value     = data.aws_ssm_parameter.redis_host_url.value
         },
         {
           name  = "DB_PORT",
