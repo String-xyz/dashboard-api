@@ -93,7 +93,7 @@ data "aws_iam_policy_document" "ecs_service_scaling" {
 }
 
 resource "aws_iam_policy" "ecs_service_scaling" {
-  name = "ecs-to-scaling"
+  name = "${local.service_name}-ecs-service-scaling-policy"
   path = "/"
   description = "Allow ecs service scaling"
   policy = data.aws_iam_policy_document.ecs_service_scaling.json
