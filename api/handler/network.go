@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/platform-admin-api/pkg/service"
+	"github.com/String-xyz/dashboard-api/pkg/service"
+	"github.com/String-xyz/go-lib/v2/common"
 	"github.com/labstack/echo/v4"
 )
 
@@ -22,8 +22,14 @@ func NewNetwork(service service.Network) Network {
 	return &network{service: service}
 }
 
+// @Summary Get all networks
+// @Tags Network
+// @Produce  json
+// @Success 200 {array} model.NetworkData
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /networks [get]
 func (a network) GetAll(c echo.Context) error {
-
 	m, err := a.service.GetAll(c.Request().Context())
 	if err != nil {
 		common.LogStringError(c, err, "network: get all")

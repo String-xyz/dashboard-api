@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/String-xyz/go-lib/database"
-	"github.com/String-xyz/go-lib/middleware"
-	"github.com/String-xyz/go-lib/validator"
+	"github.com/String-xyz/go-lib/v2/database"
+	"github.com/String-xyz/go-lib/v2/middleware"
+	"github.com/String-xyz/go-lib/v2/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
 )
@@ -22,7 +22,7 @@ func heartbeat(c echo.Context) error {
 }
 
 func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
-	e.Use(middleware.Tracer())
+	e.Use(middleware.Tracer("dashboard-api"))
 	e.Use(middleware.CORS())
 	e.Use(middleware.RequestId())
 	e.Use(middleware.Recover())
@@ -30,6 +30,16 @@ func baseMiddleware(logger *zerolog.Logger, e *echo.Echo) {
 	e.Use(middleware.LogRequest())
 }
 
+// @title Platform Management API
+// @version 1.0
+// @description Platform Management API for managing Organizations, Platforms, API keys, etc.
+
+// @contact.name Platform Management API Support
+// @contact.url http://string.xyz
+// @contact.email support@stringxyz.com
+
+// @host platform-api.sandbox.string-api.xyz
+// @BasePath /
 func Start(config APIConfig) {
 	e := echo.New()
 	e.Validator = validator.New()
@@ -42,6 +52,7 @@ func Start(config APIConfig) {
 	redis := newRedis()
 	service := newServices(config, repos, redis)
 
+	organizationRoute(service, e)
 	platformRoute(service, e)
 	memberRoute(service, e)
 	loginRoute(service, e)

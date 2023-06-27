@@ -3,13 +3,14 @@ package handler
 import (
 	"net/http"
 
-	"github.com/String-xyz/go-lib/common"
-	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
-	validator "github.com/String-xyz/go-lib/validator"
+	"github.com/String-xyz/go-lib/v2/common"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
+	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/pkg/errors"
 
-	"github.com/String-xyz/platform-admin-api/pkg/model"
-	"github.com/String-xyz/platform-admin-api/pkg/service"
+	"github.com/String-xyz/dashboard-api/pkg/model"
+	"github.com/String-xyz/dashboard-api/pkg/service"
 	"github.com/labstack/echo/v4"
 )
 
@@ -32,105 +33,215 @@ func NewContract(service service.Contract) Contract {
 	return &contract{service: service}
 }
 
+// Create a new contract
+// @Summary Create a new contract
+// @Tags Contract
+// @Accept  json
+// @Produce  json
+// @Param RequestContractCreate body model.RequestContractCreate true "Contract Create Request"
+// @Success 201 {object} model.Contract
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 409 {object} error
+// @Failure 500 {object} error
+// @Router /contracts [post]
 func (a contract) Create(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid memberId")
+	}
+
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
 
 	body := model.RequestContractCreate{}
 	if err := c.Bind(&body); err != nil {
-		return httperror.BadRequestError(c)
+		common.LogStringError(c, err, "contract: create bind")
+		return httperror.BadRequest400(c)
+	}
+
+	ok = validator.IsUUID(body.PlatformId)
+	if !ok {
+		return httperror.BadRequest400(c, "missing or invalid platformId")
 	}
 
 	SanitizeChecksums(&body.Address)
 
-	m, err := a.service.Create(c.Request().Context(), body, callerId, platformId)
+	m, err := a.service.Create(c.Request().Context(), body, callerId, organizationId)
 	if err != nil {
 		common.LogStringError(c, err, "contract: create")
 
 		if serror.Is(err, serror.ALREADY_IN_USE) {
-			return httperror.ConflictError(c, err.Error())
+			return httperror.Conflict409(c, err.Error())
 		}
-		return httperror.InternalError(c)
+		return httperror.Internal500(c)
 	}
 	return c.JSON(http.StatusCreated, m)
 }
 
+// Get all contracts
+// @Summary Get all contracts
+// @Tags Contract
+// @Accept  json
+// @Produce  json
+// @Param platformId query string false "Platform ID"
+// @Success 200 {array} model.Contract
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /contracts [get]
 func (a contract) GetAll(c echo.Context) error {
-	platformId := c.Get("platformId").(string)
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
 
-	m, err := a.service.GetAll(c.Request().Context(), platformId)
-	if err != nil {
+	platformId := c.QueryParam("platformId")
+
+	m, err := a.service.GetAll(c.Request().Context(), platformId, organizationId)
+	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "contract: get all")
 	}
 	return c.JSON(http.StatusOK, m)
 }
 
+// Get a specific contract
+// @Summary Get a specific contract
+// @Tags Contract
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Contract ID"
+// @Success 200 {object} model.Contract
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /contracts/{id} [get]
 func (a contract) Get(c echo.Context) error {
-	platformId := c.Get("platformId").(string)
-	contractId := c.Param("id")
-	if contractId == "" {
-		return httperror.BadRequestError(c)
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
-	m, err := a.service.Get(c.Request().Context(), platformId, contractId)
+	contractId := c.Param("id")
+	if contractId == "" {
+		return httperror.BadRequest400(c)
+	}
+
+	m, err := a.service.Get(c.Request().Context(), contractId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: get")
 	}
 	return c.JSON(http.StatusOK, m)
 }
 
+// Deactivate a contract
+// @Summary Deactivate a contract
+// @Tags Contract
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Contract ID"
+// @Success 200 {object} model.Contract
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /contracts/{id}/deactivate [patch]
 func (a contract) Deactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
-	contractId := c.Param("id")
-	if !validator.IsUUID(contractId, platformId, callerId) {
-		return httperror.BadRequestError(c, "invalid id")
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid callerId")
 	}
 
-	m, err := a.service.Deactivate(c.Request().Context(), callerId, platformId, contractId)
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
+
+	contractId := c.Param("id")
+	if !validator.IsUUID(contractId, organizationId, callerId) {
+		return httperror.BadRequest400(c, "invalid id")
+	}
+
+	m, err := a.service.Deactivate(c.Request().Context(), contractId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: deactivate")
 	}
 	return c.JSON(http.StatusOK, m)
 }
 
+// Reactivate a contract
+// @Summary Reactivate a contract
+// @Tags Contract
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Contract ID"
+// @Success 200 {object} model.Contract
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /contracts/{id}/reactivate [patch]
 func (a contract) Reactivate(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
-	contractId := c.Param("id")
-	if !validator.IsUUID(contractId, platformId, callerId) {
-		return httperror.BadRequestError(c, "invalid id")
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid callerId")
 	}
 
-	m, err := a.service.Reactivate(c.Request().Context(), callerId, platformId, contractId)
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
+
+	contractId := c.Param("id")
+	if !validator.IsUUID(contractId, organizationId, callerId) {
+		return httperror.BadRequest400(c, "invalid id")
+	}
+
+	m, err := a.service.Reactivate(c.Request().Context(), contractId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: reactivate")
 	}
 	return c.JSON(http.StatusOK, m)
 }
 
+// Update a contract
+// @Summary Update a contract
+// @Tags Contract
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Contract ID"
+// @Param RequestContractUpdate body model.RequestContractUpdate true "Contract Update Request"
+// @Success 200 {object} model.Contract
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 500 {object} error
+// @Router /contracts/{id} [patch]
 func (a contract) Update(c echo.Context) error {
-	callerId := c.Get("memberId").(string)
-	platformId := c.Get("platformId").(string)
-	contractId := c.Param("id")
-	if platformId == "" || callerId == "" {
-		return httperror.BadRequestError(c)
+	callerId, ok := c.Get("memberId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid callerId")
 	}
 
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
+
+	contractId := c.Param("id")
 	if !validator.IsUUID(contractId) {
-		return httperror.BadRequestError(c, "invalid id")
+		return httperror.BadRequest400(c, "invalid id")
 	}
 
 	body := model.RequestContractUpdate{}
 	err := c.Bind(&body)
 	if err != nil {
 		common.LogStringError(c, err, "contract: update bind")
-		return httperror.BadRequestError(c)
+		return httperror.BadRequest400(c)
+	}
+	if body.Address != nil {
+		SanitizeChecksums(body.Address)
 	}
 
-	SanitizeChecksums(body.Address)
-
-	m, err := a.service.Update(c.Request().Context(), body, callerId, platformId, contractId)
+	m, err := a.service.Update(c.Request().Context(), body, contractId, callerId, organizationId)
 	if err != nil {
 		return DefaultErrorHandler(c, err, "contract: update")
 	}

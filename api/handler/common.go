@@ -2,15 +2,15 @@ package handler
 
 import (
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/String-xyz/go-lib/common"
-	httperror "github.com/String-xyz/go-lib/httperror"
-	serror "github.com/String-xyz/go-lib/stringerror"
-	"github.com/String-xyz/platform-admin-api/pkg/service"
+	"github.com/String-xyz/dashboard-api/config"
+	"github.com/String-xyz/dashboard-api/pkg/service"
+	"github.com/String-xyz/go-lib/v2/common"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/sha3"
 )
@@ -19,7 +19,7 @@ import (
 
 func SetJWTCookie(c echo.Context, jwt service.JWT) error {
 	cookie := new(http.Cookie)
-	cookie.Name = "StringJWT"
+	cookie.Name = "StringAdminJWT"
 	cookie.Value = jwt.Token
 	cookie.HttpOnly = true
 	cookie.Expires = jwt.ExpAt // we want the cookie to expire at the same time as the token
@@ -33,7 +33,7 @@ func SetJWTCookie(c echo.Context, jwt service.JWT) error {
 
 func SetRefreshTokenCookie(c echo.Context, refresh service.RefreshTokenResponse) error {
 	cookie := new(http.Cookie)
-	cookie.Name = "refresh_token"
+	cookie.Name = "StringAdminRefreshToken"
 	cookie.Value = refresh.Token
 	cookie.HttpOnly = true
 	cookie.Expires = refresh.ExpAt // we want the cookie to expire at the same time as the token
@@ -62,7 +62,7 @@ func SetAuthCookies(c echo.Context, jwt service.JWT) error {
 func DeleteAuthCookies(c echo.Context) error {
 	// in order to delete a cookie we need to set it with an expired date
 	cookie := new(http.Cookie)
-	cookie.Name = "StringJWT"
+	cookie.Name = "StringAdminJWT"
 	cookie.Value = ""
 	cookie.HttpOnly = true
 	cookie.Expires = time.Now()
@@ -72,7 +72,7 @@ func DeleteAuthCookies(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	cookie = new(http.Cookie)
-	cookie.Name = "refresh_token"
+	cookie.Name = "StringAdminRefreshToken"
 	cookie.Value = ""
 	cookie.Expires = time.Now()
 	cookie.HttpOnly = true
@@ -85,7 +85,7 @@ func DeleteAuthCookies(c echo.Context) error {
 }
 
 func IsLocalEnv() bool {
-	return os.Getenv("ENV") == "local"
+	return config.Var.ENV == "local"
 }
 
 func getCookieSameSiteMode() http.SameSite {
@@ -105,26 +105,26 @@ func DefaultErrorHandler(c echo.Context, err error, handlerName string) error {
 	common.LogStringError(c, err, handlerName)
 
 	if serror.Is(err, serror.NOT_FOUND) {
-		return httperror.NotFoundError(c)
+		return httperror.NotFound404(c)
 	}
 
 	if serror.Is(err, serror.FORBIDDEN) {
-		return httperror.ForbiddenError(c, "Invoking member lacks authority")
+		return httperror.Forbidden403(c, "Invoking member lacks authority")
 	}
 
 	if serror.Is(err, serror.INVALID_RESET_TOKEN) {
-		return httperror.BadRequestError(c, "Invalid password reset token")
+		return httperror.BadRequest400(c, "Invalid password reset token")
 	}
 
 	if serror.Is(err, serror.INVALID_PASSWORD) {
-		return httperror.BadRequestError(c, "Invalid password")
+		return httperror.BadRequest400(c, "Invalid password")
 	}
 
 	if serror.Is(err, serror.ALREADY_IN_USE) {
-		return httperror.ConflictError(c, "Already in use")
+		return httperror.Conflict409(c, "Already in use")
 	}
 
-	return httperror.InternalError(c)
+	return httperror.Internal500(c)
 }
 
 func validAddress(addr string) bool {

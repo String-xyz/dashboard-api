@@ -3,9 +3,9 @@ package repository
 import (
 	"time"
 
-	"github.com/String-xyz/go-lib/common"
-	"github.com/String-xyz/go-lib/database"
-	serror "github.com/String-xyz/go-lib/stringerror"
+	"github.com/String-xyz/go-lib/v2/common"
+	"github.com/String-xyz/go-lib/v2/database"
+	serror "github.com/String-xyz/go-lib/v2/stringerror"
 )
 
 const KEY_PREFIX = "deny_"
@@ -24,20 +24,20 @@ func NewDenyList(r database.RedisStore) DenyList {
 	return &denyList{r}
 }
 
-func (a denyList) AddMember(memberId string) error {
+func (d denyList) AddMember(memberId string) error {
 	expireAt := time.Hour * 24 * 7 // 7 days expiration
 	key := KEY_PREFIX + memberId
-	return a.redis.Set(key, "true", expireAt)
+	return d.redis.Set(key, "true", expireAt)
 }
 
-func (a denyList) RemoveMember(memberId string) error {
+func (d denyList) RemoveMember(memberId string) error {
 	key := KEY_PREFIX + memberId
-	return a.redis.Delete(key)
+	return d.redis.Delete(key)
 }
 
-func (a denyList) IsDenied(memberId string) (bool, error) {
+func (d denyList) IsDenied(memberId string) (bool, error) {
 	key := KEY_PREFIX + memberId
-	denied, err := a.redis.Get(key)
+	denied, err := d.redis.Get(key)
 	if err != nil {
 		if serror.Is(err, serror.NOT_FOUND) {
 			return false, nil // if we error for this reason, continue
