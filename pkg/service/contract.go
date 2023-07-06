@@ -3,9 +3,10 @@ package service
 import (
 	"context"
 
+	"github.com/String-xyz/go-lib/v2/common"
+
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/repository"
-	"github.com/String-xyz/go-lib/v2/common"
 )
 
 type Contract interface {

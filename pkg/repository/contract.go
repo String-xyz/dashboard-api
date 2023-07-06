@@ -3,16 +3,18 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/go-lib/v2/common"
 	libcommon "github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/go-lib/v2/database"
 	"github.com/String-xyz/go-lib/v2/repository"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
+
+	"github.com/String-xyz/dashboard-api/pkg/model"
 )
 
 type Contract interface {
@@ -37,6 +39,11 @@ func NewContract(db database.Queryable) Contract {
 	return &contract[model.Contract]{repository.Base[model.Contract]{Store: db, Table: "contract"}}
 }
 
+func prettyPrint(v interface{}) {
+	b, _ := json.MarshalIndent(v, "", "  ")
+	fmt.Println(string(b))
+}
+
 // Theres a lot going on in this function query, so lets break it down.
 // with c as ( ... ) is a common table expression (CTE). It allows us to create a temporary table that we can use in the rest of the query.
 // The first CTE creates the contract record. It uses the postgres ON CONFLICT clause to prevent duplicate records from being created.
@@ -45,30 +52,33 @@ func NewContract(db database.Queryable) Contract {
 // The final select statement joins the contract record with the array of platform ids.
 // The result is a single contract record with an array of platform ids.
 func (c contract[T]) Create(ctx context.Context, request model.RequestContractCreate) (contract model.Contract, err error) {
-	rows, err := c.Store.NamedQuery(`
-		WITH c AS (
-			INSERT INTO contract (name, address, functions, network_id, organization_id)
-			VALUES (:name, :address, :functions, :network_id, :organization_id)
-			ON CONFLICT (address, organization_id, network_id) DO UPDATE SET name = name WHERE FALSE
-			RETURNING *
+	prettyPrint(request)
+
+	rows, err := c.Store.QueryxContext(ctx, `
+		WITH ins_contract AS (
+    	INSERT INTO contract (name, address, functions, network_id, organization_id)
+    	VALUES ($1, $2, $3, $4, $5)
+    	ON CONFLICT (address, organization_id, network_id) DO NOTHING
+    	RETURNING *
 		),
 		platforms AS (
-			SELECT UNNEST(:platform_ids::uuid[]) AS platform_id
-			FROM platform
-			WHERE organization_id = :organization_id
+    	SELECT UNNEST($6::uuid[]) AS platform_id
+    	WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $5)
 		),
-		ctp AS (
-			INSERT INTO contract_to_platform (platform_id, contract_id)
-			SELECT platforms.platform_id, c.id
-			FROM platforms, c
-			ON CONFLICT(platform_id, contract_id) DO NOTHING
-			RETURNING platform_id, contract_id
+		ins_ctp AS (
+    	INSERT INTO contract_to_platform (platform_id, contract_id)
+    	SELECT platforms.platform_id, ins_contract.id
+    	FROM platforms, ins_contract
+    	ON CONFLICT(platform_id, contract_id) DO NOTHING
+    	RETURNING platform_id, contract_id
 		)
-		SELECT c.*, array_agg(jctp.platform_id) AS platform_ids
-		FROM c
-		JOIN contract_to_platform jctp ON c.id = jctp.contract_id
-		GROUP BY c.id
-	`, request)
+		SELECT ins_contract.*, array_agg(ins_ctp.platform_id) AS platform_ids
+		FROM ins_contract
+		JOIN ins_ctp ON ins_contract.id = ins_ctp.contract_id
+		GROUP BY ins_contract.id, ins_contract.name, ins_contract.address, ins_contract.functions, 
+		ins_contract.network_id, ins_contract.organization_id, ins_contract.created_at, 
+		ins_contract.updated_at, ins_contract.deleted_at, ins_contract.deactivated_at, ins_contract.deleted_at
+	`, request.Name, request.Address, request.Functions, request.NetworkId, request.OrganizationId, request.PlatformIds)
 	if err != nil {
 		return contract, libcommon.StringError(err)
 	}
@@ -78,12 +88,10 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 			return contract, libcommon.StringError(err)
 		}
 	}
-
 	// If the contract id is empty, it means the contract already exists.
 	if contract.Id == "" {
 		return contract, common.StringError(serror.ALREADY_IN_USE)
 	}
-
 	defer rows.Close()
 	return contract, nil
 }
@@ -93,11 +101,11 @@ func (c contract[T]) GetForOrganization(ctx context.Context, id string, organiza
 	err = c.Store.GetContext(ctx, &contract, `
 		SELECT c.*, array_agg(ctp.platform_id) AS platform_ids
 		FROM contract c
-		JOIN contract_to_platform ctp ON contract.id = ctp.contract_id
+		JOIN contract_to_platform ctp ON c.id = ctp.contract_id
 		JOIN platform p ON ctp.platform_id = p.id
-		WHERE contract.id = $1
+		WHERE c.id = $1
 		AND p.organization_id = $2
-		GROUP BY contract.id
+		GROUP BY c.id
 		`, id, organizationId)
 
 	if err == sql.ErrNoRows {
