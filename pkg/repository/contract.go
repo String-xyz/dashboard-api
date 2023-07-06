@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -39,11 +38,6 @@ func NewContract(db database.Queryable) Contract {
 	return &contract[model.Contract]{repository.Base[model.Contract]{Store: db, Table: "contract"}}
 }
 
-func prettyPrint(v interface{}) {
-	b, _ := json.MarshalIndent(v, "", "  ")
-	fmt.Println(string(b))
-}
-
 // Theres a lot going on in this function query, so lets break it down.
 // with c as ( ... ) is a common table expression (CTE). It allows us to create a temporary table that we can use in the rest of the query.
 // The first CTE creates the contract record. It uses the postgres ON CONFLICT clause to prevent duplicate records from being created.
@@ -52,8 +46,6 @@ func prettyPrint(v interface{}) {
 // The final select statement joins the contract record with the array of platform ids.
 // The result is a single contract record with an array of platform ids.
 func (c contract[T]) Create(ctx context.Context, request model.RequestContractCreate) (contract model.Contract, err error) {
-	prettyPrint(request)
-
 	rows, err := c.Store.QueryxContext(ctx, `
 		WITH ins_contract AS (
     	INSERT INTO contract (name, address, functions, network_id, organization_id)
