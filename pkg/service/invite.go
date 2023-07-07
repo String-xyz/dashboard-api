@@ -75,7 +75,7 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 
 	// Create encrypted token so that only the email owner can accept the invite
 	key := config.Var.STRING_ENCRYPTION_KEY
-	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Second * 10).Unix(), Email: request.Email}, key)
+	token, err := common.Encrypt(TokenPayload{ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), Email: request.Email}, key)
 	if err != nil {
 		return invite, common.StringError(err)
 	}
