@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/String-xyz/dashboard-api/config"
@@ -116,7 +117,7 @@ func (i invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	}
 
 	// Ensure that the token is not expired
-	if payload.ExpiresAt < time.Now().Unix() {
+	if payload.ExpiresAt < time.Now().Unix() && strings.ToLower(invite.Role) != "owner" {
 		return member, jwt, common.StringError(serror.FORBIDDEN)
 	}
 
