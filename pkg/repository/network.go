@@ -39,7 +39,7 @@ func (n network[T]) List(ctx context.Context, limit int, offset int) (networks [
 	}
 
 	for i := range results {
-		networks = append(networks, model.NetworkData{Id: results[i].Id, Name: results[i].Name})
+		networks = append(networks, model.NetworkData{Id: results[i].Id, Name: results[i].Name, ChainId: results[i].ChainId})
 	}
 
 	return networks, nil

@@ -2,12 +2,11 @@ package service
 
 import (
 	"context"
-	"time"
+
+	"github.com/String-xyz/go-lib/v2/common"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/repository"
-	"github.com/String-xyz/go-lib/v2/common"
-	serror "github.com/String-xyz/go-lib/v2/stringerror"
 )
 
 type Contract interface {
@@ -36,20 +35,14 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 		return model.Contract{}, common.StringError(err)
 	}
 
-	// Check if contract already exists
-	exists, err := c.repos.Contract.GetByAddressAndNetworkAndPlatform(ctx, create.Address, create.NetworkId, create.PlatformId)
-	if err != nil && err != serror.NOT_FOUND {
-		return model.Contract{}, common.StringError(err)
-	} else if exists.Id != "" {
-		return model.Contract{}, common.StringError(serror.ALREADY_IN_USE)
-	}
+	create.OrganizationId = organizationId
 
-	row := model.Contract{Name: create.Name, PlatformId: create.PlatformId, Address: create.Address, Functions: create.Functions, NetworkId: create.NetworkId}
-	row, err = c.repos.Contract.Create(row)
+	contract, err := c.repos.Contract.Create(ctx, create)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	return row, nil
+
+	return contract, nil
 }
 
 func (c contract) GetAll(ctx context.Context, platformId string, organizationId string) (contracts []model.Contract, err error) {
@@ -75,17 +68,11 @@ func (c contract) Get(ctx context.Context, contractId string, organizationId str
 	_, finish := Span(ctx, "service.contract.Get", SpanTag{"organizationId": organizationId})
 	defer finish()
 
-	contract, err := c.repos.Contract.GetById(ctx, contractId)
+	contract, err := c.repos.Contract.GetForOrganization(ctx, contractId, organizationId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
-	platform, err := c.repos.Platform.GetById(ctx, contract.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
-	}
+
 	return contract, nil
 }
 
@@ -98,36 +85,12 @@ func (c contract) Deactivate(ctx context.Context, contractId string, callerId st
 		return model.Contract{}, common.StringError(err)
 	}
 
-	deactivate, err := c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	platform, err := c.repos.Platform.GetById(ctx, deactivate.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
-	}
-
-	type DeactivateUpdate struct {
-		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty" db:"deactivated_at"`
-	}
-
-	now := time.Now()
-	update := DeactivateUpdate{DeactivatedAt: &now}
-
-	err = c.repos.Contract.Update(ctx, contractId, update)
+	contract, err := c.repos.Contract.Deactivate(ctx, contractId, organizationId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
 
-	deactivate, err = c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-
-	return deactivate, nil
+	return contract, nil
 }
 
 func (c contract) Reactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error) {
@@ -139,29 +102,12 @@ func (c contract) Reactivate(ctx context.Context, contractId string, callerId st
 		return model.Contract{}, common.StringError(err)
 	}
 
-	reactivate, err := c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	platform, err := c.repos.Platform.GetById(ctx, reactivate.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
-	}
-
-	err = c.repos.Contract.Activate(ctx, contractId)
+	contract, err := c.repos.Contract.Activate(ctx, contractId, organizationId)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
 
-	reactivate, err = c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-
-	return reactivate, nil
+	return contract, nil
 }
 
 func (c contract) Update(ctx context.Context, request model.RequestContractUpdate, contractId string, callerId string, organizationId string) (model.Contract, error) {
@@ -173,27 +119,10 @@ func (c contract) Update(ctx context.Context, request model.RequestContractUpdat
 		return model.Contract{}, common.StringError(err)
 	}
 
-	update, err := c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	platform, err := c.repos.Platform.GetById(ctx, update.PlatformId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-	if platform.OrganizationId != organizationId {
-		return model.Contract{}, common.StringError(serror.FORBIDDEN)
-	}
-
-	err = c.repos.Contract.Update(ctx, contractId, request)
+	contract, err := c.repos.Contract.Update(ctx, contractId, organizationId, request)
 	if err != nil {
 		return model.Contract{}, common.StringError(err)
 	}
 
-	update, err = c.repos.Contract.GetById(ctx, contractId)
-	if err != nil {
-		return model.Contract{}, common.StringError(err)
-	}
-
-	return update, nil
+	return contract, nil
 }
