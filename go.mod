@@ -63,5 +63,3 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 	inet.af/netaddr v0.0.0-20220617031823-097006376321 // indirect
 )
-
-replace github.com/String-xyz/go-lib/v2 => ../go-lib
