@@ -95,8 +95,9 @@ type RequestContractCreate struct {
 }
 
 type RequestContractUpdate struct {
-	Name      *string         `json:"name" db:"name"`
-	Address   *string         `json:"address" db:"address"`
-	Functions *pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
-	NetworkId *string         `json:"networkId" db:"network_id"`
+	Name        *string        `json:"name"`
+	Address     *string        `json:"address"`
+	Functions   pq.StringArray `json:"functions" swaggertype:"array,string"`
+	NetworkId   *string        `json:"networkId"`
+	PlatformIds pq.StringArray `json:"platformIds"swaggertype:"array,string"`
 }
