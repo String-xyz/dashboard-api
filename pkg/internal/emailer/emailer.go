@@ -14,7 +14,7 @@ import (
 )
 
 type Emailer interface {
-	SendInviteEmail(ctx context.Context, email string, token string, inviteId string, userName string) error
+	SendInviteEmail(ctx context.Context, email string, token string, inviteId string, userName string, orgName string) error
 	SendPasswordResetEmail(ctx context.Context, email string, token string, userName string) error
 }
 
@@ -51,7 +51,7 @@ func (e emailer) SendPasswordResetEmail(ctx context.Context, email string, token
 	return sendEmail(ctx, from, subject, to, "", buf.String())
 }
 
-func (e emailer) SendInviteEmail(ctx context.Context, email string, token string, inviteId string, userName string) error {
+func (e emailer) SendInviteEmail(ctx context.Context, email string, token string, inviteId string, userName string, orgName string) error {
 	link := config.Var.BASE_DASHBOARD_URL + "/invite/" + inviteId + "?token=" + token
 
 	tmpl, err := template.ParseFS(templatesFS, "templates/invite.tpl")
@@ -63,6 +63,7 @@ func (e emailer) SendInviteEmail(ctx context.Context, email string, token string
 	err = tmpl.ExecuteTemplate(&buf, "invite.tpl", map[string]interface{}{
 		"link":     link,
 		"userName": userName,
+		"orgName":  orgName,
 	})
 	if err != nil {
 		return err

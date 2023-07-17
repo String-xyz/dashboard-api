@@ -67,6 +67,12 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	}
 
 	roleId := GetRoleId(request.Role)
+
+	organization, err := i.repos.Organization.GetById(ctx, organizationId)
+	if err != nil {
+		return repository.MemberInviteInfo{}, common.StringError(err)
+	}
+
 	// TODO: VULNERABILITY! Ensure Owner can only be set as role if no other users exist!
 	invite, err := i.repos.MemberInvite.Create(ctx, model.MemberInvite{Email: request.Email, InvitedBy: callerId, OrganizationId: organizationId, Name: request.Name, RoleId: roleId})
 	if err != nil {
@@ -82,7 +88,7 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 	token = url.QueryEscape(token) // make
 
 	emailer := emailer.New()
-	err = emailer.SendInviteEmail(ctx, request.Email, token, invite.Id, request.Name)
+	err = emailer.SendInviteEmail(ctx, request.Email, token, invite.Id, request.Name, organization.Name)
 	if err != nil {
 		return invite, common.StringError(err)
 	}
