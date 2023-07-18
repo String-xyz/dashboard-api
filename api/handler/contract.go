@@ -62,6 +62,11 @@ func (a contract) Create(c echo.Context) error {
 		return httperror.BadRequest400(c)
 	}
 
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "contract: create validate")
+		return httperror.InvalidPayload400(c, err)
+	}
+
 	SanitizeChecksums(&body.Address)
 
 	m, err := a.service.Create(c.Request().Context(), body, callerId, organizationId)
@@ -227,11 +232,17 @@ func (a contract) Update(c echo.Context) error {
 	}
 
 	body := model.RequestContractUpdate{}
-	err := c.Bind(&body)
-	if err != nil {
+
+	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "contract: update bind")
 		return httperror.BadRequest400(c)
 	}
+
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "contract: update validate")
+		return httperror.InvalidPayload400(c, err)
+	}
+
 	if body.Address != nil {
 		SanitizeChecksums(body.Address)
 	}
