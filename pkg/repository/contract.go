@@ -66,7 +66,7 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 		FROM ins_contract
 		JOIN ins_ctp ON ins_contract.id = ins_ctp.contract_id
 		GROUP BY ins_contract.id, ins_contract.name, ins_contract.address, ins_contract.functions, 
-		ins_contract.network_id, ins_contract.organization_id, ins_contract.created_at, 
+		ins_contract.type, ins_contract.network_id, ins_contract.organization_id, ins_contract.created_at, 
 		ins_contract.updated_at, ins_contract.deleted_at, ins_contract.deactivated_at, ins_contract.deleted_at
 	`, request.Name, request.Address, request.Functions, request.Type, request.NetworkId, request.OrganizationId, request.PlatformIds)
 	if err != nil {
@@ -263,7 +263,7 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 		SELECT uc.*, array_agg(ctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform ctp ON uc.id = ctp.contract_id
-		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 	`
 
 	err = c.Store.QueryRowxContext(ctx, query,
