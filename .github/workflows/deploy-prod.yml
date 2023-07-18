@@ -72,5 +72,5 @@ jobs:
         with:
           task-definition: ${{ steps.task.outputs.task-definition }}
           cluster: core
-          service: dahsboard-api
+          service: dashboard-api
           wait-for-service-stability: true
