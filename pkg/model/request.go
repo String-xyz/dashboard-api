@@ -86,12 +86,12 @@ type RequestPasswordReset struct {
 }
 
 type RequestContractCreate struct {
-	Name           string         `json:"name" db:"name"`
-	Address        string         `json:"address" db:"address"`
-	Functions      pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
+	Name           string         `json:"name" db:"name" validate:"required"`
+	Address        string         `json:"address" db:"address" validate:"required"`
+	Functions      pq.StringArray `json:"functions" db:"functions" validate:"required" swaggertype:"array,string" `
 	Type           string         `json:"type" db:"type" validate:"required,oneof=NFT TOKEN NFT_AND_TOKEN"`
-	NetworkId      string         `json:"networkId" db:"network_id"`
-	PlatformIds    pq.StringArray `json:"platformIds" db:"platform_ids" swaggertype:"array,string"`
+	NetworkId      string         `json:"networkId" db:"network_id" validate:"required"`
+	PlatformIds    pq.StringArray `json:"platformIds" db:"platform_ids" validate:"required,min=1" swaggertype:"array,string"`
 	OrganizationId string         `json:"-" db:"organization_id"`
 }
 
@@ -101,5 +101,5 @@ type RequestContractUpdate struct {
 	Functions   pq.StringArray `json:"functions" swaggertype:"array,string"`
 	Type        *string        `json:"type" validate:"omitempty,oneof=NFT TOKEN NFT_AND_TOKEN"`
 	NetworkId   *string        `json:"networkId"`
-	PlatformIds pq.StringArray `json:"platformIds" swaggertype:"array,string"`
+	PlatformIds pq.StringArray `json:"platformIds" validate:"omitempty,min=1" swaggertype:"array,string"`
 }
