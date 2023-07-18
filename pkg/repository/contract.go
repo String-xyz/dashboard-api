@@ -236,23 +236,22 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 			SET name = COALESCE($1, name),
 				address = COALESCE($2, address),
 				functions = COALESCE($3, functions),
-				type = COALESCE($4, type),
-				network_id = COALESCE($5, network_id)
-			WHERE id = $6
+				network_id = COALESCE($4, network_id)
+			WHERE id = $5
 			AND EXISTS (
 				SELECT 1
 				FROM contract_to_platform
 				JOIN platform ON contract_to_platform.platform_id = platform.id
 				WHERE contract_to_platform.contract_id = contract.id
-				AND platform.organization_id = $7
+				AND platform.organization_id = $6
 			)
 			AND deleted_at IS NULL
 			RETURNING *
 		),
 		valid_platforms AS (
-			SELECT UNNEST($8::uuid[]) AS platform_id
+			SELECT UNNEST($7::uuid[]) AS platform_id
 			FROM platform
-			WHERE organization_id = $7
+			WHERE organization_id = $6
 		),
 		new_ctp AS (
 			INSERT INTO contract_to_platform (platform_id, contract_id)
@@ -265,9 +264,10 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 		JOIN contract_to_platform ctp ON uc.id = ctp.contract_id
 		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 	`
-
+	fmt.Printf(">>>>>>>\n\nquery: %s\n", query)
+	fmt.Printf(">>>>>>>>\n\nupdates: %+v\n", updates)
 	err = c.Store.QueryRowxContext(ctx, query,
-		updates.Name, updates.Address, updates.Functions, updates.Type, updates.NetworkId, id, organizationId, updates.PlatformIds).StructScan(&model)
+		updates.Name, updates.Address, updates.Functions, updates.NetworkId, id, organizationId, updates.PlatformIds).StructScan(&model)
 	if err != nil {
 		return model, libcommon.StringError(err)
 	}
