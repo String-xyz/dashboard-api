@@ -89,7 +89,7 @@ type RequestContractCreate struct {
 	Name           string         `json:"name" db:"name"`
 	Address        string         `json:"address" db:"address"`
 	Functions      pq.StringArray `json:"functions" db:"functions" swaggertype:"array,string"`
-	Type           string         `json:"type" db:"type" validate:"omitempty,oneof=NFT TOKEN NFT_AND_TOKEN"`
+	Type           string         `json:"type" db:"type" validate:"required,oneof=NFT TOKEN NFT_AND_TOKEN"`
 	NetworkId      string         `json:"networkId" db:"network_id"`
 	PlatformIds    pq.StringArray `json:"platformIds" db:"platform_ids" swaggertype:"array,string"`
 	OrganizationId string         `json:"-" db:"organization_id"`
