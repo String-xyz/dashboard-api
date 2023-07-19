@@ -48,13 +48,13 @@ func NewContract(db database.Queryable) Contract {
 func (c contract[T]) Create(ctx context.Context, request model.RequestContractCreate) (contract model.Contract, err error) {
 	rows, err := c.Store.QueryxContext(ctx, `
 		WITH platforms AS (
-    	SELECT UNNEST($6::uuid[]) AS platform_id
-    	WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $5)
+			SELECT UNNEST($7::uuid[]) AS platform_id
+			WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $6)
 		),
 		ins_contract AS (
-    	INSERT INTO contract (name, address, functions, network_id, organization_id)
-    	VALUES ($1, $2, $3, $4, $5)
-    	RETURNING *
+			INSERT INTO contract (name, address, functions, type, network_id, organization_id)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING *
 		),
 		ins_ctp AS (
     	INSERT INTO contract_to_platform (platform_id, contract_id)
@@ -67,9 +67,9 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 		FROM ins_contract
 		JOIN ins_ctp ON ins_contract.id = ins_ctp.contract_id
 		GROUP BY ins_contract.id, ins_contract.name, ins_contract.address, ins_contract.functions, 
-		ins_contract.network_id, ins_contract.organization_id, ins_contract.created_at, 
+		ins_contract.type, ins_contract.network_id, ins_contract.organization_id, ins_contract.created_at, 
 		ins_contract.updated_at, ins_contract.deleted_at, ins_contract.deactivated_at, ins_contract.deleted_at
-	`, request.Name, request.Address, request.Functions, request.NetworkId, request.OrganizationId, request.PlatformIds)
+	`, request.Name, request.Address, request.Functions, request.Type, request.NetworkId, request.OrganizationId, request.PlatformIds)
 	if err != nil {
 		var pgErr *pq.Error
 		if errors.As(err, &pgErr) {
@@ -203,7 +203,7 @@ func (c contract[T]) Deactivate(ctx context.Context, id string, organizationId s
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
@@ -227,7 +227,7 @@ func (c contract[T]) Activate(ctx context.Context, id string, organizationId str
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
@@ -240,22 +240,23 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 			SET name = COALESCE($1, name),
 				address = COALESCE($2, address),
 				functions = COALESCE($3, functions),
-				network_id = COALESCE($4, network_id)
-			WHERE id = $5
+				type = COALESCE($4, type),
+				network_id = COALESCE($5, network_id)
+			WHERE id = $6
 			AND EXISTS (
 				SELECT 1
 				FROM contract_to_platform
 				JOIN platform ON contract_to_platform.platform_id = platform.id
 				WHERE contract_to_platform.contract_id = contract.id
-				AND platform.organization_id = $6
+				AND platform.organization_id = $7
 			)
 			AND deleted_at IS NULL
 			RETURNING *
 		),
 		valid_platforms AS (
-			SELECT UNNEST($7::uuid[]) AS platform_id
+			SELECT UNNEST($8::uuid[]) AS platform_id
 			FROM platform
-			WHERE organization_id = $6
+			WHERE organization_id = $7
 		),
 		new_ctp AS (
 			INSERT INTO contract_to_platform (platform_id, contract_id)
@@ -266,11 +267,11 @@ func (c contract[T]) Update(ctx context.Context, id string, organizationId strin
 		SELECT uc.*, array_agg(ctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform ctp ON uc.id = ctp.contract_id
-		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 	`
 
 	err = c.Store.QueryRowxContext(ctx, query,
-		updates.Name, updates.Address, updates.Functions, updates.NetworkId, id, organizationId, updates.PlatformIds).StructScan(&model)
+		updates.Name, updates.Address, updates.Functions, updates.Type, updates.NetworkId, id, organizationId, updates.PlatformIds).StructScan(&model)
 	if err != nil {
 		return model, libcommon.StringError(err)
 	}
