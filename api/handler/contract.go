@@ -9,9 +9,10 @@ import (
 	validator "github.com/String-xyz/go-lib/v2/validator"
 	"github.com/pkg/errors"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/service"
-	"github.com/labstack/echo/v4"
 )
 
 type Contract interface {
