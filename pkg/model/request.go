@@ -3,14 +3,14 @@ package model
 import "github.com/lib/pq"
 
 type RequestOrganizationCreate struct {
-	OrganizationName string `json:"organizationName" validate:"required"`
+	OrganizationName string `json:"organizationName" validate:"required,max=100"`
 	Email            string `json:"email" validate:"required,email"`
-	Name             string `json:"name" validate:"required"`
+	Name             string `json:"name" validate:"required,max=100"`
 }
 
 type RequestOrganizationUpdate struct {
-	Name        *string `json:"organizationName" db:"name"`
-	Description *string `json:"description" db:"description"`
+	Name        *string `json:"organizationName" db:"name" validate:"omitempty,max=100"`
+	Description *string `json:"description" db:"description" validate:"omitempty,max=144"`
 }
 
 type RequestPlatformCreate struct {
@@ -56,8 +56,8 @@ type RequestInviteAcceptance struct {
 
 type RequestMemberUpdateSelf struct {
 	Name        *string `json:"name" db:"name"`
-	OldPassword *string `json:"oldPassword" validate:"required_with=NewPassword,min=8,max=100"`
-	NewPassword *string `json:"newPassword" validate:"required_with=OldPassword,min=8,max=100"`
+	OldPassword *string `json:"oldPassword" validate:"required_with_all=OldPassword,NewPassword,min=8,max=100"`
+	NewPassword *string `json:"newPassword" validate:"required_with_all=NewPassword,OldPassword,min=8,max=100"`
 }
 
 type RequestMemberUpdateOther struct {
@@ -86,20 +86,20 @@ type RequestPasswordReset struct {
 }
 
 type RequestContractCreate struct {
-	Name           string         `json:"name" db:"name" validate:"required"`
-	Address        string         `json:"address" db:"address" validate:"required"`
+	Name           string         `json:"name" db:"name" validate:"required,max=100"`
+	Address        string         `json:"address" db:"address" validate:"required,eth_addr"`
 	Functions      pq.StringArray `json:"functions" db:"functions" validate:"required" swaggertype:"array,string" `
 	Type           string         `json:"type" db:"type" validate:"required,oneof=NFT TOKEN NFT_AND_TOKEN"`
-	NetworkId      string         `json:"networkId" db:"network_id" validate:"required"`
+	NetworkId      string         `json:"networkId" db:"network_id" validate:"required,uuid"`
 	PlatformIds    pq.StringArray `json:"platformIds" db:"platform_ids" validate:"required,min=1" swaggertype:"array,string"`
 	OrganizationId string         `json:"-" db:"organization_id"`
 }
 
 type RequestContractUpdate struct {
-	Name        *string        `json:"name"`
-	Address     *string        `json:"address"`
+	Name        *string        `json:"name" validate:"omitempty,max=100"`
+	Address     *string        `json:"address" validate:"omitempty,eth_addr"`
 	Functions   pq.StringArray `json:"functions" swaggertype:"array,string"`
 	Type        *string        `json:"type" validate:"omitempty,oneof=NFT TOKEN NFT_AND_TOKEN"`
-	NetworkId   *string        `json:"networkId"`
+	NetworkId   *string        `json:"networkId" validate:"omitempty,uuid"`
 	PlatformIds pq.StringArray `json:"platformIds" validate:"omitempty,min=1" swaggertype:"array,string"`
 }
