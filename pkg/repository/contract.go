@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/String-xyz/go-lib/v2/common"
@@ -10,6 +11,7 @@ import (
 	"github.com/String-xyz/go-lib/v2/database"
 	"github.com/String-xyz/go-lib/v2/repository"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
+	"github.com/lib/pq"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 )
@@ -45,15 +47,14 @@ func NewContract(db database.Queryable) Contract {
 // The result is a single contract record with an array of platform ids.
 func (c contract[T]) Create(ctx context.Context, request model.RequestContractCreate) (contract model.Contract, err error) {
 	rows, err := c.Store.QueryxContext(ctx, `
-		WITH ins_contract AS (
-    	INSERT INTO contract (name, address, functions, network_id, organization_id)
-    	VALUES ($1, $2, $3, $4, $5)
-    	ON CONFLICT (address, organization_id, network_id) DO NOTHING
-    	RETURNING *
-		),
-		platforms AS (
+		WITH platforms AS (
     	SELECT UNNEST($6::uuid[]) AS platform_id
     	WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $5)
+		),
+		ins_contract AS (
+    	INSERT INTO contract (name, address, functions, network_id, organization_id)
+    	VALUES ($1, $2, $3, $4, $5)
+    	RETURNING *
 		),
 		ins_ctp AS (
     	INSERT INTO contract_to_platform (platform_id, contract_id)
@@ -70,6 +71,12 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 		ins_contract.updated_at, ins_contract.deleted_at, ins_contract.deactivated_at, ins_contract.deleted_at
 	`, request.Name, request.Address, request.Functions, request.NetworkId, request.OrganizationId, request.PlatformIds)
 	if err != nil {
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" { // unique violation
+				return contract, common.StringError(serror.ALREADY_IN_USE)
+			}
+		}
 		return contract, libcommon.StringError(err)
 	}
 	for rows.Next() {
@@ -78,10 +85,7 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 			return contract, libcommon.StringError(err)
 		}
 	}
-	// If the contract id is empty, it means the contract already exists.
-	if contract.Id == "" {
-		return contract, common.StringError(serror.ALREADY_IN_USE)
-	}
+
 	defer rows.Close()
 	return contract, nil
 }
@@ -199,7 +203,7 @@ func (c contract[T]) Deactivate(ctx context.Context, id string, organizationId s
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
@@ -223,7 +227,7 @@ func (c contract[T]) Activate(ctx context.Context, id string, organizationId str
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
