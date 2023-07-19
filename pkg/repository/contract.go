@@ -48,13 +48,13 @@ func NewContract(db database.Queryable) Contract {
 func (c contract[T]) Create(ctx context.Context, request model.RequestContractCreate) (contract model.Contract, err error) {
 	rows, err := c.Store.QueryxContext(ctx, `
 		WITH platforms AS (
-    	SELECT UNNEST($6::uuid[]) AS platform_id
-    	WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $5)
+			SELECT UNNEST($7::uuid[]) AS platform_id
+			WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $6)
 		),
 		ins_contract AS (
-    	INSERT INTO contract (name, address, functions, network_id, organization_id)
-    	VALUES ($1, $2, $3, $4, $5)
-    	RETURNING *
+			INSERT INTO contract (name, address, functions, type, network_id, organization_id)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING *
 		),
 		ins_ctp AS (
     	INSERT INTO contract_to_platform (platform_id, contract_id)
