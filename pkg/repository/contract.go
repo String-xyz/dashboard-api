@@ -203,7 +203,7 @@ func (c contract[T]) Deactivate(ctx context.Context, id string, organizationId s
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
@@ -227,7 +227,7 @@ func (c contract[T]) Activate(ctx context.Context, id string, organizationId str
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
