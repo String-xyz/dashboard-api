@@ -46,7 +46,7 @@ func (e emailer) SendPasswordResetEmail(ctx context.Context, email string, token
 	}
 
 	from := mail.NewEmail("String API", config.Var.AUTH_EMAIL_ADDRESS)
-	subject := "String API Password Reset"
+	subject := "String Dashboard Password Reset Request"
 	to := mail.NewEmail(userName, email)
 	return sendEmail(ctx, from, subject, to, "", buf.String())
 }
@@ -70,7 +70,7 @@ func (e emailer) SendInviteEmail(ctx context.Context, email string, token string
 	}
 
 	from := mail.NewEmail("String API", config.Var.AUTH_EMAIL_ADDRESS)
-	subject := "New String API User"
+	subject := "Invite to " + orgName + " on String Dashboard"
 	to := mail.NewEmail(userName, email)
 	return sendEmail(ctx, from, subject, to, "", buf.String())
 }

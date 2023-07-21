@@ -55,8 +55,8 @@ func (i invite) Send(c echo.Context) error {
 	}
 
 	body := model.RequestInviteSend{}
-	err := c.Bind(&body)
-	if err != nil {
+
+	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "invite: send bind")
 		return httperror.BadRequest400(c, "invalid payload")
 	}
@@ -90,8 +90,8 @@ func (i invite) Accept(c echo.Context) error {
 	id := c.Param("id")
 
 	body := model.RequestInviteAcceptance{}
-	err := c.Bind(&body)
-	if err != nil {
+
+	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "invite: accept bind")
 		return httperror.BadRequest400(c)
 	}
@@ -166,12 +166,17 @@ func (i invite) Resend(c echo.Context) error {
 		return httperror.Internal500(c, "missing or invalid callerId")
 	}
 
+	organizationId, ok := c.Get("organizationId").(string)
+	if !ok {
+		return httperror.Internal500(c, "missing or invalid organizationId")
+	}
+
 	id := c.Param("id")
 	if !validator.IsUUID(id) {
 		return httperror.BadRequest400(c, "invalid id")
 	}
 
-	m, err := i.service.Resend(c.Request().Context(), id, callerId)
+	m, err := i.service.Resend(c.Request().Context(), id, callerId, organizationId)
 	if err != nil {
 		common.LogStringError(c, err, "invite: resend")
 
@@ -209,8 +214,8 @@ func (i invite) Update(c echo.Context) error {
 	}
 
 	body := model.RequestInviteUpdate{}
-	err := c.Bind(&body)
-	if err != nil {
+
+	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "invite: update bind")
 		return httperror.BadRequest400(c)
 	}

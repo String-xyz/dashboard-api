@@ -20,7 +20,7 @@ type Invite interface {
 	Send(ctx context.Context, request model.RequestInviteSend, callerId *string, organizationId string) (repository.MemberInviteInfo, error)
 	Accept(ctx context.Context, inviteId string, requestBody model.RequestInviteAcceptance) (model.OrganizationMember, JWT, error)
 	List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error)
-	Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error)
+	Resend(ctx context.Context, inviteId string, callerId string, organizationId string) (repository.MemberInviteInfo, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error)
 	Revoke(ctx context.Context, inviteId string, callerId string) error
 	Get(ctx context.Context, id string) (repository.MemberInviteInfo, error)
@@ -63,7 +63,7 @@ func (i invite) Send(ctx context.Context, request model.RequestInviteSend, calle
 		if err != nil {
 			return repository.MemberInviteInfo{}, common.StringError(err)
 		}
-		return i.Resend(ctx, newInvite.Id, *callerId)
+		return i.Resend(ctx, newInvite.Id, *callerId, organizationId)
 	}
 
 	roleId := GetRoleId(request.Role)
@@ -188,14 +188,22 @@ func (i invite) List(ctx context.Context, status string, organizationId string) 
 	return result, nil
 }
 
-func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (repository.MemberInviteInfo, error) {
+func (i invite) Resend(ctx context.Context, inviteId string, callerId string, organizationId string) (repository.MemberInviteInfo, error) {
 	_, finish := Span(ctx, "service.invite.Resend")
 	defer finish()
+
+	organization, err := i.repos.Organization.GetById(ctx, organizationId)
+	if err != nil {
+		return repository.MemberInviteInfo{}, common.StringError(err)
+	}
+
 	result := repository.MemberInviteInfo{}
-	err := RequireAuthority(i.repos, callerId, "Admin", "Owner")
+
+	err = RequireAuthority(i.repos, callerId, "Admin", "Owner")
 	if err != nil {
 		return result, common.StringError(err)
 	}
+
 	result, err = i.repos.MemberInvite.GetById(ctx, inviteId)
 	if err != nil {
 		return result, common.StringError(err)
@@ -211,7 +219,7 @@ func (i invite) Resend(ctx context.Context, inviteId string, callerId string) (r
 	token = url.QueryEscape(token)
 
 	emailer := emailer.New()
-	err = emailer.SendInviteEmail(ctx, result.Email, token, result.Id, result.Name)
+	err = emailer.SendInviteEmail(ctx, result.Email, token, result.Id, result.Name, organization.Name)
 	if err != nil {
 		return result, common.StringError(err)
 	}
