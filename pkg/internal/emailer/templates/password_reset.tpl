@@ -3,7 +3,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<link href="https://fonts.cdnfonts.com/css/open-sauce-one" rel="stylesheet">
 	</head>
-	<body style="margin: 0; padding: 0; font-family: 'Open Sauce One', Arial, sans-serif;">
+	<body style="margin: 0; padding: 0; font-family: 'Open Sauce One', Roboto, sans-serif;">
 		<table border="0" cellpadding="0" cellspacing="0">
 			<tr>
 				<td align="center" valign="middle">
