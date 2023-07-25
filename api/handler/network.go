@@ -2,9 +2,11 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/String-xyz/dashboard-api/pkg/service"
 	"github.com/String-xyz/go-lib/v2/common"
+	httperror "github.com/String-xyz/go-lib/v2/httperror"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,7 +32,28 @@ func NewNetwork(service service.Network) Network {
 // @Failure 500 {object} error
 // @Router /networks [get]
 func (a network) GetAll(c echo.Context) error {
-	m, err := a.service.GetAll(c.Request().Context())
+	var err error
+	var limit int
+	var offset int
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			common.LogStringError(c, err, "network get all: invalid limit")
+			return httperror.BadRequest400(c, "invalid limit")
+		}
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			common.LogStringError(c, err, "network get all: invalid offset")
+			return httperror.BadRequest400(c, "invalid offset")
+		}
+	}
+
+	m, err := a.service.GetAll(c.Request().Context(), limit, offset)
 	if err != nil {
 		common.LogStringError(c, err, "network: get all")
 		return DefaultErrorHandler(c, err, "network: get all")
