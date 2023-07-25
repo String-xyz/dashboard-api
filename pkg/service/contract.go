@@ -11,7 +11,7 @@ import (
 
 type Contract interface {
 	Create(ctx context.Context, create model.RequestContractCreate, callerId string, organizationId string) (model.Contract, error)
-	GetAll(ctx context.Context, platformId string, organizationId string) ([]model.Contract, error)
+	GetAll(ctx context.Context, platformId string, organizationId string, limit int, offset int) ([]model.Contract, error)
 	Get(ctx context.Context, contractId string, organizationId string) (model.Contract, error)
 	Deactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error)
 	Reactivate(ctx context.Context, contractId string, callerId string, organizationId string) (model.Contract, error)
@@ -45,17 +45,17 @@ func (c contract) Create(ctx context.Context, create model.RequestContractCreate
 	return contract, nil
 }
 
-func (c contract) GetAll(ctx context.Context, platformId string, organizationId string) (contracts []model.Contract, err error) {
+func (c contract) GetAll(ctx context.Context, platformId string, organizationId string, limit int, offset int) (contracts []model.Contract, err error) {
 	_, finish := Span(ctx, "service.contract.GetAll", SpanTag{"organizationId": organizationId})
 	defer finish()
 
 	if platformId != "" {
-		contracts, err = c.repos.Contract.ListByPlatform(ctx, platformId, 0, 0)
+		contracts, err = c.repos.Contract.ListByPlatform(ctx, platformId, limit, offset)
 		if err != nil {
 			return contracts, common.StringError(err)
 		}
 	} else {
-		contracts, err = c.repos.Contract.ListByOrganization(ctx, organizationId, 0, 0)
+		contracts, err = c.repos.Contract.ListByOrganization(ctx, organizationId, limit, offset)
 		if err != nil {
 			return contracts, common.StringError(err)
 		}

@@ -14,7 +14,7 @@ import (
 type Platform interface {
 	Create(ctx context.Context, request model.RequestPlatformCreate, organizationId string) (platform model.Platform, err error)
 	Get(ctx context.Context, platformId string, organizationId string) (platform model.Platform, err error)
-	GetAll(ctx context.Context, callerId string, organizationId string) (platforms []model.Platform, err error)
+	GetAll(ctx context.Context, callerId string, organizationId string, limit int, offset int) (platforms []model.Platform, err error)
 	Update(ctx context.Context, request model.RequestPlatformUpdate, platformId string, callerId string, organizationId string) (platform model.Platform, err error)
 	Deactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error)
 	Reactivate(ctx context.Context, platformId string, callerId string, organizationId string) (model.Platform, error)
@@ -57,11 +57,11 @@ func (p platform) Get(ctx context.Context, platformId string, organizationId str
 	return platform, nil
 }
 
-func (p platform) GetAll(ctx context.Context, callerId string, organizationId string) (platforms []model.Platform, err error) {
+func (p platform) GetAll(ctx context.Context, callerId string, organizationId string, limit int, offset int) (platforms []model.Platform, err error) {
 	_, finish := Span(ctx, "service.platform.GetAll", SpanTag{"organizationId": organizationId})
 	defer finish()
 
-	platforms, err = p.repos.Platform.List(ctx, organizationId, 0, 0)
+	platforms, err = p.repos.Platform.List(ctx, organizationId, limit, offset)
 	if err != nil {
 		return platforms, common.StringError(err)
 	}

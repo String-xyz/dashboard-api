@@ -21,7 +21,7 @@ type MemberCreateResponse struct {
 }
 
 type Member interface {
-	GetAll(ctx context.Context, organizationId string) ([]repository.OrganizationMemberWithRole, error)
+	GetAll(ctx context.Context, organizationId string, limit int, offset int) ([]repository.OrganizationMemberWithRole, error)
 	Get(ctx context.Context, callerId string, organizationId string, memberId string) (repository.OrganizationMemberWithRole, error)
 	UpdateMember(ctx context.Context, request model.RequestMemberUpdateOther, callerId string, memberId string) (repository.OrganizationMemberWithRole, error)
 	UpdateSelf(ctx context.Context, request model.RequestMemberUpdateSelf, callerId string) (repository.OrganizationMemberWithRole, error)
@@ -40,11 +40,11 @@ func NewMember(repos repository.Repositories) Member {
 	return &member{repos}
 }
 
-func (m member) GetAll(ctx context.Context, organizationId string) ([]repository.OrganizationMemberWithRole, error) {
+func (m member) GetAll(ctx context.Context, organizationId string, limit int, offset int) ([]repository.OrganizationMemberWithRole, error) {
 	_, finish := Span(ctx, "service.member.GetAll", SpanTag{"organizationId": organizationId})
 	defer finish()
 
-	result, err := m.repos.OrganizationMember.List(ctx, organizationId, 0, 0)
+	result, err := m.repos.OrganizationMember.List(ctx, organizationId, limit, offset)
 	if err != nil {
 		return result, common.StringError(err)
 	}
