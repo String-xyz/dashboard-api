@@ -9,9 +9,9 @@ import (
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/service"
-	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	"github.com/String-xyz/go-lib/v2/httperror"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
-	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/String-xyz/go-lib/v2/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 )
