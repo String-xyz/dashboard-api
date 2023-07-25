@@ -19,7 +19,7 @@ import (
 type Invite interface {
 	Send(ctx context.Context, request model.RequestInviteSend, callerId *string, organizationId string) (repository.MemberInviteInfo, error)
 	Accept(ctx context.Context, inviteId string, requestBody model.RequestInviteAcceptance) (model.OrganizationMember, JWT, error)
-	List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error)
+	List(ctx context.Context, status string, organizationId string, limit int, offset int) ([]repository.MemberInviteInfo, error)
 	Resend(ctx context.Context, inviteId string, callerId string, organizationId string) (repository.MemberInviteInfo, error)
 	Update(ctx context.Context, request model.RequestInviteUpdate, inviteId string, callerId string) (repository.MemberInviteInfo, error)
 	Revoke(ctx context.Context, inviteId string, callerId string) error
@@ -176,11 +176,11 @@ func (i invite) Accept(ctx context.Context, inviteId string, requestBody model.R
 	return member, jwt, nil
 }
 
-func (i invite) List(ctx context.Context, status string, organizationId string) ([]repository.MemberInviteInfo, error) {
+func (i invite) List(ctx context.Context, status string, organizationId string, limit int, offset int) ([]repository.MemberInviteInfo, error) {
 	_, finish := Span(ctx, "service.invite.List", SpanTag{"organizationId": organizationId})
 	defer finish()
 
-	result, err := i.repos.MemberInvite.GetByOrganization(ctx, organizationId)
+	result, err := i.repos.MemberInvite.GetByOrganization(ctx, organizationId, limit, offset)
 	if err != nil {
 		return result, common.StringError(err)
 	}

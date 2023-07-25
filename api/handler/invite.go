@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/String-xyz/go-lib/v2/common"
@@ -143,8 +144,29 @@ func (i invite) List(c echo.Context) error {
 		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
+	var err error
+	var limit int
+	var offset int
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			common.LogStringError(c, err, "invite get all: invalid limit")
+			return httperror.BadRequest400(c, "invalid limit")
+		}
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			common.LogStringError(c, err, "invite get all: invalid offset")
+			return httperror.BadRequest400(c, "invalid offset")
+		}
+	}
+
 	status := c.QueryParam("status")
-	m, err := i.service.List(c.Request().Context(), status, organizationId)
+	m, err := i.service.List(c.Request().Context(), status, organizationId, limit, offset)
 	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "invite: list")
 	}

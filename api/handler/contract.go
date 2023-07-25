@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/String-xyz/go-lib/v2/common"
 	httperror "github.com/String-xyz/go-lib/v2/httperror"
@@ -101,7 +102,28 @@ func (a contract) GetAll(c echo.Context) error {
 
 	platformId := c.QueryParam("platformId")
 
-	m, err := a.service.GetAll(c.Request().Context(), platformId, organizationId)
+	var err error
+	var limit int
+	var offset int
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			common.LogStringError(c, err, "contract get all: invalid limit")
+			return httperror.BadRequest400(c, "invalid limit")
+		}
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			common.LogStringError(c, err, "contract get all: invalid offset")
+			return httperror.BadRequest400(c, "invalid offset")
+		}
+	}
+
+	m, err := a.service.GetAll(c.Request().Context(), platformId, organizationId, limit, offset)
 	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "contract: get all")
 	}
