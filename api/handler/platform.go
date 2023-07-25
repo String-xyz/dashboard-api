@@ -114,7 +114,7 @@ func (p platform) GetAll(c echo.Context) error {
 
 	m, err := p.service.GetAll(c.Request().Context(), callerId, organizationId)
 	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
-		return DefaultErrorHandler(c, err, "apikey: get all")
+		return DefaultErrorHandler(c, err, "platform: get all")
 	}
 
 	return c.JSON(http.StatusOK, m)
