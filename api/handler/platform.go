@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/service"
@@ -111,8 +112,28 @@ func (p platform) GetAll(c echo.Context) error {
 	if !ok {
 		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
+	var err error
+	var limit int
+	var offset int
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
 
-	m, err := p.service.GetAll(c.Request().Context(), callerId, organizationId)
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			common.LogStringError(c, err, "platform get all: invalid limit")
+			return httperror.BadRequest400(c, "invalid limit")
+		}
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			common.LogStringError(c, err, "platform get all: invalid offset")
+			return httperror.BadRequest400(c, "invalid offset")
+		}
+	}
+
+	m, err := p.service.GetAll(c.Request().Context(), callerId, organizationId, limit, offset)
 	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "platform: get all")
 	}
