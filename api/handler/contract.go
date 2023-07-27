@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/String-xyz/go-lib/v2/common"
-	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	"github.com/String-xyz/go-lib/v2/httperror"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
-	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/String-xyz/go-lib/v2/validator"
 	"github.com/pkg/errors"
 
 	"github.com/labstack/echo/v4"

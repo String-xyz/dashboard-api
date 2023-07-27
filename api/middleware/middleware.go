@@ -3,12 +3,12 @@ package middleware
 import (
 	"strings"
 
-	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/String-xyz/go-lib/v2/validator"
 
 	"github.com/String-xyz/dashboard-api/config"
 	"github.com/String-xyz/dashboard-api/pkg/service"
 	libcommon "github.com/String-xyz/go-lib/v2/common"
-	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	"github.com/String-xyz/go-lib/v2/httperror"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"

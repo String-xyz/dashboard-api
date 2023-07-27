@@ -7,7 +7,7 @@ import (
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/service"
 	"github.com/String-xyz/go-lib/v2/common"
-	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	"github.com/String-xyz/go-lib/v2/httperror"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
 	"github.com/labstack/echo/v4"
 )
