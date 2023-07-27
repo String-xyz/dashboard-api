@@ -2,12 +2,13 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/String-xyz/go-lib/v2/common"
-	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	"github.com/String-xyz/go-lib/v2/httperror"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
-	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/String-xyz/go-lib/v2/validator"
 	"github.com/pkg/errors"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
@@ -47,7 +48,28 @@ func (a member) GetAll(c echo.Context) error {
 		return httperror.Internal500(c, "missing or invalid organizationId")
 	}
 
-	m, err := a.service.GetAll(c.Request().Context(), organizationId)
+	var err error
+	var limit int
+	var offset int
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			common.LogStringError(c, err, "member get all: invalid limit")
+			return httperror.BadRequest400(c, "invalid limit")
+		}
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			common.LogStringError(c, err, "member get all: invalid offset")
+			return httperror.BadRequest400(c, "invalid offset")
+		}
+	}
+
+	m, err := a.service.GetAll(c.Request().Context(), organizationId, limit, offset)
 	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		common.LogStringError(c, err, "member: get all")
 		return httperror.Internal500(c)

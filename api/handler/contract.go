@@ -2,16 +2,18 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/String-xyz/go-lib/v2/common"
-	httperror "github.com/String-xyz/go-lib/v2/httperror"
+	"github.com/String-xyz/go-lib/v2/httperror"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
-	validator "github.com/String-xyz/go-lib/v2/validator"
+	"github.com/String-xyz/go-lib/v2/validator"
 	"github.com/pkg/errors"
+
+	"github.com/labstack/echo/v4"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 	"github.com/String-xyz/dashboard-api/pkg/service"
-	"github.com/labstack/echo/v4"
 )
 
 type Contract interface {
@@ -57,9 +59,15 @@ func (a contract) Create(c echo.Context) error {
 	}
 
 	body := model.RequestContractCreate{}
+
 	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "contract: create bind")
 		return httperror.BadRequest400(c)
+	}
+
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "contract: create validate")
+		return httperror.InvalidPayload400(c, err)
 	}
 
 	SanitizeChecksums(&body.Address)
@@ -94,7 +102,28 @@ func (a contract) GetAll(c echo.Context) error {
 
 	platformId := c.QueryParam("platformId")
 
-	m, err := a.service.GetAll(c.Request().Context(), platformId, organizationId)
+	var err error
+	var limit int
+	var offset int
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			common.LogStringError(c, err, "contract get all: invalid limit")
+			return httperror.BadRequest400(c, "invalid limit")
+		}
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			common.LogStringError(c, err, "contract get all: invalid offset")
+			return httperror.BadRequest400(c, "invalid offset")
+		}
+	}
+
+	m, err := a.service.GetAll(c.Request().Context(), platformId, organizationId, limit, offset)
 	if err != nil && errors.Cause(err) != serror.NOT_FOUND {
 		return DefaultErrorHandler(c, err, "contract: get all")
 	}
@@ -227,11 +256,17 @@ func (a contract) Update(c echo.Context) error {
 	}
 
 	body := model.RequestContractUpdate{}
-	err := c.Bind(&body)
-	if err != nil {
+
+	if err := c.Bind(&body); err != nil {
 		common.LogStringError(c, err, "contract: update bind")
 		return httperror.BadRequest400(c)
 	}
+
+	if err := c.Validate(body); err != nil {
+		common.LogStringError(c, err, "contract: update validate")
+		return httperror.InvalidPayload400(c, err)
+	}
+
 	if body.Address != nil {
 		SanitizeChecksums(body.Address)
 	}

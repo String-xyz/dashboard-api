@@ -9,7 +9,7 @@ import (
 )
 
 type Network interface {
-	GetAll(ctx context.Context) ([]model.NetworkData, error)
+	GetAll(ctx context.Context, limit int, offset int) ([]model.NetworkData, error)
 }
 
 type network struct {
@@ -20,11 +20,11 @@ func NewNetwork(repos repository.Repositories) Network {
 	return &network{repos}
 }
 
-func (n network) GetAll(ctx context.Context) ([]model.NetworkData, error) {
+func (n network) GetAll(ctx context.Context, limit int, offset int) ([]model.NetworkData, error) {
 	_, finish := Span(ctx, "service.network.GetAll")
 	defer finish()
 
-	networks, err := n.repos.Network.List(ctx, 0, 0)
+	networks, err := n.repos.Network.List(ctx, limit, offset)
 	if err != nil {
 		return nil, common.StringError(err)
 	}

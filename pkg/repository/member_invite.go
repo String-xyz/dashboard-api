@@ -49,7 +49,7 @@ type MemberInvite interface {
 	GetById(ctx context.Context, id string) (invite MemberInviteInfo, err error)
 	List(ctx context.Context, limit int, offset int) (invites []model.MemberInvite, err error)
 	Update(ctx context.Context, id string, updates any) error
-	GetByOrganization(ctx context.Context, organizationId string) (invites []MemberInviteInfo, err error)
+	GetByOrganization(ctx context.Context, organizationId string, limit int, offset int) (invites []MemberInviteInfo, err error)
 	GetByEmail(ctx context.Context, email string) (invite MemberInviteInfo, err error)
 	SoftDelete(ctx context.Context, id string) error
 }
@@ -89,8 +89,11 @@ func (i memberInvite[T]) Create(ctx context.Context, request model.MemberInvite)
 	return invite, nil
 }
 
-func (i memberInvite[T]) GetByOrganization(ctx context.Context, organizationId string) (invites []MemberInviteInfo, err error) {
-	err = i.Store.Select(&invites, getBaseQuery()+`WHERE member_invite.organization_id = $1 AND member_invite.deleted_at IS NULL`, organizationId)
+func (i memberInvite[T]) GetByOrganization(ctx context.Context, organizationId string, limit int, offset int) (invites []MemberInviteInfo, err error) {
+	if limit == 0 {
+		limit = 100
+	}
+	err = i.Store.Select(&invites, getBaseQuery()+`WHERE member_invite.organization_id = $1 AND member_invite.deleted_at IS NULL LIMIT $2 OFFSET $3`, organizationId, limit, offset)
 
 	if err != nil && err == sql.ErrNoRows {
 		return []MemberInviteInfo{}, common.StringError(serror.NOT_FOUND)

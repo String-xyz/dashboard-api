@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/String-xyz/go-lib/v2/common"
 	libcommon "github.com/String-xyz/go-lib/v2/common"
 	"github.com/String-xyz/go-lib/v2/database"
 	"github.com/String-xyz/go-lib/v2/repository"
 	serror "github.com/String-xyz/go-lib/v2/stringerror"
+	"github.com/lib/pq"
 
 	"github.com/String-xyz/dashboard-api/pkg/model"
 )
@@ -47,15 +47,14 @@ func NewContract(db database.Queryable) Contract {
 // The result is a single contract record with an array of platform ids.
 func (c contract[T]) Create(ctx context.Context, request model.RequestContractCreate) (contract model.Contract, err error) {
 	rows, err := c.Store.QueryxContext(ctx, `
-		WITH ins_contract AS (
-    	INSERT INTO contract (name, address, functions, network_id, organization_id)
-    	VALUES ($1, $2, $3, $4, $5)
-    	ON CONFLICT (address, organization_id, network_id) DO NOTHING
-    	RETURNING *
+		WITH platforms AS (
+			SELECT UNNEST($7::uuid[]) AS platform_id
+			WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $6)
 		),
-		platforms AS (
-    	SELECT UNNEST($6::uuid[]) AS platform_id
-    	WHERE EXISTS (SELECT 1 FROM platform WHERE organization_id = $5)
+		ins_contract AS (
+			INSERT INTO contract (name, address, functions, type, network_id, organization_id)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING *
 		),
 		ins_ctp AS (
     	INSERT INTO contract_to_platform (platform_id, contract_id)
@@ -68,10 +67,16 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 		FROM ins_contract
 		JOIN ins_ctp ON ins_contract.id = ins_ctp.contract_id
 		GROUP BY ins_contract.id, ins_contract.name, ins_contract.address, ins_contract.functions, 
-		ins_contract.network_id, ins_contract.organization_id, ins_contract.created_at, 
+		ins_contract.type, ins_contract.network_id, ins_contract.organization_id, ins_contract.created_at, 
 		ins_contract.updated_at, ins_contract.deleted_at, ins_contract.deactivated_at, ins_contract.deleted_at
-	`, request.Name, request.Address, request.Functions, request.NetworkId, request.OrganizationId, request.PlatformIds)
+	`, request.Name, request.Address, request.Functions, request.Type, request.NetworkId, request.OrganizationId, request.PlatformIds)
 	if err != nil {
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" { // unique violation
+				return contract, common.StringError(serror.ALREADY_IN_USE)
+			}
+		}
 		return contract, libcommon.StringError(err)
 	}
 	for rows.Next() {
@@ -80,10 +85,7 @@ func (c contract[T]) Create(ctx context.Context, request model.RequestContractCr
 			return contract, libcommon.StringError(err)
 		}
 	}
-	// If the contract id is empty, it means the contract already exists.
-	if contract.Id == "" {
-		return contract, common.StringError(serror.ALREADY_IN_USE)
-	}
+
 	defer rows.Close()
 	return contract, nil
 }
@@ -201,7 +203,7 @@ func (c contract[T]) Deactivate(ctx context.Context, id string, organizationId s
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
@@ -225,38 +227,54 @@ func (c contract[T]) Activate(ctx context.Context, id string, organizationId str
 		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
 		FROM updated_contract uc
 		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
 		`, id, organizationId)
 
 	return model, libcommon.StringError(err)
 }
 
 func (c contract[T]) Update(ctx context.Context, id string, organizationId string, updates model.RequestContractUpdate) (model model.Contract, err error) {
-	names, keyToUpdate := libcommon.KeysAndValues(updates)
-	if len(names) == 0 {
-		return model, libcommon.StringError(errors.New("no fields to update"))
-	}
-	query := fmt.Sprintf(`
+	query := `
 		WITH updated_contract AS (
-		UPDATE contract SET %s  
-		WHERE EXISTS (
-			SELECT 1
-			FROM contract_to_platform
-			JOIN platform ON contract_to_platform.platform_id = platform.id
-			WHERE contract_to_platform.contract_id = contract.id
-			AND platform.organization_id = %s
+			UPDATE contract 
+			SET name = COALESCE($1, name),
+				address = COALESCE($2, address),
+				functions = COALESCE($3, functions),
+				type = COALESCE($4, type),
+				network_id = COALESCE($5, network_id)
+			WHERE id = $6
+			AND EXISTS (
+				SELECT 1
+				FROM contract_to_platform
+				JOIN platform ON contract_to_platform.platform_id = platform.id
+				WHERE contract_to_platform.contract_id = contract.id
+				AND platform.organization_id = $7
+			)
+			AND deleted_at IS NULL
+			RETURNING *
+		),
+		valid_platforms AS (
+			SELECT UNNEST($8::uuid[]) AS platform_id
+			FROM platform
+			WHERE organization_id = $7
+		),
+		new_ctp AS (
+			INSERT INTO contract_to_platform (platform_id, contract_id)
+			SELECT platform_id, id FROM valid_platforms, updated_contract
+			ON CONFLICT (platform_id, contract_id) DO NOTHING
+			RETURNING platform_id, contract_id
 		)
-		AND contract.id = %s AND deleted_at IS NULL
-		RETURNING *
-		)
-		SELECT uc.*, array_agg(jctp.platform_id) AS platform_ids
+		SELECT uc.*, array_agg(ctp.platform_id) AS platform_ids
 		FROM updated_contract uc
-		JOIN contract_to_platform jctp ON uc.id = jctp.contract_id
-		GROUP BY uc.id
-		`, strings.Join(names, ", "), organizationId, id)
-	err = c.Store.GetContext(ctx, &model, query, keyToUpdate)
+		JOIN contract_to_platform ctp ON uc.id = ctp.contract_id
+		GROUP BY uc.id, uc.name, uc.address, uc.organization_id, uc.functions, uc.type, uc.network_id, uc.created_at, uc.updated_at, uc.deactivated_at, uc.deleted_at
+	`
+
+	err = c.Store.QueryRowxContext(ctx, query,
+		updates.Name, updates.Address, updates.Functions, updates.Type, updates.NetworkId, id, organizationId, updates.PlatformIds).StructScan(&model)
 	if err != nil {
-		return model, err
+		return model, libcommon.StringError(err)
 	}
-	return model, err
+
+	return model, nil
 }
