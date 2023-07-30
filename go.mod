@@ -3,7 +3,7 @@ module github.com/String-xyz/dashboard-api
 go 1.19
 
 require (
-	github.com/String-xyz/go-lib/v2 v2.1.1
+	github.com/String-xyz/go-lib/v2 v2.1.2
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/jmoiron/sqlx v1.3.5
